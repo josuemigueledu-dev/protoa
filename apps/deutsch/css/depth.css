@@ -210,7 +210,13 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .conv-band{position:sticky;top:calc(var(--lt-h,0px) + env(safe-area-inset-top,0px));z-index:3;height:200px;background:var(--il-mist);box-shadow:0 1px 0 var(--line);transition:height .3s var(--spring)}
 .conv-band.small{height:120px}
 .conv-band svg{display:block;width:100%;height:100%}
+/* the learner's lines: words are buttons and do not inherit colour, so they were navy on the pane. Done lines sit on green: text takes the status ink */
+.bub.l .box .gl .w:not(.speaking){color:inherit}
+:root:root:root .bub.l.done .box,:root:root:root .bub.l.done .box .gl .w:not(.speaking){color:var(--on-status)}
+:root:root:root .bub.l.done .box .gl .e,:root:root:root .bub.l.done .box .en-after,:root:root:root .bub.l.done .box .faint{color:color-mix(in srgb,var(--on-status) 86%,transparent)}
 .conv.has-band .log{padding-top:20px}
+/* anything scrolled or focused into view lands below the header and the shrunken band, never under them */
+.conv.has-band .log>*,.conv.has-band .turnbox{scroll-margin-top:calc(var(--lt-h,96px) + 132px)}
 .bub.w .bust{align-self:flex-end;width:40px;height:40px}
-@media (min-width:700px){.conv-band{height:300px}.conv-band.small{height:200px}}
+@media (min-width:700px){.conv-band{height:300px}.conv-band.small{height:200px}.conv.has-band .log>*,.conv.has-band .turnbox{scroll-margin-top:calc(var(--lt-h,96px) + 212px)}}
 @media (prefers-reduced-motion:reduce){.conv-band{transition:none}}
