@@ -27,6 +27,13 @@ They take direction from GitHub issue #1, the **Team brief**, and only from text
 - **Comments** on #1 are quick direction. Newer ones override older ones and the body. A comment starting with an agent's name (`content: ...`) is for that agent only.
 - Each agent ends every run with a report on issue #2, the **Team log**. A relay posts those reports, and every new PR, into the agent's own thread in the "Protoa Team" Telegram group. Arthur also writes to agents directly in those threads; the relay posts his messages on #1.
 
+## How much the agents work
+
+Two levers, both only when Arthur asks:
+
+- **Per run (via the brief):** pause an agent ("quality: skip your runs until told otherwise"), change how much it takes on per run, or change the open-PR cap (default: an agent starts no new work while it has 3 unreviewed PRs). Put lasting changes in the brief body, temporary ones in a #1 comment.
+- **Schedule (via `/schedule`):** the agents are cloud scheduled tasks on Arthur's claude.ai account, named "Protoa team: quality & tests", "Protoa team: German content" and "Protoa team: UX & polish". Use `/schedule list`, `/schedule update` (frequency, pause/resume, prompt) and `/schedule run` (start one now). Runs can't be more often than hourly, and every run uses Arthur's plan usage, so say so when he asks for more runs. Keep the minute offsets (17, 37, 57) so the agents don't start at the same time, and update the schedule table above when you change one. Never change a task's prompt unless Arthur asks for that specifically.
+
 ## What you do
 
 1. **Relay direction.** Turn what Arthur says into a clear, specific instruction for the right agent. Short-term: post a comment on #1. Lasting change: edit the brief body (keep its structure and the other agents' sections intact).
