@@ -2,13 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { lessonFiles } from '../support/lessons.js';
 
 // Load the browser's scripts in a bare context, in the page's order, with a
 // learner who has learned every built-in lesson word.
 const js = f => readFileSync(new URL(`../../apps/deutsch/js/${f}`, import.meta.url), 'utf8');
 const ctx = vm.createContext({ console, matchMedia: () => ({ matches: false }) });
 ctx.window = ctx;
-for (const f of ['content.js', 'core.js', 'levels.js']) vm.runInContext(js(f), ctx, { filename: f });
+for (const f of ['content.js', ...lessonFiles(), 'core.js', 'levels.js']) vm.runInContext(js(f), ctx, { filename: f });
 const get = expr => vm.runInContext(expr, ctx);
 const run = code => vm.runInContext(code, ctx);
 

@@ -1,5 +1,11 @@
 /* ===================== CORE: utils, storage, SRS, checking, audio ===================== */
 const LANG = 'de';
+
+/* Lessons arrive one file at a time (js/lessons/NN.js); put them in order once, so load order can't matter.
+   A written grammar unit replaces the stub with the same id; units sort by lesson, stubs last. */
+LESSONS.sort((a, b) => a.n - b.n);
+GRAMMAR.splice(0, GRAMMAR.length, ...GRAMMAR.filter(g => !g.stub || !GRAMMAR.some(o => !o.stub && o.id === g.id))
+  .sort((a, b) => !!a.stub - !!b.stub || a.lesson - b.lesson));
 const $ = (s, el = document) => el.querySelector(s);
 const h = (tag, attrs = {}, ...kids) => {
   const el = document.createElement(tag);

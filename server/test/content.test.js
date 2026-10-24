@@ -2,13 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { lessonFiles } from '../support/lessons.js';
 
 // Load the browser's content.js and the pure helpers from core.js in a bare
 // context (no DOM), the same way the page does: one shared global scope.
 const js = f => readFileSync(new URL(`../../apps/deutsch/js/${f}`, import.meta.url), 'utf8');
 const ctx = vm.createContext({ console, matchMedia: () => ({ matches: false }) });
 ctx.window = ctx; // core.js feature-detects speechSynthesis on window
-vm.runInContext(js('content.js'), ctx, { filename: 'content.js' });
+for (const f of ['content.js', ...lessonFiles()]) vm.runInContext(js(f), ctx, { filename: f });
 vm.runInContext(js('core.js'), ctx, { filename: 'core.js' });
 const get = expr => vm.runInContext(expr, ctx);
 const lessons = get('LESSONS');
@@ -172,4 +173,19 @@ test('fixLessonArt maps a legacy scene.id to its plate and rejects unknown cast'
   const L = { title: 't', theme: 't', scene: { id: 'cafe', cast: [{ id: 'cast.ghost', x: 1 }] }, words: [] };
   assert.deepEqual([...fixLessonArt(L, manifest, () => {})], ['unknown cast cast.ghost']);
   assert.equal(L.scene.plate, 'plate.cafe');
+});
+
+test('index.html loads every lesson file, in order, right after content.js', () => {
+  const html = readFileSync(new URL('../../apps/deutsch/index.html', import.meta.url), 'utf8');
+  const loaded = [...html.matchAll(/<script src="js\/([^"]+)"/g)].map(m => m[1]);
+  const files = lessonFiles();
+  assert.ok(files.length > 0, 'no lesson files found');
+  assert.deepEqual(loaded.slice(loaded.indexOf('content.js') + 1, loaded.indexOf('content.js') + 1 + files.length), files,
+    'index.html must load js/lessons/*.js in order, directly after content.js');
+});
+
+test('each lesson file holds the lesson its name says', () => {
+  const ns = [...lessons.map(L => L.n)];
+  assert.deepEqual(ns, lessonFiles().map(f => Number(f.match(/(\d+)\.js$/)[1])).sort((a, b) => a - b));
+  assert.equal(new Set(ns).size, ns.length, 'two lessons share a number');
 });

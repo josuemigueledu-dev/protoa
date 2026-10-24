@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { lessonFiles } from '../support/lessons.js';
 
 // The browser's core.js in a bare context: spaced repetition, merging for sync,
 // answer matching and JSON import/export.
@@ -12,7 +13,7 @@ const ctx = vm.createContext({
   localStorage: { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)), get length() { return store.size; }, key: i => [...store.keys()][i] },
 });
 ctx.window = ctx;
-for (const f of ['content.js', 'core.js']) vm.runInContext(js(f), ctx, { filename: f });
+for (const f of ['content.js', ...lessonFiles(), 'core.js']) vm.runInContext(js(f), ctx, { filename: f });
 // plain-data results from the vm realm, so deepEqual compares them with local literals
 const exec = code => vm.runInContext(code, ctx);
 const run = code => JSON.parse(JSON.stringify(vm.runInContext(`(${code})`, ctx) ?? null));
