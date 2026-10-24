@@ -3,6 +3,8 @@ let NAV = 'fade'; // direction of the next screen change: 'fwd' slides in from t
 let lastSegs = null; // progress bar state of the previous lesson screen, so the bar grows instead of jumping
 const SEG_NAMES = ['Scene', 'Words', 'Check', 'Build', 'Conversation'];
 const STEP_SEG = { scene: 0, notice: 0, words: 1, check: 2, build: 3, conv: 4, done: 5 };
+// Name of the lesson before n: its topic when it shares n's station (two lessons per station), else its station.
+function prevName(n, ref = n) { if (n <= 1) return 'the previous lesson'; const a = courseOf(n - 1), b = courseOf(ref); return a.station === b.station ? a.topic : a.station; }
 function sigEl(icon, cls = '') { const s = h('span', { class: 'sig ' + cls, 'aria-hidden': 'true' }); s.innerHTML = ICON[icon] || ICON.question; return s; }
 const rangeN = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 
@@ -125,7 +127,7 @@ function stationEl(it, W, cx, firstSoon) {
   const room = Math.max(96, right ? W - (it.x + r + 16) - 16 : it.x - r - 16 - 16);
   const tappable = it.state !== 'soon';
   let label, icon, aria;
-  if (it.kind === 'lesson') { label = [h('b', { lang: 'de' }, it.c.station), h('span', {}, it.c.topic)]; icon = sigEl(it.c.icon); aria = `${it.c.station}, lesson ${it.n}: ${it.c.topic}, ${({ done: 'done', now: 'current station', locked: 'locked', soon: 'coming soon' })[it.state]}`; }
+  if (it.kind === 'lesson') { label = [h('b', { lang: 'de' }, it.c.station), h('span', {}, it.c.topic)]; icon = sigEl(it.c.icon); aria = `${it.c.station}, lesson ${it.n}: ${it.c.topic}, ${({ done: 'done', now: 'current station', locked: 'locked, opens after ' + prevName(it.n), soon: 'coming soon' })[it.state]}`; }
   else if (it.kind === 'review') { label = [h('b', { lang: 'de' }, 'Wiederholung'), h('span', {}, 'Review of ' + courseOf(it.from).station + ' – ' + courseOf(it.to).station)]; icon = sigEl('review'); aria = 'Review stop, ' + it.state; }
   else if (it.kind === 'exam') { label = [h('b', { lang: 'de' }, 'Prüfung ' + it.code), h('span', {}, it.state === 'done' ? 'bestanden' : it.state === 'now' ? 'Exam ready · pass at 90 %' : 'after this lesson')]; icon = sigEl('exam'); aria = 'Level exam ' + it.code + ', ' + it.state; }
   else if (it.kind === 'start') { label = [h('b', { lang: 'de' }, 'Laute'), h('span', {}, 'Lesson 0 · Sounds')]; icon = sigEl('sound'); aria = 'Lesson 0, Sounds'; }
@@ -136,6 +138,7 @@ function stationEl(it, W, cx, firstSoon) {
   if (it.state === 'locked' && it.kind === 'lesson') { const l = h('span', { class: 'lock', 'aria-hidden': 'true' }); l.innerHTML = LOCK_SVG; mk.append(l); }
   const lab = h('div', { class: 'lab', style: `max-width:${room}px` }, ...label);
   if (it.state === 'soon' && it.kind !== 'term') lab.append(h('span', { class: 'soon' }, 'Bald'));
+  if (it.state === 'locked' && it.kind === 'lesson' && it.n > 1) lab.append(h('span', { class: 'why' }, 'Opens after ' + prevName(it.n)));
   if (firstSoon) lab.append(h('button', { class: 'btn ghost sm write', onclick: generateLesson }, 'Write it with Claude'));
   st.append(mk, lab); return st;
 }
@@ -182,7 +185,7 @@ function openLessonPreview(n) {
     if (done) p.append(h('button', { class: 'btn', onclick: () => go_(true) }, 'Review again'));
     else if (inProg) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Continue · ' + (SEG_NAMES[STEP_SEG[ls.step]] || 'where you left off')));
     else if (n === cur) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Start'));
-    else { p.append(h('p', { class: 'faint' }, 'Comes after ' + courseOf(cur || n - 1).station + '. You can still go ahead.')); p.append(h('button', { class: 'btn ghost', onclick: () => go_(false) }, 'Start anyway')); }
+    else { p.append(h('p', { class: 'faint' }, 'Comes after ' + prevName((cur || n - 1) + 1, n) + '. You can still go ahead.')); p.append(h('button', { class: 'btn ghost', onclick: () => go_(false) }, 'Start anyway')); }
     inner.append(p);
   }, 'station');
 }
