@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Everyday verbs">
+<g style="stroke:var(--il-ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><g transform="rotate(45 32 32)"><rect x="24" y="4" width="16" height="12" rx="3" style="fill:var(--il-deep)"/><rect x="24" y="16" width="16" height="30" style="fill:var(--il-bright)"/><path d="M24 46h16l-8 14z" style="fill:var(--il-sand)"/><path d="M30 56l2 4l2-4" style="fill:var(--il-ink)"/></g></g><path d="M22 18l14 14" style="fill:none;stroke:var(--il-hi);stroke-width:2.4;stroke-linecap:round"/>
+</svg>

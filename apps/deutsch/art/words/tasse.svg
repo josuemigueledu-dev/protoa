@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="die Tasse">
+<ellipse cx="56" cy="104" rx="40" ry="6" style="fill:var(--il-shadow)"/><g style="stroke:var(--il-ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M80 46h4a15 15 0 0 1 0 30h-4v-9h4a6 6 0 0 0 0-12h-4z" style="fill:var(--il-bright)"/><path d="M30 40h50v44a12 12 0 0 1-12 12h-26a12 12 0 0 1-12-12z" style="fill:var(--il-bright)"/><ellipse cx="55" cy="40" rx="25" ry="6" style="fill:var(--il-deep)"/></g><rect x="31.5" y="60" width="47" height="9" style="fill:var(--il-ice)"/><path d="M38 50v34" style="fill:none;stroke:var(--il-hi);stroke-width:5;stroke-linecap:round"/>
+</svg>
