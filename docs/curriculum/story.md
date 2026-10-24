@@ -83,7 +83,7 @@ Lessons 25–60 get outlined in later runs; chapter arcs above are fixed. A1 exa
 
 Established facts, by lesson. Add a line per merged lesson.
 
-- **1** Tuesday 9:00, room 2.04, Volkshochschule am Hermannplatz. Herr Weber writes the date on the board; his phone rings, *Entschuldigung, mein Handy*, *Einen Moment, bitte*. Ends with *Bis Donnerstag*.
+- **1** Tuesday 9:00, room 2.04, Volkshochschule am Hermannplatz. Nobody has spoken yet when Herr Weber turns from the board and looks at the learner. His phone rings (`event.phone`): *Entschuldigung*, *Einen Moment, bitte*. Ends with *So. Auf Wiedersehen. Bis Donnerstag.* (reworked to `lesson-experience.md`: phrases vs words, tiles only, `parts` on phrase cards).
 - **2** Thursday. Weber has a class list. Learner uses *Sie* with him. Weber is from Berlin. He asks if the learner is a student, *Lehrer* vs *Student*.
 - **3** Tuesday. **Ana** (Mexico City) joins; **Lena** (Rome) is there. First-name terms among students (*du*); Weber stays *Sie*. *Wir sind jetzt ein Kurs.*
 - **4** Thursday. Ana and Lena sit next to the learner. A map of Europe beside the board. Lena says she is from Italy; Ana is from Mexico. Language guessing game.
