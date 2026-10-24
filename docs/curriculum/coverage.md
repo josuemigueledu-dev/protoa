@@ -1,6 +1,6 @@
 # A1 coverage plan (Goethe-Zertifikat A1: Start Deutsch 1)
 
-Status: content.js has lessons 1–4 (12, 12, 12 and 13 words). The first plan had 30 lessons of about 20 words; the owner capped a lesson at 14 words, so every topic is now two lessons and **A1 ends at lesson 60**. A2 starts at 61.
+Status: content.js has lessons 1–6 (12, 12, 12, 13, 12 and 12 words). The first plan had 30 lessons of about 20 words; the owner capped a lesson at 14 words, so every topic is now two lessons and **A1 ends at lesson 60**. A2 starts at 61.
 
 ## What Start Deutsch 1 asks for
 
@@ -21,7 +21,7 @@ On the course map each station holds two lessons (`COURSE` in content.js has 60 
 
 ## Word budget and the A1 gate
 
-`LANG_LEVELS` in levels.js opens the A1 exam at **600 learned words**. 60 lessons × 10–14 words is 600–840, so the gate stays at 600 as long as the average stays at 10 or more. Rule for the gate: **when the last A1 lesson is written, set the A1 gate to the real number of A1 words, minus about 5 %**, so the exam opens when the lessons are done and not before. Whoever finishes lesson 60 makes that change in the same PR and tells quality. Current count: lessons 1–4 = 49 words.
+`LANG_LEVELS` in levels.js opens the A1 exam at **600 learned words**. 60 lessons × 10–14 words is 600–840, so the gate stays at 600 as long as the average stays at 10 or more. Rule for the gate: **when the last A1 lesson is written, set the A1 gate to the real number of A1 words, minus about 5 %**, so the exam opens when the lessons are done and not before. Whoever finishes lesson 60 makes that change in the same PR and tells quality. Current count: lessons 1–6 = 73 words.
 
 ## Topics, in build order
 
@@ -76,8 +76,8 @@ Tick when the lesson is merged. One complete lesson per run.
 - [x] 2 Your name
 - [x] 3 Who is who
 - [x] 4 Countries and languages
-- [ ] 5 Verbs for living
-- [ ] 6 Verbs for doing
+- [x] 5 Verbs for living
+- [x] 6 Verbs for doing
 - [ ] 7 Question words
 - [ ] 8 Yes, no and answers
 - [ ] 9 Numbers 0–10
