@@ -151,8 +151,8 @@ body.lay-desktop .sidebar{background:var(--card);-webkit-backdrop-filter:var(--b
 .fb.ok{box-shadow:inset 0 0 0 1px var(--green-soft)} .fb.bad{box-shadow:inset 0 0 0 1px var(--red-soft)}
 .scene{box-shadow:inset 0 0 0 1px var(--glass-edge),var(--shadow)}
 .scene .cap{color:var(--pane-ink)}
-:root[data-theme="dark"] .scene svg,:root[data-theme="dark"] .conv .bgscene svg{filter:brightness(.72) saturate(.9)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .scene svg{filter:brightness(.72) saturate(.9)}}
+:root[data-theme="dark"] .scene:not(.art) svg,:root[data-theme="dark"] .conv .bgscene svg{filter:brightness(.72) saturate(.9)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .scene:not(.art) svg{filter:brightness(.72) saturate(.9)}}
 .coach .say,.bub .box{background:var(--card);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-hi),var(--shadow)}
 .bub.l .box{background:linear-gradient(160deg,var(--yellow),var(--yellow-deep));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -14px var(--glow)}
 .bub.l .box .gl .e,.bub.l .box .faint,.bub.l .box .en-after,.bub.l .box .muted{color:rgba(255,255,255,.8)}
