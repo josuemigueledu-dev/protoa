@@ -1,0 +1,125 @@
+/* Palette directions for the owner to pick (mockups only). Loaded last by mock.js when the URL has ?palette=a|b|c.
+   Each direction keeps the azure accent, the glass and the orb; what changes is the ground, the hero panes,
+   the fields behind content and the art's own colours. Skin and clothes never change with the theme. */
+
+/* ---------- shared: what every direction does ---------- */
+:root[data-palette]{
+  --il-skin-1:#f1d3b8; --il-skin-2:#dcab86; --il-skin-3:#b47a54; --il-skin-4:#7a4e36; /* identical in both themes */
+}
+:root[data-palette] .today-hero,:root[data-palette] .talkhero,:root[data-palette] .chapter,:root[data-palette] .weiter,
+:root[data-palette] .ticket .top,:root[data-palette] .scene .cap{
+  background:radial-gradient(120% 160% at 88% -10%,var(--pane-glow),transparent 58%),linear-gradient(160deg,var(--pane-2),var(--pane-1))}
+:root[data-palette] .today-hero .goal .ring circle.fg{stroke:var(--ring);filter:drop-shadow(0 0 6px var(--ring))}
+:root[data-palette] .card.primary{background:linear-gradient(var(--field-1),var(--field-1)),var(--card)}
+:root[data-palette] .nextcard .sig{background:var(--field-2);box-shadow:inset 0 0 0 1px var(--glass-edge)}
+:root[data-palette] .wcard .illus,:root[data-palette] .wcard .illus.m,:root[data-palette] .wcard .illus.f,:root[data-palette] .wcard .illus.n{background:var(--field-2)}
+:root[data-palette] .bar i{background:var(--ring)}
+:root[data-palette] .talkrow{background:linear-gradient(var(--field-4),var(--field-4)),var(--card)}
+/* art never dims in dark mode */
+:root[data-palette] .scene svg,:root[data-palette] .conv .bgscene svg{filter:none!important}
+:root[data-palette="a"]{--field-3:rgba(240,196,170,.30); --field-4:rgba(178,206,236,.34)}
+:root[data-palette="a"][data-theme="dark"]{--field-3:rgba(230,150,120,.09); --field-4:rgba(130,170,230,.09)}
+:root[data-palette="b"]{--field-3:rgba(0,132,90,.10); --field-4:rgba(209,40,46,.08)}
+:root[data-palette="b"][data-theme="dark"]{--field-3:rgba(63,214,154,.08); --field-4:rgba(255,115,120,.07)}
+:root[data-palette="c"]{--field-3:rgba(255,184,92,.18); --field-4:rgba(127,212,255,.22)}
+:root[data-palette="c"][data-theme="dark"]{--field-3:rgba(255,170,80,.09); --field-4:rgba(114,200,245,.09)}
+:root[data-palette] .bub.l .box{background:linear-gradient(160deg,var(--yellow),var(--yellow-deep))}
+
+/* =====================================================================
+   A · Altbau: the pastel facades of Neukölln and Kreuzberg.
+   Warm stone ground, sage, powder blue and apricot fields, deep petrol panes.
+   ===================================================================== */
+:root[data-palette="a"][data-theme="light"]{
+  --bg:#f2efea; --bg-deep:#e4ded4; --bg-2:rgba(40,52,58,.06);
+  --card:rgba(255,253,250,.62); --chip:rgba(255,253,250,.7);
+  --ink:#13212b; --muted:#4b5961;
+  --yellow:#2563eb; --yellow-deep:#1749b8; --yellow-soft:rgba(37,99,235,.10);
+  --act-1:#2f6ef0; --act-2:#1d52c9; --act-glow:rgba(37,99,235,.40);
+  --pane-1:#0f2f38; --pane-2:#1b4a55; --pane-glow:rgba(143,214,190,.40); --ring:#9fe0c4;
+  --field-1:rgba(184,214,196,.42); --field-2:#d8e8dc;
+  --aur-1:rgba(255,250,242,.95); --aur-2:rgba(214,226,214,.7); --aur-3:rgba(240,200,176,.35); --aur-4:rgba(206,222,240,.7);
+  --green:#1d7a5c; --red:#b23a48; --blue:#2458c9;
+  --il-mist:#d9e7dc; --il-paper:#fbf8f2; --il-sand:#ecd9c3; --il-ice:#a9d3ec; --il-bright:#3a86f0; --il-mid:#2b5aa8; --il-deep:#173c4a;
+  --il-leaf:#7fa88a; --il-fruit:#d0806c; --il-wood:#946a4c; --il-butter:#f2dfa6;
+  --sky:#e9e2d6;
+}
+:root[data-palette="a"][data-theme="dark"]{
+  --bg:#0d1517; --bg-deep:#070c0d; --bg-2:rgba(220,236,230,.06);
+  --card:rgba(220,240,232,.06); --chip:rgba(220,240,232,.08);
+  --ink:#eef3ef; --muted:#a9b8b2;
+  --yellow:#6aa8ff; --yellow-deep:#3b7fe6; --yellow-soft:rgba(106,168,255,.15);
+  --act-1:#3b7fe6; --act-2:#2560c4; --act-glow:rgba(106,168,255,.45);
+  --pane-1:#0a2228; --pane-2:#164451; --pane-glow:rgba(120,210,180,.30); --ring:#8fdcbc;
+  --field-1:rgba(120,190,160,.10); --field-2:#1b3a38;
+  --aur-1:rgba(30,80,84,.45); --aur-2:rgba(20,44,50,.6); --aur-3:rgba(210,140,110,.12); --aur-4:rgba(120,180,200,.08);
+  --green:#6fdcb0; --red:#ff8c96; --blue:#8cbcff;
+  --il-mist:#cfdfd3; --il-paper:#f3efe8; --il-sand:#dfcab2; --il-ice:#9cc8e2; --il-bright:#3a86f0; --il-mid:#2b5aa8; --il-deep:#173c4a;
+  --il-leaf:#7fa88a; --il-fruit:#d0806c; --il-wood:#946a4c; --il-butter:#f2dfa6;
+  --sky:#16262a;
+}
+
+/* =====================================================================
+   B · U-Bahn: the transit system as the palette.
+   Cool tiled ground, BVG yellow for arrivals and wins, azure for actions, U-Bahn navy panes.
+   ===================================================================== */
+:root[data-palette="b"][data-theme="light"]{
+  --bg:#edf1f6; --bg-deep:#dce3ec; --bg-2:rgba(14,28,52,.06);
+  --card:rgba(255,255,255,.6); --chip:rgba(255,255,255,.72);
+  --ink:#0b1630; --muted:#4a556b;
+  --yellow:#1f62e6; --yellow-deep:#1146b8; --yellow-soft:rgba(31,98,230,.10);
+  --act-1:#2a6df0; --act-2:#174fc4; --act-glow:rgba(31,98,230,.42);
+  --pane-1:#08163a; --pane-2:#123076; --pane-glow:rgba(255,214,0,.30); --ring:#ffd200;
+  --field-1:rgba(255,214,0,.16); --field-2:#fff0a8;
+  --aur-1:rgba(255,255,255,.95); --aur-2:rgba(190,206,232,.6); --aur-3:rgba(255,214,0,.16); --aur-4:rgba(200,220,250,.8);
+  --green:#00845a; --red:#d1282e; --blue:#1f5fd1;
+  --il-mist:#e3ecd9; --il-paper:#fafbf7; --il-sand:#d9d2c4; --il-ice:#8cc8f5; --il-bright:#1f6fe0; --il-mid:#0f4fb3; --il-deep:#0b2a6b;
+  --il-leaf:#6fa57b; --il-fruit:#d9534a; --il-wood:#8a5d3c; --il-butter:#ffd84a;
+  --sky:#e3e8ef;
+}
+:root[data-palette="b"][data-theme="dark"]{
+  --bg:#060b18; --bg-deep:#03060e; --bg-2:rgba(210,224,255,.06);
+  --card:rgba(200,220,255,.06); --chip:rgba(200,220,255,.08);
+  --ink:#eef2fb; --muted:#a6b1c6;
+  --yellow:#5b9dff; --yellow-deep:#2f78ea; --yellow-soft:rgba(91,157,255,.15);
+  --act-1:#2f78ea; --act-2:#1b58c8; --act-glow:rgba(91,157,255,.45);
+  --pane-1:#050d26; --pane-2:#10285e; --pane-glow:rgba(255,210,0,.26); --ring:#ffd200;
+  --field-1:rgba(255,210,0,.08); --field-2:#2a2a14;
+  --aur-1:rgba(30,60,140,.45); --aur-2:rgba(12,24,56,.6); --aur-3:rgba(255,210,0,.07); --aur-4:rgba(150,180,240,.07);
+  --green:#3fd69a; --red:#ff7378; --blue:#86b8ff;
+  --il-mist:#d6e1cc; --il-paper:#f2f4ee; --il-sand:#cfc7b8; --il-ice:#7fbdf0; --il-bright:#1f6fe0; --il-mid:#0f4fb3; --il-deep:#0b2a6b;
+  --il-leaf:#6fa57b; --il-fruit:#d9534a; --il-wood:#8a5d3c; --il-butter:#ffd84a;
+  --sky:#0f1830;
+}
+
+/* =====================================================================
+   C · Blaue Stunde: Berlin at blue hour, the orb's own world.
+   Saturated ultramarine fields, ice-cyan light, warm street-lamp amber for highlights.
+   ===================================================================== */
+:root[data-palette="c"][data-theme="light"]{
+  --bg:#e8edfa; --bg-deep:#d3dcf4; --bg-2:rgba(20,34,90,.06);
+  --card:rgba(255,255,255,.58); --chip:rgba(255,255,255,.7);
+  --ink:#0a1238; --muted:#4a5378;
+  --yellow:#2850f0; --yellow-deep:#1a36c4; --yellow-soft:rgba(40,80,240,.10);
+  --act-1:#3158f5; --act-2:#1c38c8; --act-glow:rgba(40,80,240,.45);
+  --pane-1:#0d1660; --pane-2:#2443d6; --pane-glow:rgba(255,178,90,.45); --ring:#ffb85c;
+  --field-1:rgba(120,160,255,.16); --field-2:#d6e0ff;
+  --aur-1:rgba(255,255,255,.9); --aur-2:rgba(150,178,255,.55); --aur-3:rgba(255,184,110,.28); --aur-4:rgba(120,210,255,.4);
+  --green:#0a7d62; --red:#c3304c; --blue:#2850f0;
+  --il-mist:#d3dcff; --il-paper:#f8f9ff; --il-sand:#f1dcc3; --il-ice:#7fd4ff; --il-bright:#3a6cf5; --il-mid:#2440c4; --il-deep:#141f74;
+  --il-leaf:#78a88c; --il-fruit:#d77d62; --il-wood:#8f6346; --il-butter:#ffd79a;
+  --sky:#dfe5fa;
+}
+:root[data-palette="c"][data-theme="dark"]{
+  --bg:#060a24; --bg-deep:#03051a; --bg-2:rgba(200,214,255,.07);
+  --card:rgba(190,206,255,.07); --chip:rgba(190,206,255,.09);
+  --ink:#eef1ff; --muted:#a7afd4;
+  --yellow:#6f8dff; --yellow-deep:#4364f0; --yellow-soft:rgba(111,141,255,.16);
+  --act-1:#4466f5; --act-2:#2a44cf; --act-glow:rgba(111,141,255,.5);
+  --pane-1:#080e45; --pane-2:#1e36b8; --pane-glow:rgba(255,170,80,.38); --ring:#ffb85c;
+  --field-1:rgba(110,140,255,.12); --field-2:#1a2366;
+  --aur-1:rgba(40,60,200,.45); --aur-2:rgba(14,22,80,.6); --aur-3:rgba(255,160,80,.10); --aur-4:rgba(90,200,255,.10);
+  --green:#56dcb0; --red:#ff8098; --blue:#93abff;
+  --il-mist:#c4cff7; --il-paper:#eef0fb; --il-sand:#e6cfb4; --il-ice:#72c8f5; --il-bright:#3a6cf5; --il-mid:#2440c4; --il-deep:#141f74;
+  --il-leaf:#78a88c; --il-fruit:#d77d62; --il-wood:#8f6346; --il-butter:#ffd79a;
+  --sky:#0e1544;
+}

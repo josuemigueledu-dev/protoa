@@ -194,7 +194,7 @@ function openReviewPreview(it) {
       h('p', { class: 'muted' }, 'Words and lines from ' + courseOf(it.from).station + ' to ' + courseOf(it.to).station + ', including the ones you brought from Protoa v1.'),
       h('div', { class: 'facts' }, h('span', { class: 'chip' }, items.length + ' cards'), h('span', { class: 'chip' }, '≈ ' + Math.max(3, Math.round(Math.min(items.length, 20) * .4)) + ' min'), it.state === 'done' ? h('span', { class: 'chip ok' }, 'done') : ''));
     const start = () => { close(); startReview(shuffle(items).slice(0, 20).map((x, i) => x.kind === 'sent' ? x : Object.assign({}, x, { kind: i % 3 === 2 && x.c.r && x.c.r[1] >= 4 ? 'p' : 'r' }))); PR.stop = it.id; };
-    if (!items.length) p.append(h('p', { class: 'faint' }, 'No words from these lessons yet.'));
+    if (!items.length) p.append(h('p', { class: 'faint' }, 'Nothing to review yet. Words from these lessons appear here once you have learned them.'));
     else if (it.state === 'locked') { p.append(h('p', { class: 'faint' }, 'Opens after ' + courseOf(it.to).station + '.')); p.append(h('button', { class: 'btn ghost', onclick: start }, 'Review anyway')); }
     else p.append(h('button', { class: 'btn', onclick: start }, it.state === 'done' ? 'Review again' : 'Start review'));
     inner.append(p);

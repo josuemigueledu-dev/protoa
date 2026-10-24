@@ -77,7 +77,7 @@ h2,h3{letter-spacing:-.01em}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.yours{color:var(--ice)}}
 
 /* ---------- inputs ---------- */
-input[type=text],input[type=number],input[type=date],select,textarea{background:var(--card);border:1px solid var(--line-2);box-shadow:inset 0 1px 2px rgba(16,36,72,.06);font-weight:600;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+input[type=text],input[type=number],input[type=date],select,textarea{background:var(--card);border:1px solid var(--line-2);box-shadow:inset 0 1px 2px rgba(16,36,72,.06);font-weight:500;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
 input:focus,select:focus,textarea:focus{border-color:var(--yellow);box-shadow:0 0 0 4px var(--yellow-soft),0 0 18px -4px var(--glow)}
 .toggle input{background:var(--line-2);box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
 .toggle input:checked{background:linear-gradient(90deg,var(--yellow),var(--ice));box-shadow:0 0 12px -2px var(--glow)}
@@ -86,7 +86,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--yellow);box-shadow:0 
 /* ---------- light as progress ---------- */
 .bar{background:var(--bg-2);box-shadow:inset 0 1px 2px rgba(16,36,72,.10),inset 0 0 0 1px var(--line)}
 .bar i{background:linear-gradient(90deg,var(--yellow),var(--ice));box-shadow:0 0 14px -2px var(--glow),inset 0 1px 0 rgba(255,255,255,.45)}
-.ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--yellow);filter:drop-shadow(0 0 4px var(--glow))}
+.ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--ring);filter:drop-shadow(0 0 4px var(--ring))}
 .lesson-top .segs i{background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line)}
 .lesson-top .segs i b{background:linear-gradient(90deg,var(--yellow),var(--ice));box-shadow:0 0 10px var(--glow)}
 .week .d .ring.full .fg{stroke:var(--green);filter:drop-shadow(0 0 4px var(--green-soft))}
@@ -113,12 +113,12 @@ body.lay-desktop .sidebar{background:var(--card);-webkit-backdrop-filter:var(--b
 
 /* ---------- black-glass panes (hero moments) ---------- */
 .today-hero,.talkhero,.chapter,.toast,.weiter,.ctip,.cert .top,.ticket .top,.scene .cap{
-  background:radial-gradient(120% 160% at 88% -10%,rgba(95,169,255,.38),transparent 55%),linear-gradient(160deg,var(--pane-2),var(--pane-1));
+  background:radial-gradient(120% 160% at 88% -10%,var(--pane-glow),transparent 58%),linear-gradient(160deg,var(--pane-2),var(--pane-1));
   color:var(--pane-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.06),var(--shadow-lg)}
 .today-hero h1,.talkhero h1{color:var(--pane-ink)} .today-hero p,.talkhero p{color:var(--pane-muted);opacity:1}
 .today-hero,.talkhero{position:relative;overflow:hidden;isolation:isolate}
 .today-hero::after,.talkhero::after{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:24px 24px;-webkit-mask-image:linear-gradient(100deg,transparent 30%,#000 100%);mask-image:linear-gradient(100deg,transparent 30%,#000 100%)}
-.today-hero .goal .ring circle.bg{stroke:rgba(255,255,255,.12)} .today-hero .goal .ring circle.fg{stroke:var(--ice);filter:drop-shadow(0 0 6px rgba(124,198,255,.8))}
+.today-hero .goal .ring circle.bg{stroke:rgba(255,255,255,.12)} .today-hero .goal .ring circle.fg{stroke:var(--ring);filter:drop-shadow(0 0 6px var(--ring))}
 .chapter .num{background:linear-gradient(145deg,var(--ice),var(--yellow));color:var(--white);box-shadow:0 0 16px -2px var(--glow)}
 .chapter span{color:var(--pane-muted);opacity:1}
 .ticket .top b,.cert .top b{color:var(--pane-ink)}
@@ -151,8 +151,6 @@ body.lay-desktop .sidebar{background:var(--card);-webkit-backdrop-filter:var(--b
 .fb.ok{box-shadow:inset 0 0 0 1px var(--green-soft)} .fb.bad{box-shadow:inset 0 0 0 1px var(--red-soft)}
 .scene{box-shadow:inset 0 0 0 1px var(--glass-edge),var(--shadow)}
 .scene .cap{color:var(--pane-ink)}
-:root[data-theme="dark"] .scene:not(.art) svg,:root[data-theme="dark"] .conv .bgscene svg{filter:brightness(.72) saturate(.9)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .scene:not(.art) svg{filter:brightness(.72) saturate(.9)}}
 .coach .say,.bub .box{background:var(--card);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-hi),var(--shadow)}
 .bub.l .box{background:linear-gradient(160deg,var(--yellow),var(--yellow-deep));color:var(--white);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -14px var(--glow)}
 .bub.l .box .gl .e,.bub.l .box .faint,.bub.l .box .en-after,.bub.l .box .muted{color:rgba(255,255,255,.8)}

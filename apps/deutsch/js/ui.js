@@ -84,7 +84,7 @@ function openWordSheet(bare) {
   sheet.append(inner); document.body.append(sheet);
 }
 function playBtn(text, label = 'Play', cls = '') { return h('button', { class: 'icon-btn ' + cls, 'aria-label': label + ' ' + text, html: ICONS.play, onclick: () => speak(text) }); }
-function umlautRow(input) { const r = h('div', { class: 'umlauts', 'aria-label': 'German characters' }); 'ä ö ü ß Ä Ö Ü'.split(' ').forEach(c => r.append(h('button', { type: 'button', onclick: () => { const s = input.selectionStart ?? input.value.length, e = input.selectionEnd ?? s; input.value = input.value.slice(0, s) + c + input.value.slice(e); input.focus(); input.setSelectionRange(s + 1, s + 1); input.dispatchEvent(new Event('input')); } }, c))); return r; }
+function umlautRow(input) { const r = h('div', { class: 'umlauts', role: 'group', 'aria-label': 'German characters' }); 'ä ö ü ß Ä Ö Ü'.split(' ').forEach(c => r.append(h('button', { type: 'button', onclick: () => { const s = input.selectionStart ?? input.value.length, e = input.selectionEnd ?? s; input.value = input.value.slice(0, s) + c + input.value.slice(e); input.focus(); input.setSelectionRange(s + 1, s + 1); input.dispatchEvent(new Event('input')); } }, c))); return r; }
 function deInput(attrs = {}) { const i = h('input', Object.assign({ type: 'text', class: 'de-input', lang: 'de', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' }, attrs)); i.addEventListener('input', () => { const v = applyShortcuts(i.value); if (v !== i.value) { const p = i.selectionStart - 1; i.value = v; i.setSelectionRange(p, p); } }); return i; }
 // "Say it": a mic button that dictates German into an input (Chrome's speech recognition; hidden elsewhere)
 function micBtn(input, onDone) {
@@ -157,7 +157,7 @@ function openOnMap(n) { NAV = 'fade'; route = 'learn'; const ls = S.progress.les
 function nextLessonN() { const all = allLessons().map(l => l.n); return all.find(n => !S.progress.lessonsDone.includes(n)) || null; }
 function writeYourOwn() {
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Write your own'), h('p', { class: 'muted small' }, "One German sentence with words you know. You get it back corrected, with the main error named and one way to extend it."));
-  const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input' }); const out = h('div', { class: 'stack' });
+  const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input', 'aria-label': 'Say where you are from, in German' }); const out = h('div', { class: 'stack' });
   const btn = h('button', { class: 'btn', onclick: async () => {
     const s = inp.value.trim(); if (!s) return; if (!S.ai) { out.innerHTML = ''; out.append(fbEl('note', 'Claude is not available right now, so I cannot check this.')); return; }
     btn.disabled = true; Voice.busy(true); out.innerHTML = ''; out.append(fbEl('hint', 'Protoa is reading your sentence…'));
@@ -453,6 +453,12 @@ function renderReview(v) {
     card.append(widget.el, fb); if (widget.focus) setTimeout(() => widget.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   }
 }
+/* a calm empty state: icon, what is missing, and the way forward */
+function emptyState(icon, title, text, action) {
+  const e = h('div', { class: 'empty', role: 'note' }, h('div', { class: 'empty-icon' }, sigEl(icon)), h('h3', {}, title), h('p', { class: 'muted' }, text));
+  if (action) e.append(h('button', { class: 'btn ghost', onclick: action[1] }, action[0]));
+  return e;
+}
 function wordBank() {
   const c = h('div', { class: 'card stack' }, h('h2', {}, 'Your words'), h('p', { class: 'muted small' }, 'A growing collection of Berlin. The ring fills as a word gets stronger. Tap a tile for its card and history.'));
   const search = h('input', { type: 'text', placeholder: 'Search', 'aria-label': 'Search words', id: 'bank-search' });
@@ -467,7 +473,7 @@ function wordBank() {
   const draw = () => {
     grid.innerHTML = ''; const q = search.value.toLowerCase();
     let items = entries.filter(([id, cd]) => { const d = wordDef(id) || { en: [] }; if (q && !(id.toLowerCase().includes(q) || d.en.join(' ').toLowerCase().includes(q))) return false; if (fLesson.value !== '' && groupKey(cd) !== fLesson.value) return false; if (fType.value && d.type !== fType.value) return false; const iv = cd.r ? cd.r[1] : 0; if (fStr.value === 'weak' && !(cd.r && cd.r[4] >= 2)) return false; if (fStr.value === 'new' && iv >= 4) return false; if (fStr.value === 'strong' && iv < 14) return false; return true; });
-    if (!items.length) { grid.append(h('p', { class: 'muted small' }, entries.length ? 'No words match.' : 'No words yet. Finish Lesson 1 or import your progress in More → Settings.')); return; }
+    if (!items.length) { grid.append(entries.length ? emptyState('question', 'No words match', 'Try a shorter search or clear a filter.', ['Clear filters', () => { search.value = ''; fLesson.value = fType.value = fStr.value = ''; draw(); }]) : emptyState('brezel', 'Your collection starts here', 'Each word you learn becomes a tile. Finish a lesson, or import your progress in Profile → Settings.', ['Go to Lessons', () => go('learn')])); return; }
     items.sort((a, b) => keys.indexOf(groupKey(a[1])) - keys.indexOf(groupKey(b[1])) || a[0].localeCompare(b[0]));
     let last = null;
     items.forEach(([id, cd]) => { const d = wordDef(id) || { en: ['?'] }; const k = groupKey(cd); if (k !== last) { last = k; grid.append(h('div', { class: 'grp' }, sigEl(groupIcon(k)), h('span', { class: 'eyebrow' }, groupLabel(k)))); }

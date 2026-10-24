@@ -129,3 +129,43 @@ Research (sources below) lists the patterns that make a product look AI-generate
 - [ ] Characters look identical in light and dark mode.
 - [ ] None of the visual tells in the table above remain on any screen.
 - [ ] A lesson's text passes a read-aloud test: nothing a Berliner wouldn't say, no hollow praise.
+
+# Round 3: colour palette (owner pick, Oct 24, 2026)
+
+The owner picked **C · Blaue Stunde** (Berlin at blue hour, the orb's own world) over the old palette and directions A and B. See it with `mockups/palettes.html?p=c` (compare `?p=now`); every mockup page takes `&palette=c`. The values are in `mockups/palettes.css`, under `:root[data-palette="c"]` plus the shared rules at the top.
+
+What changes, and what stays:
+- **Stays:** the glass, the orb, azure as the one action colour, the radius and type rules.
+- **Ground:** cool blue-white `#e8edfa` in light, deep night blue `#060a24` in dark. No grey.
+- **Hero panes** (Today hero, Sprechen hero, chapter banners, "Weiter", tickets, scene captions): ultramarine `#0d1660` to `#2443d6`, with a warm street-lamp glow (`--pane-glow`) in the top corner.
+- **Wins and progress:** amber `#ffb85c` (`--ring`) for the goal ring, progress bars and celebration moments. Azure stays for buttons and links; amber never becomes a button colour.
+- **Fields behind content:** soft blue (`--field-1`, `--field-2`) behind the primary card and word pictures, with amber and ice-cyan fields (`--field-3`, `--field-4`) to tell neighbouring cards apart. They are tints over glass, never solid blocks.
+- **Dark mode never dims the art** (`filter: none` on scene and conversation art).
+
+**Pictures (owner's note):** the art does *not* take the UI palette. Plates, cast and word pictures use colours that suit their subject (a real café's wood and cream, green plants, a yellow U-Bahn, natural food colours, real skin tones), chosen so they stand out against the blue-hour UI without clashing: keep them slightly muted and warm, so they read as lit by the same evening light, never neon and never tinted blue. Skin and clothes are identical in light and dark.
+
+Done when: the app's tokens (`shared/art/tokens.css`, `apps/deutsch/css/*.css`) carry palette C in both themes; Today, a lesson scene, a word card, the conversation and Done match `mockups/palettes.html?p=c` side by side; contrast passes WCAG AA in both themes; no screen still shows the old grey ground.
+
+# Round 4: type system picked, cast sent back (owner, Oct 24, 2026)
+
+## Type: system C
+
+The owner picked **C** from `mockups/type.html`:
+- **Unbounded** for big moments only: the Today greeting, lesson-complete and level-up screens, exam results, chapter banners. At most one Unbounded line on a screen, never in body, buttons or lists.
+- **Sora** for headings, German words on word cards, and numbers (tabular figures). It is also the protoa wordmark.
+- **Onest** for everything else: body, glosses, buttons, labels, inputs. Body weight 500.
+- No mono and no italics. Load only the weights the app uses. Fallbacks stay system sans.
+Tokens: `--hero` (Unbounded), `--display` (Sora), `--text` (Onest), as in `.sysC` in `mockups/type.html`. Manrope and JetBrains Mono leave the app.
+
+## Cast: none of A, B or C. A new round, more mature
+
+The owner rejected all three cast directions: **"More mature character designs, think of the body structure of the agent running in the game Vector."**
+
+What that means for the next round:
+- **Adult, realistic proportions.** About 7–7.5 heads tall, a small head, long limbs, a real neck, shoulders, waist and joints in the right places. No big heads, no stubby bodies, no toy shapes. Directions A, B and C are dropped.
+- **An athletic, fluid build and pose**, like the runner in *Vector*: weight on one leg, a natural lean, arms mid-gesture, a body that could move. Every character still has a distinct silhouette (height, build, posture, hair, one role prop).
+- **Flat vector**, no outlines needed, few shapes, but each shape follows anatomy instead of a rounded block. Faces simplified and adult: small eyes, brows and mouth carry the mood; no googly or dot-and-catchlight cartoon eyes.
+- **The 40 px bust** is a head-and-shoulders crop of the same drawing, not a separate cartoon head. Moods (neutral, pleased, thinking, amused, surprised) come from brows, mouth and a head tilt.
+- Unchanged: skin and clothes identical in light and dark, a real range of skin tones, clothes carry the colour, and pictures follow palette C's note (subject colours, slightly muted and warm, never tinted blue).
+
+Process: rebuild `mockups/cast.html` with Herr Weber and the barista in **three new directions that all use this body structure** and differ in rendering (for example: pure flat colour; flat with one soft shadow tone; two-tone with a warm rim light from the street lamp). Light and dark side by side, full body, 40 px bust, five moods. Post the screenshot in your log; the owner picks on the sign-off page.
