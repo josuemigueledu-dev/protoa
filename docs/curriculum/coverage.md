@@ -1,6 +1,6 @@
 # A1 coverage plan (Goethe-Zertifikat A1: Start Deutsch 1)
 
-Status: content.js has lesson 1 only (14 words). `COURSE` lists 24 stations, but several of them (opinions, "because, that, if", travel stories) are A2 material. This plan re-sequences the course so that **A1 ends at lesson 30** and A2 starts at 31.
+Status: content.js has lessons 1–4 (12, 12, 12 and 13 words). The first plan had 30 lessons of about 20 words; the owner capped a lesson at 14 words, so every topic is now two lessons and **A1 ends at lesson 60**. A2 starts at 61.
 
 ## What Start Deutsch 1 asks for
 
@@ -15,92 +15,123 @@ Vocabulary: about 650 words in the Goethe A1 list. Grammar: present tense of reg
 
 ## Where A1 ends
 
-A1 = lessons **1–30**, ten review stops (after every 3rd lesson), five chapters of six. Then the A1 exam. A2 begins at lesson 31 (Perfekt, Dativ, *weil/dass*, comparatives).
+Owner rule: **a lesson has 10–14 new words, never more.** Each of the 30 topics below (about 20–24 words) is therefore **two lessons** of 10–14 words, part 1 and part 2. A1 = lessons **1–60**, five chapters of twelve lessons (six stations). Then the A1 exam. A2 begins at lesson 61 (Perfekt, Dativ, *weil/dass*, comparatives).
+
+On the course map each station holds two lessons (`COURSE` in content.js has 60 entries; the two lessons of a topic share the station name and carry `part: 1|2`). Review stops fall after every 4th lesson (two topics, `REVIEW_EVERY = 4`), 15 in A1. The second lesson of a topic opens with a warm-up that reviews the first.
 
 ## Word budget and the A1 gate
 
-`LANG_LEVELS` in levels.js opens the A1 exam at **600 learned words**. Target: **20 words per lesson × 30 = 600**, plus the extra words in the review stops. Lesson 1 has 14, so its correction pass adds 6 (*Entschuldigung, bitte, danke, Wie geht's?, gut, und*). Rule for the gate: **when the last A1 lesson is written, set the A1 gate to the real number of A1 words, minus about 5 %**, so the exam opens when the lessons are done and not before. Whoever finishes lesson 30 makes that change in the same PR and tells quality (the A1 exam test depends on it). No code change is needed now.
+`LANG_LEVELS` in levels.js opens the A1 exam at **600 learned words**. 60 lessons × 10–14 words is 600–840, so the gate stays at 600 as long as the average stays at 10 or more. Rule for the gate: **when the last A1 lesson is written, set the A1 gate to the real number of A1 words, minus about 5 %**, so the exam opens when the lessons are done and not before. Whoever finishes lesson 60 makes that change in the same PR and tells quality. Current count: lessons 1–4 = 49 words.
 
-## Lessons, in build order
+## Topics, in build order
 
-Each lesson ~20 words, in the new format (see the spec), with a recurring cast: Herr Weber (teacher), the barista at the café near the VHS, and a neighbour. Spanish contrasts are marked ES.
+Each topic is taught in two lessons (n = 2k-1 and 2k) of 10–14 words, in the new format, with the recurring cast: Herr Weber (teacher), Ana and Lena (classmates), the barista at the café. Spanish contrasts are marked ES. Stations: lesson 8 uses Karl-Marx-Straße (a real U7 stop near the café scene); topic 23 uses Anton-Wilhelm-Amo-Straße (formerly Mohrenstraße, renamed August 2025).
 
-| # | Station | Topic | Grammar | Goethe topics / words | ES contrast |
-|---|---|---|---|---|---|
-| 1 | Hermannplatz | Greetings | *sein* (ich, Sie), Sie vs du | *Hallo, Guten Tag, Tschüss, Wie geht's?, bitte, danke, Entschuldigung* | *Sie* = *usted* |
-| 2 | Görlitzer Bahnhof | People | *sein* all persons, *kommen aus* | countries, languages, nationalities, *Ich heiße* | *soy/eres* vs *bin/bist*; no "de" before country |
-| 3 | Mehringdamm | Everyday verbs | regular present, verb in position 2 | *wohnen, arbeiten, lernen, machen, spielen* | subject pronoun is never dropped |
-| 4 | Südstern | Questions | W-questions, yes/no questions | *wer, was, wo, woher, wie, wann* | no inverted *¿?* marks; verb first for yes/no |
-| 5 | Boddinstraße | Numbers 0–20 | numbers, *Telefonnummer*, age | *eins … zwanzig, Jahre alt* | *einundzwanzig* is "one-and-twenty" |
-| 6 | Schönleinstraße | Small words | *nicht, auch, und, aber, oder, sehr, gern* | position of *nicht* | *gern* has no Spanish equivalent |
-| 7 | Kottbusser Tor | Food & drink | gender, *ein/eine*, plural | *Brot, Käse, Wasser, Kaffee, Apfel* | der/die/das; *el/la* only partly match |
-| 8 | Hermannplatz Café | Ordering | *möchten*, *Ich hätte gern*, accusative | *bestellen, bezahlen, Rechnung, Euro*, numbers 20–100 | *quisiera* ≈ *möchte* |
-| 9 | Schönhauser Allee | Home | *es gibt*, *haben*, rooms | *Zimmer, Küche, Miete, Wohnung, Stock* | *hay* = *es gibt* (+ accusative) |
-| 10 | Alexanderplatz | Time | clock times, *um*, *von … bis* | *Uhr, halb, Viertel, früh, spät* | *y cuarto* vs *Viertel nach*; *halb drei* = 2:30 |
-| 11 | Rosenthaler Platz | Days & weeks | days, months, *am / im* | *Montag … Sonntag, Woche, heute, morgen* | days are masculine; months capitalised |
-| 12 | Senefelderplatz | Family | *mein/dein/ihr*, *kein* | *Mutter, Bruder, Kind, verheiratet* | *mi/tu* vs *mein/dein* + ending |
-| 13 | Eberswalder Straße | Work & study | professions, *als*, no article | *Beruf, Student, Arzt, Firma, Büro* | no article after *ich bin* + job (like ES) |
-| 14 | Zoologischer Garten | Getting around | *fahren, nehmen*, *mit dem* | *Bus, U-Bahn, Fahrkarte, Gleis, Haltestelle* | stem change a→ä |
-| 15 | Wittenbergplatz | Directions | *Wo ist …?*, places | *links, rechts, geradeaus, hier, dort* | *a la izquierda* = *links* |
-| 16 | Kurfürstendamm | Shopping | accusative, *kosten*, *wie viel* | *Preis, Tasche, Hose, Größe, teuer* | prices read "ein Euro fünfzig" |
-| 17 | Kurfürstendamm | Supermarket | quantities | *Kilo, Packung, Flasche, ein bisschen* | *un poco de* = *ein bisschen* |
-| 18 | Nollendorfplatz | Body & health | *tut weh*, *haben* | *Kopf, Hand, Arzt, krank, Termin* | *me duele* = *… tut weh* |
-| 19 | Bülowstraße | Daily routine | separable verbs | *aufstehen, anrufen, einkaufen, frühstücken* | reflexive verbs come later |
-| 20 | Gleisdreieck | Free time | *gern / lieber*, hobbies | *Musik, Sport, Fußball, kochen, Film* | *me gusta* ≠ *gern + verb* |
-| 21 | Tempelhof | Weather & seasons | *es regnet*, seasons | *Wetter, Sonne, Regen, kalt, warm, Winter* | *hace frío* = *es ist kalt* |
-| 22 | Potsdamer Platz | Can, must, want | *können, müssen, wollen* | modal + infinitive at the end | *poder/deber/querer* |
-| 23 | Mohrenstraße* | Invitations | *Wollen wir …?*, imperative | *Party, Einladung, kommen Sie, Treffen* | *vamos a* ≈ *wollen wir* |
-| 24 | Hauptbahnhof | Travel | tickets, *von … nach* | *Zug, Reise, Flughafen, Koffer, Verspätung* | |
-| 25 | Hauptbahnhof | Hotel | *Zimmer, Nacht*, requests | *Einzelzimmer, Frühstück, Schlüssel* | |
-| 26 | Friedrichstraße | Forms & messages | forms, e-mail, *Sie schreiben* | *Adresse, Postleitzahl, Unterschrift, E-Mail* | |
-| 27 | Friedrichstraße | Dates & birthdays | ordinal numbers, *am …ten* | *Geburtstag, Datum, Jahr, gratulieren* | |
-| 28 | Warschauer Straße | Describing things | predicate adjectives | colours, *groß, klein, neu, alt* | adjectives are not inflected after *sein* |
-| 29 | Warschauer Straße | City places | prepositions of place in fixed phrases | *Bank, Post, Apotheke, Supermarkt, Park* | |
-| 30 | Oberbaumbrücke | When you get stuck | polite repair phrases | *Wie bitte? Langsamer, bitte. Wie schreibt man das?* | |
+| Topic | Lessons | Station | Part 1 | Part 2 | Grammar | ES contrast |
+|---|---|---|---|---|---|---|
+| 1 | 1–2 | Hermannplatz | Greetings | Your name | formal vs informal greetings; *sein* (ich, Sie) | *Sie* = *usted* |
+| 2 | 3–4 | Görlitzer Bahnhof | Who is who | Countries and languages | *sein* all persons, *kommen aus*, no article before countries | pronoun never dropped; *de México* vs *aus Mexiko* |
+| 3 | 5–6 | Mehringdamm | Verbs for living (*wohnen, arbeiten, lernen*) | Verbs for doing (*machen, spielen, trinken*) | regular present, verb in position 2 | subject pronoun is never dropped |
+| 4 | 7–8 | Südstern | Question words | Yes, no and answers | W-questions, yes/no questions | no inverted *¿?*; verb first for yes/no |
+| 5 | 9–10 | Boddinstraße | Numbers 0–10 | Numbers 11–20, phone numbers, age | *Jahre alt* | *einundzwanzig* = "one-and-twenty" |
+| 6 | 11–12 | Schönleinstraße | Joining words (*und, aber, oder, auch*) | *nicht, sehr, gern* | position of *nicht* | *gern* has no Spanish equivalent |
+| 7 | 13–14 | Kottbusser Tor | Drinks | Food | gender, *ein/eine*, plural, accusative intro | der/die/das vs *el/la* |
+| 8 | 15–16 | Karl-Marx-Straße | Ordering (*möchten, ich hätte gern*) | Paying, numbers 20–100, prices | *möchten* | *quisiera* ≈ *möchte* |
+| 9 | 17–18 | Schönhauser Allee | Rooms | Furniture, *es gibt* | *es gibt* + accusative, *haben* | *hay* = *es gibt* |
+| 10 | 19–20 | Alexanderplatz | The clock | Times of day | *um*, *von … bis* | *y cuarto* vs *Viertel nach*; *halb drei* = 2:30 |
+| 11 | 21–22 | Rosenthaler Platz | The week | The months | *am / im* | days masculine; months capitalised |
+| 12 | 23–24 | Senefelderplatz | Close family | My family | *mein/dein/ihr*, *kein* | *mi/tu* vs *mein/dein* + ending |
+| 13 | 25–26 | Eberswalder Straße | Jobs | Study and office | professions, no article | no article after *ich bin* + job (like ES) |
+| 14 | 27–28 | Zoologischer Garten | Vehicles (*fahren, nehmen*) | Tickets and stops | *mit dem* as a phrase | stem change a→ä |
+| 15 | 29–30 | Wittenbergplatz | Asking the way | Places on the way | *Wo ist …?* | *a la izquierda* = *links* |
+| 16 | 31–32 | Kurfürstendamm | Clothes | Prices and sizes | accusative, *kosten* | prices read "ein Euro fünfzig" |
+| 17 | 33–34 | Uhlandstraße | Quantities | The shopping list | *Kilo, Packung, Flasche* | *un poco de* = *ein bisschen* |
+| 18 | 35–36 | Nollendorfplatz | The body | At the doctor | *tut weh* | *me duele* = *… tut weh* |
+| 19 | 37–38 | Bülowstraße | Morning | Evening | separable verbs | reflexives come later |
+| 20 | 39–40 | Gleisdreieck | Hobbies | Sport and music | *gern / lieber* | *me gusta* ≠ *gern + verb* |
+| 21 | 41–42 | Tempelhof | Weather | Seasons | *es regnet* | *hace frío* = *es ist kalt* |
+| 22 | 43–44 | Potsdamer Platz | Can | Must and want | *können, müssen, wollen* | *poder/deber/querer* |
+| 23 | 45–46 | Anton-Wilhelm-Amo-Straße | Inviting | Accepting and declining | *Wollen wir …?*, imperative | *vamos a* ≈ *wollen wir* |
+| 24 | 47–48 | Hauptbahnhof | By train | At the airport | *von … nach* | |
+| 25 | 49–50 | Zoologischer Garten | Booking a room | At the hotel | polite requests | |
+| 26 | 51–52 | Friedrichstraße | Forms | Messages | *Sie schreiben*, e-mail | |
+| 27 | 53–54 | Spittelmarkt | Dates | Birthdays | ordinal numbers, *am …ten* | |
+| 28 | 55–56 | Warschauer Straße | Colours | Big, small, old, new | predicate adjectives | not inflected after *sein* |
+| 29 | 57–58 | Moritzplatz | Public places | Shops and services | prepositions of place in fixed phrases | |
+| 30 | 59–60 | Schlesisches Tor | Please repeat | Spelling and understanding | repair phrases (*Wie bitte? Langsamer, bitte.*) | |
 
-\* Station names for 24–30 are provisional; ux owns the final map icons. Mohrenstraße (lesson 23) may be renamed by the BVG; check before building the lesson.
-
-Review stops follow lessons 3, 6, … 30. The A1 exam follows the last review.
+Station names for 24 onwards are provisional; ux owns the final map icons. Lessons 25–60 use icons that already exist; ux may draw better ones.
 
 ## Changes to the existing `COURSE`
 
-- Stations 13–24 move down or are re-themed to the table above (lessons 14–30). "Opinions" (old 21) and "Because, that, if" (old 24) move to A2.
-- `CHAPTERS` become five chapters of six: 1–6 Ankommen, 7–12 Alltag, 13–18 Unterwegs, 19–24 Freizeit, 25–30 Selbstständig. The edit is made in the first lesson PR that touches lesson 7 or later, with ux told so the map icons follow.
+- Done in the split PR: `COURSE` has 60 entries (two per station), `CHAPTERS` are five of twelve (1, 13, 25, 37, 49), `REVIEW_EVERY` is 4. Lesson 1 (21 words) and lesson 2 (23 words) were each split in two, so the old lesson 3 (everyday verbs) is now lessons 5–6, and so on.
+- "Opinions" and "Because, that, if" are A2 and not in this list.
+- Saved progress keyed to the old lesson numbers is not migrated (nothing is deployed yet).
 
 ## Build order and tracking
 
 Tick when the lesson is merged. One complete lesson per run.
 
-- [x] 1 Greetings (correction pass + new format)
-- [x] 2 People
-- [ ] 3 Everyday verbs
-- [ ] 4 Questions
-- [ ] 5 Numbers
-- [ ] 6 Small words
-- [ ] 7 Food & drink
-- [ ] 8 Ordering
-- [ ] 9 Home
-- [ ] 10 Time
-- [ ] 11 Days & weeks
-- [ ] 12 Family
-- [ ] 13 Work & study
-- [ ] 14 Getting around
-- [ ] 15 Directions
-- [ ] 16 Shopping
-- [ ] 17 Supermarket
-- [ ] 18 Body & health
-- [ ] 19 Daily routine
-- [ ] 20 Free time
-- [ ] 21 Weather & seasons
-- [ ] 22 Can, must, want
-- [ ] 23 Invitations
-- [ ] 24 Travel
-- [ ] 25 Hotel
-- [ ] 26 Forms & messages
-- [ ] 27 Dates & birthdays
-- [ ] 28 Describing things
-- [ ] 29 City places
-- [ ] 30 When you get stuck
-- [ ] 10 review stops, 5 chapter banners
+- [x] 1 Greetings
+- [x] 2 Your name
+- [x] 3 Who is who
+- [x] 4 Countries and languages
+- [ ] 5 Verbs for living
+- [ ] 6 Verbs for doing
+- [ ] 7 Question words
+- [ ] 8 Yes, no and answers
+- [ ] 9 Numbers 0–10
+- [ ] 10 Numbers 11–20
+- [ ] 11 Joining words
+- [ ] 12 Not and very
+- [ ] 13 Drinks
+- [ ] 14 Food
+- [ ] 15 Ordering
+- [ ] 16 Paying
+- [ ] 17 Rooms
+- [ ] 18 Furniture and es gibt
+- [ ] 19 The clock
+- [ ] 20 Times of day
+- [ ] 21 The week
+- [ ] 22 The months
+- [ ] 23 Close family
+- [ ] 24 My family
+- [ ] 25 Jobs
+- [ ] 26 Study and office
+- [ ] 27 Vehicles
+- [ ] 28 Tickets and stops
+- [ ] 29 Asking the way
+- [ ] 30 Places on the way
+- [ ] 31 Clothes
+- [ ] 32 Prices and sizes
+- [ ] 33 Quantities
+- [ ] 34 The shopping list
+- [ ] 35 The body
+- [ ] 36 At the doctor
+- [ ] 37 Morning
+- [ ] 38 Evening
+- [ ] 39 Hobbies
+- [ ] 40 Sport and music
+- [ ] 41 Weather
+- [ ] 42 Seasons
+- [ ] 43 Can
+- [ ] 44 Must and want
+- [ ] 45 Inviting
+- [ ] 46 Accepting and declining
+- [ ] 47 By train
+- [ ] 48 At the airport
+- [ ] 49 Booking a room
+- [ ] 50 At the hotel
+- [ ] 51 Forms
+- [ ] 52 Messages
+- [ ] 53 Dates
+- [ ] 54 Birthdays
+- [ ] 55 Colours
+- [ ] 56 Big, small, old, new
+- [ ] 57 Public places
+- [ ] 58 Shops and services
+- [ ] 59 Please repeat
+- [ ] 60 Spelling and understanding
+- [ ] 15 review stops (after lessons 4, 8, … 60), 5 chapter banners
 - [ ] A1 exam: `EXAM_TEXTS.A1` and `EXAM_PLAN.A1`, at least 3 sets
 - [ ] A1 gate set to the real word count
