@@ -227,3 +227,18 @@ for (const L of lessons) {
     assert.equal(bad.length, 0, `untaught words in lesson ${L.n}: ${bad.join(', ')}`);
   });
 }
+
+// Owner's rule: nothing religious or political anywhere in the lessons (text, scenes, examples, exam).
+// Everyday words stay allowed: wählen / Wahl (to dial or choose, a choice) are not listed.
+// Known gap: christ\w* also matches the name Christian and Christstollen; reword or adjust if one appears.
+const BANNED = /\b(kirche|kirchen|church|gott|god|jesus|christ\w*|weihnacht\w*|christmas|ostern|easter|ramadan|moschee|mosque|synagoge|synagogue|gebet|prayer|pray|religio\w*|bibel|bible|papst|pope|politi\w*|partei\w*|party leader|wahlen|election|vote|voting|protest\w*|demonstration|regierung|government|kanzler\w*|chancellor|präsident\w*|president|minister\w*|bundestag|afd|cdu|spd|fdp|trump|merkel|putin)\b/i;
+
+test('no lesson text is religious or political', () => {
+  const hits = [];
+  for (const L of lessons) {
+    const text = JSON.stringify(L).replace(/"[\w$]+":/g, ' ');
+    const m = text.match(BANNED);
+    if (m) hits.push(`lesson ${L.n}: "${m[0]}"`);
+  }
+  assert.deepEqual(hits, [], 'remove religious or political content (owner rule); if this is a false positive, adjust BANNED');
+});
