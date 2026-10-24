@@ -2,17 +2,20 @@
 """Telegram relay for the Protoa agent team.
 
 Runs inside GitHub Actions (the agents' cloud sessions can't keep a Telegram
-connection of their own). Three modes:
+connection of their own). The team lives in a Telegram group with topics: one
+thread per agent (see config.json) plus the group's built-in General thread.
 
-  outbound-comment  forward a new Team log comment (issue #2) to the owner's chat
-  outbound-pr       announce a newly opened pull request
-  inbound           pull the owner's new Telegram messages and post them on the
-                    Team brief (issue #1), where every agent reads its direction
+  outbound-comment  forward a new Team log comment (issue #2) to that agent's thread
+  outbound-pr       announce a newly opened pull request in that agent's thread
+  inbound           pull the owner's new messages and post them on the Team brief
+                    (issue #1), where every agent reads its direction. A message
+                    in an agent's thread is addressed to that agent.
+
+The owner is the creator of the group, looked up from Telegram on every run, so
+no user id has to be configured. Messages from anyone else are ignored.
 
 Environment:
   TELEGRAM_BOT_TOKEN  bot token (repository secret)
-  TELEGRAM_OWNER_ID   the owner's numeric Telegram user id (repository secret);
-                      it is also the chat id for private messages
   GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_EVENT_PATH  provided by Actions
   RELAY_SINCE         unix time; inbound ignores messages sent before it
 """
@@ -23,17 +26,21 @@ import re
 import sys
 import time
 import urllib.error
-import urllib.parse
 import urllib.request
 
-BRIEF_ISSUE = 1
-LOG_ISSUE = 2
+HERE = os.path.dirname(os.path.abspath(__file__))
+CONFIG = json.load(open(os.path.join(HERE, "config.json")))
+GROUP_ID = CONFIG["group_id"]
+TOPICS = CONFIG["topics"]                      # agent name -> message_thread_id
+AGENT_BY_TOPIC = {v: k for k, v in TOPICS.items()}
+BRIEF_ISSUE = CONFIG["brief_issue"]
+LOG_ISSUE = CONFIG["log_issue"]
+
 INBOUND_MARKER = "📩 From Telegram (owner)"
 TRUSTED = {"OWNER", "MEMBER", "COLLABORATOR"}
 TG_LIMIT = 4000  # Telegram allows 4096 characters per message; keep a margin
 
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
-OWNER_ID = os.environ.get("TELEGRAM_OWNER_ID", "").strip()
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GH_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
@@ -47,9 +54,7 @@ def die(msg):
 
 def tg(method, params=None, quiet=False):
     url = f"https://api.telegram.org/bot{TOKEN}/{method}"
-    data = None
-    if params is not None:
-        data = json.dumps(params).encode()
+    data = json.dumps(params).encode() if params is not None else None
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
@@ -62,7 +67,14 @@ def tg(method, params=None, quiet=False):
         return {"ok": False, "error_code": e.code, "description": body}
 
 
-def send_text(text):
+def target(thread=None, chat=None):
+    p = {"chat_id": chat if chat is not None else GROUP_ID}
+    if thread:
+        p["message_thread_id"] = thread
+    return p
+
+
+def send_text(text, thread=None, chat=None, reply_to=None):
     text = text.strip() or "(empty)"
     chunks = []
     while text:
@@ -74,34 +86,47 @@ def send_text(text):
             cut = TG_LIMIT
         chunks.append(text[:cut])
         text = text[cut:].lstrip("\n")
-    for c in chunks:
-        r = tg("sendMessage", {"chat_id": OWNER_ID, "text": c, "disable_web_page_preview": True})
+    for i, c in enumerate(chunks):
+        p = {**target(thread, chat), "text": c, "link_preview_options": {"is_disabled": True}}
+        if reply_to and i == 0:
+            p["reply_parameters"] = {"message_id": reply_to, "allow_sending_without_reply": True}
+        r = tg("sendMessage", p)
         if not r.get("ok"):
-            die("Could not send the message to Telegram (check the TELEGRAM_BOT_TOKEN secret).")
+            die("Could not send the message to Telegram.")
 
 
-def send_photos(images):
+def send_photos(images, thread=None):
     """images: list of (caption, url). Falls back to links if Telegram can't fetch one."""
     failed = []
     for i in range(0, len(images), 10):
         batch = images[i:i + 10]
         if len(batch) == 1:
             cap, url = batch[0]
-            r = tg("sendPhoto", {"chat_id": OWNER_ID, "photo": url, "caption": cap[:1000]}, quiet=True)
+            r = tg("sendPhoto", {**target(thread), "photo": url, "caption": cap[:1000]}, quiet=True)
             if not r.get("ok"):
                 failed += batch
         else:
             media = [{"type": "photo", "media": u, "caption": c[:1000]} for c, u in batch]
-            r = tg("sendMediaGroup", {"chat_id": OWNER_ID, "media": media}, quiet=True)
+            r = tg("sendMediaGroup", {**target(thread), "media": media}, quiet=True)
             if not r.get("ok"):
                 # One bad image fails the whole album; retry them one by one.
                 for cap, url in batch:
-                    r1 = tg("sendPhoto", {"chat_id": OWNER_ID, "photo": url, "caption": cap[:1000]}, quiet=True)
+                    r1 = tg("sendPhoto", {**target(thread), "photo": url, "caption": cap[:1000]}, quiet=True)
                     if not r1.get("ok"):
                         failed.append((cap, url))
     if failed:
         send_text("Some screenshots couldn't be shown here; open them directly:\n"
-                  + "\n".join(f"• {c or 'image'}: {u}" for c, u in failed))
+                  + "\n".join(f"• {c or 'image'}: {u}" for c, u in failed), thread)
+
+
+def owner_id():
+    r = tg("getChatAdministrators", {"chat_id": GROUP_ID})
+    if not r.get("ok"):
+        die("Could not read the team group's admins (is the bot still an admin there?).")
+    for m in r["result"]:
+        if m.get("status") == "creator":
+            return m["user"]["id"]
+    die("The team group has no visible creator; can't tell who the owner is.")
 
 
 # ---------------------------------------------------------------- GitHub
@@ -122,6 +147,7 @@ def gh(path, method="GET", payload=None):
 
 IMG_RE = re.compile(r"!\[([^\]]*)\]\((https?://[^)\s]+)\)")
 LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+TAG_RE = re.compile(r"\[(quality|content|ux)\]", re.I)
 
 
 def markdown_to_plain(md):
@@ -140,6 +166,12 @@ def markdown_to_plain(md):
     return text.strip(), images
 
 
+def thread_for(text):
+    """The agent thread for a post or PR title tagged [quality]/[content]/[ux]; None = General."""
+    m = TAG_RE.search(text[:200])
+    return TOPICS.get(m.group(1).lower()) if m else None
+
+
 # ---------------------------------------------------------------- modes
 
 def outbound_comment():
@@ -151,11 +183,13 @@ def outbound_comment():
     if c.get("author_association") not in TRUSTED:
         print(f"Ignoring comment from {c['user']['login']} ({c.get('author_association')}).")
         return
-    text, images = markdown_to_plain(c.get("body") or "")
-    send_text(f"{text}\n\n🔗 {c['html_url']}")
+    body = c.get("body") or ""
+    thread = thread_for(body)
+    text, images = markdown_to_plain(body)
+    send_text(f"{text}\n\n🔗 {c['html_url']}", thread)
     if images:
-        send_photos(images)
-    print(f"Forwarded log comment {c['id']} with {len(images)} image(s).")
+        send_photos(images, thread)
+    print(f"Forwarded log comment {c['id']} with {len(images)} image(s) to thread {thread or 'General'}.")
 
 
 def outbound_pr():
@@ -164,21 +198,23 @@ def outbound_pr():
     if pr.get("author_association") not in TRUSTED:
         print(f"Ignoring PR from {pr['user']['login']} ({pr.get('author_association')}).")
         return
+    thread = thread_for(pr["title"])
     body, _ = markdown_to_plain(pr.get("body") or "")
     if len(body) > 900:
         body = body[:900].rsplit("\n", 1)[0] + "\n…"
-    send_text(f"🔀 New pull request #{pr['number']}: {pr['title']}\n\n{body}\n\n🔗 {pr['html_url']}")
-    print(f"Announced PR #{pr['number']}.")
+    send_text(f"🔀 New pull request #{pr['number']}: {pr['title']}\n\n{body}\n\n🔗 {pr['html_url']}", thread)
+    print(f"Announced PR #{pr['number']} in thread {thread or 'General'}.")
 
 
 HELP = (
-    "Message me anything and I'll pass it to the agents; each one reads your "
-    "messages at the start of its next run (every agent runs every 4 hours).\n\n"
-    "• To address one agent, start with its name: \"content: …\", \"ux: …\" or \"quality: …\". "
-    "Anything else goes to the whole team.\n"
+    "Write to the team here and I'll pass it on. Each agent reads your messages at "
+    "the start of its next run (every agent runs every 4 hours).\n\n"
+    "• A message in an agent's thread (Quality, Content, UX) goes to that agent only.\n"
+    "• A message in General goes to the whole team, unless it starts with an agent's "
+    "name (\"content: …\").\n"
+    "• To set a new mission: \"new mission: …\" in that agent's thread.\n"
     "• Newer messages override older ones.\n"
-    "• /prs lists the open pull requests.\n"
-    "• /help shows this message."
+    "• /prs lists the open pull requests.  /help shows this message."
 )
 
 
@@ -186,8 +222,8 @@ def list_prs():
     prs = gh("pulls?state=open&per_page=50")
     if not prs:
         return "No open pull requests right now."
-    lines = [f"#{p['number']} {p['title']}\n{p['html_url']}" for p in prs]
-    return "Open pull requests:\n\n" + "\n\n".join(lines)
+    return "Open pull requests:\n\n" + "\n\n".join(
+        f"#{p['number']} {p['title']}\n{p['html_url']}" for p in prs)
 
 
 def inbound():
@@ -199,45 +235,53 @@ def inbound():
     if not updates:
         print("No new Telegram messages.")
         return
+    owner = owner_id()
     last_id = None
     relayed = 0
     for u in updates:
+        last_id = u["update_id"]
         msg = u.get("message") or {}
-        sender = str((msg.get("from") or {}).get("id", ""))
-        chat_type = (msg.get("chat") or {}).get("type")
-        if sender != OWNER_ID or chat_type != "private":
-            print(f"Skipping update {u['update_id']} from an unknown sender.")
-            last_id = u["update_id"]
+        chat = msg.get("chat") or {}
+        sender = (msg.get("from") or {}).get("id")
+        in_group = chat.get("id") == GROUP_ID
+        in_dm = chat.get("type") == "private"
+        if sender != owner or not (in_group or in_dm):
+            print(f"Skipping update {u['update_id']}: not the owner, or not the team group / a DM.")
             continue
         if msg.get("date", 0) < since:
             print(f"Skipping update {u['update_id']}: sent before the relay was set up.")
-            last_id = u["update_id"]
             continue
+        thread = msg.get("message_thread_id") if in_group and msg.get("is_topic_message") else None
+        agent = AGENT_BY_TOPIC.get(thread)
+        reply = dict(thread=thread, chat=None if in_group else chat["id"], reply_to=msg.get("message_id"))
         text = (msg.get("text") or msg.get("caption") or "").strip()
         if not text:
-            send_text("I can only pass text messages to the agents for now. Please type it out.")
-        elif text.lower().startswith("/start") or text.lower().startswith("/help"):
-            send_text(HELP)
-        elif text.lower().startswith("/prs"):
-            send_text(list_prs())
+            # Service messages (topic created, member joined, ...) have no text and need no answer.
+            if any(k in msg for k in ("photo", "document", "voice", "video", "sticker", "audio")):
+                send_text("I can only pass text to the agents for now. Please type it out.", **reply)
+            continue
+        cmd = text.split()[0].split("@")[0].lower() if text.startswith("/") else ""
+        if cmd in ("/start", "/help"):
+            send_text(HELP, **reply)
+        elif cmd == "/prs":
+            send_text(list_prs(), **reply)
         else:
+            if agent and not re.match(rf"\s*{agent}\s*:", text, re.I):
+                text = f"{agent}: {text}"
             when = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime(msg.get("date", time.time())))
-            body = f"{INBOUND_MARKER}, {when}:\n\n{text}"
-            gh(f"issues/{BRIEF_ISSUE}/comments", "POST", {"body": body})
+            gh(f"issues/{BRIEF_ISSUE}/comments", "POST", {"body": f"{INBOUND_MARKER}, {when}:\n\n{text}"})
             relayed += 1
-            send_text("✅ Passed to the agents. Each one will see it at the start of its next run.")
-        last_id = u["update_id"]
-    if last_id is not None:
-        # Confirm everything up to last_id so Telegram doesn't send it again.
-        tg("getUpdates", {"offset": last_id + 1, "timeout": 0, "allowed_updates": ["message"]})
+            who = f"the {agent} agent" if agent else "the team"
+            send_text(f"✅ Passed to {who}. It'll be picked up at the start of the next run.", **reply)
+    # Confirm everything up to last_id so Telegram doesn't send it again.
+    tg("getUpdates", {"offset": last_id + 1, "timeout": 0, "allowed_updates": ["message"]})
     print(f"Processed {len(updates)} update(s), relayed {relayed} message(s) to the brief.")
 
 
 def main():
-    if not TOKEN or not OWNER_ID:
+    if not TOKEN:
         # Not configured yet: skip quietly instead of failing every few minutes.
-        print("::notice::Telegram relay is not set up yet: add the TELEGRAM_BOT_TOKEN and "
-              "TELEGRAM_OWNER_ID repository secrets.")
+        print("::notice::Telegram relay is not set up yet: add the TELEGRAM_BOT_TOKEN repository secret.")
         return
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
     {"outbound-comment": outbound_comment, "outbound-pr": outbound_pr, "inbound": inbound}.get(
