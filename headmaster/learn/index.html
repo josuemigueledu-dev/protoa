@@ -1,0 +1,119 @@
+<title>Protoa for Arthur</title>
+<style>
+/* Loader for Arthur's own copy of Protoa: picks his build, restores his progress, then hands the page to the app. */
+:root{--bg:#e8edfa;--ink:#0a1238;--muted:#4a5378}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#060a24;--ink:#eef1ff;--muted:#a7afd4;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#060a24;--ink:#eef1ff;--muted:#a7afd4;color-scheme:dark}
+body{background:var(--bg);color:var(--ink)}
+#pl-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg);color:var(--muted);font:500 15px/1.4 system-ui,sans-serif;z-index:100;padding:0 24px;text-align:center}
+#pl-splash .o{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#fff 0 6%,#8fc4ff 14%,#2f6bff 30%,rgba(47,107,255,.15) 58%,transparent 62%),radial-gradient(circle at 35% 28%,rgba(255,255,255,.6),rgba(255,255,255,.06) 50%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+@media (prefers-reduced-motion:no-preference){#pl-splash .o{animation:pl-bob 2.4s ease-in-out infinite}@keyframes pl-bob{50%{transform:translateY(-6px)}}}
+</style>
+<div id="pl-splash" role="status"><div class="o" aria-hidden="true"></div><span id="pl-msg">Waking Protoa…</span></div>
+<script>
+(() => {
+  const FALLBACK = { id: '60b8d6e', date: 'Oct 24' }; // the build this page was published with
+  const PREFIX = 'weg:';
+  const msg = t => { const m = document.getElementById('pl-msg'); if (m) m.textContent = t; };
+  let db = null, uid = null, latest = FALLBACK, current = null;
+  const lsPath = () => 'data/users/' + uid + '/state/ls';
+  const statePath = () => 'data/users/' + uid + '/state';
+  const updatedAt = s => { try { return JSON.parse(s).updatedAt || 0; } catch (e) { return 0; } };
+
+  /* ---------- progress: localStorage is the app's store; Arthur's private db rows are the copy that lasts ---------- */
+  const dirty = new Set(); let timer = null, flushing = null;
+  const setItem = Storage.prototype.setItem, removeItem = Storage.prototype.removeItem;
+  function watch() {
+    Storage.prototype.setItem = function (k, v) { setItem.call(this, k, v); if (this === localStorage && String(k).startsWith(PREFIX)) mark(k); };
+    Storage.prototype.removeItem = function (k) { removeItem.call(this, k); if (this === localStorage && String(k).startsWith(PREFIX)) mark(k); };
+  }
+  function mark(k) { if (!uid) return; dirty.add(k); clearTimeout(timer); timer = setTimeout(flush, 1500); }
+  async function flush() {
+    if (flushing) return flushing;
+    flushing = (async () => {
+      while (dirty.size) {
+        const k = dirty.values().next().value; dirty.delete(k);
+        let v = null; try { v = localStorage.getItem(k); } catch (e) { }
+        try { if (v == null) await db.doc(lsPath() + '/' + k).delete(); else await db.doc(lsPath() + '/' + k).set({ v, t: Date.now() }); }
+        catch (e) { dirty.add(k); clearTimeout(timer); timer = setTimeout(flush, 10000); break; }
+      }
+    })();
+    try { await flushing; } finally { flushing = null; }
+  }
+  addEventListener('pagehide', () => { if (dirty.size) flush(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty.size) flush(); });
+
+  async function restore() {
+    const snap = await db.collection(lsPath()).limit(1000).get();
+    const remote = new Map(snap.docs.map(d => [d.id, d.data()?.v]));
+    for (const [k, v] of remote) {
+      if (typeof v !== 'string') continue;
+      let local = null; try { local = localStorage.getItem(k); } catch (e) { }
+      if (local == null || updatedAt(local) < updatedAt(v)) try { setItem.call(localStorage, k, v); } catch (e) { }
+    }
+    // anything only this browser has, or has newer, goes up
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(PREFIX)) { const r = remote.get(k); if (r == null || updatedAt(localStorage.getItem(k)) > updatedAt(r)) mark(k); } } } catch (e) { }
+  }
+
+  /* ---------- build: the one Arthur chose, never changed under him ---------- */
+  const load = (tag, attrs) => new Promise((ok, fail) => { const e = Object.assign(document.createElement(tag), attrs); e.onload = ok; e.onerror = () => fail(new Error('Could not load ' + (attrs.src || attrs.href))); if (tag === 'script') e.async = false; document.head.append(e); });
+  async function boot(id) {
+    const base = 'b/' + id + '/';
+    const get = async f => { const r = await fetch(base + f); if (!r.ok) throw new Error('missing ' + f); return r.text(); };
+    const [body, scripts, fonts] = await Promise.all([get('body.html'), get('scripts.txt'), get('fonts.txt')]);
+    if (fonts.trim()) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: fonts.trim() }));
+    await Promise.all(['tokens', 'base', 'glass', 'depth'].map(n => load('link', { rel: 'stylesheet', href: base + 'css/' + n + '.css' })));
+    document.body.insertAdjacentHTML('afterbegin', body);
+    for (const s of scripts.split('\n').map(s => s.trim()).filter(Boolean)) await load('script', { src: base + 'js/' + s });
+    document.getElementById('pl-splash')?.remove();
+    new MutationObserver(addUpdateCard).observe(document.body, { childList: true, subtree: true });
+  }
+
+  /* ---------- Settings → App version ---------- */
+  function addUpdateCard() {
+    const view = document.getElementById('view'); const h1 = view && view.querySelector('h1');
+    if (!h1 || h1.textContent.trim() !== 'Settings' || document.getElementById('pl-update')) return;
+    const card = document.createElement('div'); card.className = 'card stack'; card.id = 'pl-update';
+    const fresh = latest.id === current.id;
+    card.innerHTML = '<div class="eyebrow">App version</div><p class="small"></p><ul class="small muted" style="margin:0;padding-left:18px"></ul><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" type="button"></button><button class="btn ghost" type="button">Check for updates</button></div><p class="small muted" style="margin:0">Your progress is saved to your account and comes with you when you update.</p>';
+    card.querySelector('p').textContent = fresh ? `You're on the newest build (${current.id}, ${current.date || ''}).` : `You're on build ${current.id} (${current.date || ''}). A newer build is ready: ${latest.id} (${latest.date || ''}).`;
+    const ul = card.querySelector('ul');
+    if (!fresh) for (const n of latest.notes || []) { const li = document.createElement('li'); li.textContent = n; ul.append(li); }
+    if (!ul.children.length) ul.remove();
+    const [up, check] = card.querySelectorAll('button');
+    up.textContent = fresh ? 'Up to date' : 'Update now'; up.disabled = fresh || !db;
+    up.addEventListener('click', async () => {
+      up.disabled = true; up.textContent = 'Updating…';
+      try { await flush(); await db.doc(statePath()).set({ build: latest.id, at: Date.now() }); location.reload(); }
+      catch (e) { up.disabled = false; up.textContent = 'Update now'; }
+    });
+    check.disabled = !db;
+    check.addEventListener('click', async () => { check.textContent = 'Checking…'; await readLatest(); card.remove(); addUpdateCard(); });
+    view.append(card);
+  }
+  async function readLatest() { try { const d = (await db.doc('builds/latest').get()).data(); if (d && d.id) latest = d; } catch (e) { } }
+
+  (async () => {
+    try {
+      db = await window.claude?.use?.('db');
+      const user = db && await window.claude.use('user');
+      uid = user ? await user.id() : null;
+      if (db) await readLatest();
+      current = latest;
+      if (db && uid) {
+        msg('Loading your progress…');
+        const st = (await db.doc(statePath()).get()).data();
+        if (st && st.build) {
+          const b = (await db.doc('builds/' + st.build).get()).data();
+          current = b && b.id ? b : { id: st.build };
+        } else await db.doc(statePath()).set({ build: current.id, at: Date.now() });
+        await restore();
+        watch();
+      } else if (!db) msg('Opening without your account: progress stays in this browser only.');
+      await boot(current.id);
+    } catch (e) {
+      msg('Protoa could not start: ' + (e.message || e) + '. Reload to try again.');
+    }
+  })();
+})();
+</script>

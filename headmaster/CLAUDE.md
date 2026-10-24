@@ -60,3 +60,13 @@ Arthur's private page: https://claude.ai/artifact/4fzCsBJQoEbeJfgnDVuZ6N (source
 
 - `decisions`: anything that needs his call (`title`, `question`, `options[{key,label,desc}]`, `recommend`, `shots[{label,src}]`, `order`). He taps an option there, which sets `pick` and `note`. Check for new picks at every PR review (including ones he has hidden with the green check, `dismissed: true`); act on them, then set `closed: true` and an `outcome` line.
 - `changes`: one row per reviewed PR with screenshots (`pr`, `agent`, `status` merged|back|review, `kind` (one of: Colour & style, Fonts & text, Animation & motion, Layout & screens, Characters & art, Accessibility, Lessons, Tests & safety), `title`, `summary`, `pairs[{label,before,after}]`, `note`, `order` = PR number). Arthur deletes rows he has seen; when a PR you sent back is later merged, re-create its row. Upload screenshots first (Artifact publish with `url`, `asset: true`, `file_paths` under this folder) and use the returned `/_blob/<id>` urls. Add a row whenever you merge or send back a PR.
+
+## Arthur's own Protoa (learning copy)
+
+Arthur learns German with his own copy: https://claude.ai/artifact/CZwThbASVU74G5MXoQsrN4 (source `learn/`). `learn/index.html` is a loader (capabilities `db` + `user`): it reads the build Arthur chose from his private `data/users/<id>/state` doc, restores his progress from `data/users/<id>/state/ls/<localStorage key>` into localStorage, mirrors every `weg:` key back there, then loads `b/<build>/` (the app's body, CSS and scripts). Settings gets an "App version" card with **Update now**, which switches him to `builds/latest`. His progress never touches the dev app or the repo.
+
+Ship a new build after a review hour that merged app changes (not for test-only or docs-only merges):
+1. `git pull --ff-only`, then `sh learn/build.sh` (prints the build id, writes `learn/b/<id>/`, which is gitignored).
+2. Publish `learn/index.html` with `root` = `learn` and `files` = every file under `b/<id>/` (older builds stay published; never remove them, Arthur may still be on one).
+3. ArtifactData batch: set `builds/<id>` and `builds/latest` to `{id, date, notes: [plain one-line notes on what changed for him]}`.
+Never change his `state` or `state/ls` docs.
