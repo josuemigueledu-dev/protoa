@@ -17,12 +17,13 @@
 const Companion = (() => {
   const P = { x: -1, y: -1, vx: 0, vy: 0, raf: 0, last: 0, attend: null, sq: 0, ang: 0, seed: Math.random() * 50, a: null, aAt: 0, lookAt: null };
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const phone = () => document.body.classList.contains('lay-mobile');   /* inside a sheet on a phone the field has no free margin: perch on the sheet's corner instead, clear of its text */
   const size = () => document.body.classList.contains('lay-mobile') ? 58 : 72;
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
   function anchor() {
     const view = document.getElementById('view'); let b, el;
     if (P.attend && (b = vis(P.attend))) return { b, kind: 'speak', el: P.attend };
-    el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && (b = vis(el))) return { b, kind: 'input', el };
+    el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && !(phone() && el.closest('.sheet .in')) && (b = vis(el))) return { b, kind: 'input', el };
     el = document.querySelector('.sheet:not(.closing) .in'); if (el && (b = vis(el))) return { b, kind: 'sheet', el };
     el = document.querySelector('.actionbar.ok .msg,.actionbar.bad .msg'); if (el && (b = vis(el))) return { b, kind: 'feedback', el };
     if (document.body.classList.contains('in-lesson')) {
