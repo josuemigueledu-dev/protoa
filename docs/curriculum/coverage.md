@@ -78,7 +78,7 @@ Tick when the lesson is merged. One complete lesson per run.
 - [x] 4 Countries and languages
 - [x] 5 Verbs for living
 - [x] 6 Verbs for doing
-- [ ] 7 Question words
+- [x] 7 Question words
 - [ ] 8 Yes, no and answers
 - [ ] 9 Numbers 0–10
 - [ ] 10 Numbers 11–20
