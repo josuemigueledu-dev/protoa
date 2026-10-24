@@ -598,7 +598,7 @@ async function generateLesson() {
   toast('Protoa is writing lesson ' + n + '…');
   for (let tries = 0; tries < 2; tries++) {
     try {
-      const r = await AI.run('generateLesson', { n, topic: plan.topic, station: plan.station, profile: aiProfile(), known, example: LESSONS[0] });
+      const r = await AI.run('generateLesson', { n, topic: plan.topic, station: plan.station, profile: aiProfile(), known, example: LESSONS[0], art: typeof ART_MANIFEST !== 'undefined' ? ART_MANIFEST.filter(a => ['plate', 'cast', 'event', 'word'].includes(a.kind)).map(({ id, kind, tags }) => ({ id, kind, tags })) : [] });
       const bad = validateLesson(r, n, known); if (bad.length) { console.warn('lesson rejected', bad); if (tries === 1) { toast('The lesson came back malformed: ' + bad[0]); return; } continue; }
       r.n = n; S.lessonsGen[n] = r; save('lessonsGen'); toast('Lesson ' + n + ' ready'); render(); return;
     } catch (e) { toast(AI.message(e, 'Could not write the lesson right now.')); return; }
@@ -611,7 +611,7 @@ function validateLesson(L, n, known) {
   if (!Array.isArray(L.words) || L.words.length < 8 || L.words.length > 14) bad.push('need 8–14 words');
   (L.words || []).forEach(w => { for (const k of ['de', 'en', 'type', 'ex', 'exEn', 'exG']) if (!w[k]) bad.push('word ' + (w.de || '?') + ' missing ' + k); if (!Array.isArray(w.en)) w.en = [String(w.en)]; if (known.includes(w.de)) bad.push('duplicate known word ' + w.de); });
   if (!Array.isArray(L.conv) || L.conv.length < 6) bad.push('conversation too short'); if (!(L.conv || []).some(t => t.l)) bad.push('no learner turns');
-  if (!L.lex.verbs || !L.lex.nouns) bad.push('lexicon incomplete'); if (!SCENES[L.scene.id]) L.scene.id = 'classroom';
+  if (!L.lex.verbs || !L.lex.nouns) bad.push('lexicon incomplete'); if (typeof ART_MANIFEST !== 'undefined') bad.push(...fixLessonArt(L, ART_MANIFEST)); else if (!SCENES[L.scene.id]) L.scene.id = 'classroom';
   try { bad.push(...checkGlosses(L)); } catch (e) { bad.push('gloss check failed'); }
   return bad;
 }

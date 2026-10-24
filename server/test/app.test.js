@@ -13,7 +13,7 @@ const SAMPLE = {
   talkTurn: { profile: { name: 'Alex', city: 'Orlando' }, brief: 'You meet the student.', known: 'hallo, ich', history: [{ who: 'w', de: 'Hallo!' }, { who: 'l', de: 'Hallo, ich bin Alex.' }] },
   talkHelp: { brief: 'At a café.', question: 'I would like a coffee' },
   gradeExam: { code: 'A1', items: [{ i: 0, kind: 'trans', task: 'I am Alex.', model: 'Ich bin Alex.', answer: 'Ich bin Alex.', max: 1 }] },
-  generateLesson: { n: 2, topic: 'People', station: 'Görlitzer Bahnhof', profile: { name: 'Alex' }, known: ['hallo'], example: { n: 1, title: 'Greetings' } },
+  generateLesson: { n: 2, topic: 'People', station: 'Görlitzer Bahnhof', profile: { name: 'Alex' }, known: ['hallo'], art: [{ id: 'plate.cafe', kind: 'plate', tags: ['food'] }], example: { n: 1, title: 'Greetings' } },
 };
 
 const post = (app, path, body) => app.request(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: typeof body === 'string' ? body : JSON.stringify(body) });
@@ -84,6 +84,13 @@ test('bad requests are rejected before Claude is called', withKey(async () => {
   assert.equal((await post(app, '/api/deutsch/ai/gradeExam', { code: 'C2', items: [] })).status, 400);
   assert.equal((await post(app, '/api/deutsch/ai/correctSentence', { sentence: 'x'.repeat(300 * 1024) })).status, 413);
 }));
+
+test('the lesson prompt lists the art ids it may use, and the list is capped', () => {
+  const t = tasks.generateLesson;
+  assert.match(t.prompt(t.input.parse(SAMPLE.generateLesson)), /"id":"plate\.cafe"/);
+  assert.ok(t.input.safeParse({ ...SAMPLE.generateLesson, art: Array(401).fill({ id: 'a', kind: 'word', tags: [] }) }).error);
+  assert.ok(t.input.safeParse({ ...SAMPLE.generateLesson, art: [{ id: 'a', kind: 'word', tags: Array(13).fill('t') }] }).error);
+});
 
 test('AI errors keep their code and status', withKey(async () => {
   const app = createApp({ runJSON: async () => { throw new AIError('refused', 'Claude declined this request.', 422); } });

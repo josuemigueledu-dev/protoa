@@ -144,3 +144,32 @@ test('COURSE and CHAPTERS are consistent', () => {
   ch.forEach((c, i) => i && assert.ok(c.from > ch[i - 1].from));
   assert.ok(ch.at(-1).from <= course.length);
 });
+
+// Generated lessons: art ids outside the manifest are repaired or dropped, never defaulted to the classroom.
+vm.runInContext(js('art-bundle.js'), ctx, { filename: 'art-bundle.js' });
+const fixLessonArt = get('fixLessonArt');
+const manifest = get('ART_MANIFEST');
+
+test('fixLessonArt swaps an unknown plate for the best tag match and logs it', () => {
+  const log = [];
+  const L = { title: 'At the café', theme: 'Ein Kaffee, bitte', words: [], scene: { plate: 'plate.moon', place: 'Café, food and drink' } };
+  assert.deepEqual([...fixLessonArt(L, manifest, m => log.push(m))], []);
+  assert.equal(L.scene.plate, 'plate.cafe');
+  assert.equal(log.length, 1);
+});
+
+test('fixLessonArt leaves known ids alone and drops unknown pictures and events', () => {
+  const log = [];
+  const L = { title: 't', theme: 't', scene: { plate: 'plate.cafe', cast: [{ id: 'cast.weber', x: 1 }] }, words: [{ de: 'der Kaffee', pic: 'kaffee' }, { de: 'das Ufo', pic: 'ufo' }, { de: 'das Brot', pic: 'word.brot' }], twist: { at: 1, event: 'event.ufo' } };
+  assert.deepEqual([...fixLessonArt(L, manifest, m => log.push(m))], []);
+  assert.equal(L.scene.plate, 'plate.cafe');
+  assert.deepEqual(L.words.map(w => w.pic), ['kaffee', undefined, 'word.brot']);
+  assert.equal(L.twist, undefined);
+  assert.equal(log.length, 2);
+});
+
+test('fixLessonArt maps a legacy scene.id to its plate and rejects unknown cast', () => {
+  const L = { title: 't', theme: 't', scene: { id: 'cafe', cast: [{ id: 'cast.ghost', x: 1 }] }, words: [] };
+  assert.deepEqual([...fixLessonArt(L, manifest, () => {})], ['unknown cast cast.ghost']);
+  assert.equal(L.scene.plate, 'plate.cafe');
+});

@@ -45,6 +45,25 @@ function applyShortcuts(v) { return v.replace(/([aouAOU])[:"]/g, (m, c) => ({ a:
 
 /* ---------- Gloss parsing / coverage ---------- */
 function parseGloss(g) { return fill(g).split('|').map(p => { const i = p.indexOf('='); return [p.slice(0, i).trim(), p.slice(i + 1).trim()]; }); }
+/* Art ids in a generated lesson must exist in the manifest (ART_MANIFEST, art-bundle.js). An unknown plate is swapped
+   for the plate with the most tags in common with the lesson's text; an unknown word picture or twist event is
+   dropped. Each swap is logged. Returns problems that cannot be repaired (an unknown cast member). */
+function fixLessonArt(L, manifest, log = console.warn) {
+  const ids = kind => manifest.filter(a => a.kind === kind);
+  const has = (kind, id) => ids(kind).some(a => a.id === id);
+  const bad = [], sc = L.scene || {};
+  const plate = sc.plate || (sc.id ? 'plate.' + sc.id : '');
+  if (!has('plate', plate)) {
+    const text = [L.title, L.theme, sc.place, sc.cap].join(' ').toLowerCase();
+    const score = a => (a.tags || []).filter(t => text.includes(t)).length;
+    const best = ids('plate').reduce((m, a) => score(a) > score(m) ? a : m, ids('plate').find(a => a.id === 'plate.classroom') || ids('plate')[0]);
+    if (best) { log('lesson art: unknown plate "' + plate + '" replaced by ' + best.id); sc.plate = best.id; } else bad.push('no plates available');
+  } else sc.plate = plate;
+  (sc.cast || []).forEach(c => { if (!has('cast', c.id)) bad.push('unknown cast ' + c.id); });
+  (L.words || []).forEach(w => { if (w.pic && !has('word', w.pic.startsWith('word.') ? w.pic : 'word.' + w.pic)) { log('lesson art: unknown picture "' + w.pic + '" dropped from ' + w.de); delete w.pic; } });
+  if (L.twist && !has('event', L.twist.event)) { log('lesson art: unknown event "' + L.twist.event + '" dropped'); delete L.twist; }
+  return bad;
+}
 function checkGlosses(lesson) {
   const bad = [];
   const chk = (de, g, where) => {
