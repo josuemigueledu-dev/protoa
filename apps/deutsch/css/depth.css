@@ -141,7 +141,7 @@ input[type=range]{width:100%;accent-color:var(--yellow);min-height:32px;backgrou
 .card.primary.tilting::after,.examcard.tilting::after,.ticket.tilting::after{display:block}
 
 /* ---- the black weight: hero panes and the learner's own words ---- */
-.today-hero,.talkhero{background:radial-gradient(120% 160% at 92% -20%,rgba(90,150,255,.20),transparent 52%),linear-gradient(160deg,var(--pane-2),var(--pane-1));border-radius:var(--r);animation:none}
+.today-hero,.talkhero{background:radial-gradient(120% 160% at 88% -10%,var(--pane-glow),transparent 58%),linear-gradient(160deg,var(--pane-2),var(--pane-1));border-radius:var(--r);animation:none}
 .bub.l .box{background:linear-gradient(160deg,var(--pane-2),var(--pane-1));color:var(--pane-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 24px -16px rgba(0,0,0,.45)}
 .bub.l .box .gl .e,.bub.l .box .faint,.bub.l .box .en-after,.bub.l .box .muted{color:var(--pane-muted)}
 :root[data-theme="dark"] .bub.l .box{color:var(--pane-ink)} :root[data-theme="dark"] .bub.l .box .gl .e,:root[data-theme="dark"] .bub.l .box .faint{color:var(--pane-muted)}
@@ -198,3 +198,9 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .ev-pop{transform-box:fill-box;transform-origin:center;animation:evpop .3s cubic-bezier(.34,1.4,.64,1) both}
 @keyframes evpop{from{transform:scale(.6)}to{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.ev-pop{animation:none}}
+
+/* ---- Blaue Stunde: soft fields behind content (tints over glass, never solid blocks); amber is for progress and wins only ---- */
+.card.primary{background:linear-gradient(var(--field-1),var(--field-1)),linear-gradient(180deg,rgba(255,255,255,.16),transparent 40%,var(--curve) 100%),linear-gradient(155deg,var(--sheen) 0%,transparent 46%),var(--card)}
+.nextcard .sig,.wcard .illus,.wcard .illus.m,.wcard .illus.f,.wcard .illus.n{background:var(--field-2)}
+.talkrow{background:linear-gradient(var(--field-4),var(--field-4)),var(--card)}
+.scene svg,.conv .bgscene svg{filter:none!important}
