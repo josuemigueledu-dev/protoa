@@ -13,13 +13,13 @@ The project itself is described in `../CLAUDE.md`. Your working copy of the repo
 
 ## The team
 
-Three agents run as scheduled tasks in the cloud, each every 4 hours, in fresh sessions with no memory:
+Three agents run as scheduled tasks in the cloud, in fresh sessions with no memory. Normally each runs every 4 hours; during the A1 sprint (from Oct 24, 2026, Arthur's request) they run **every hour**, and go back to the 4-hour times below once the brief's sprint goal is done:
 
 | agent | area | runs (UTC) |
 |---|---|---|
-| quality | tests, CI, bugs, server code | 00:17, 04:17, 08:17, 12:17, 16:17, 20:17 |
-| content | German lessons (`apps/deutsch/js/content.js`) | 01:37, 05:37, 09:37, 13:37, 17:37, 21:37 |
-| ux | front end, phone layout, accessibility | 02:57, 06:57, 10:57, 14:57, 18:57, 22:57 |
+| quality | tests, CI, bugs, server code | 00:17, 04:17, 08:17, 12:17, 16:17, 20:17 (sprint: every hour at :17) |
+| content | German lessons (`apps/deutsch/js/content.js`) | 01:37, 05:37, 09:37, 13:37, 17:37, 21:37 (sprint: every hour at :37) |
+| ux | front end, phone layout, accessibility | 02:57, 06:57, 10:57, 14:57, 18:57, 22:57 (sprint: every hour at :57) |
 
 They take direction from GitHub issue #1, the **Team brief**, and only from text written by Arthur's account (you post as his account, so they trust you):
 
