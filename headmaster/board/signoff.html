@@ -43,6 +43,7 @@ h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.
 .opt[aria-pressed="true"]{border-color:var(--azure);box-shadow:0 0 0 3px var(--azure-soft)}
 .opt b{font-family:var(--display);font-size:15px} .opt span{font-size:13px;color:var(--muted);line-height:1.4}
 .opt .rec{color:var(--azure);font-weight:600}
+.opt.redo{border-style:dashed}
 .shots{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
 .shots button{all:unset;cursor:zoom-in;flex:none;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px}
 .shots img{display:block;height:180px;width:auto;max-width:none;border-radius:14px;border:1px solid var(--edge);background:var(--bg-2)}
@@ -111,23 +112,27 @@ const shot = (s) => el('button', { onclick: () => lightbox(s.src, s.label), 'ari
 
 function decisionCard(d) {
   const card = el('article', { class: 'card' });
-  card.append(el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), d.pick ? el('span', { class: 'chip ok' }, 'Picked ' + d.pick) : el('span', { class: 'chip warn' }, 'Waiting for you')));
+  card.append(el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), d.pick ? el('span', { class: 'chip ' + (d.pick === 'Redo' ? 'warn' : 'ok') }, d.pick === 'Redo' ? 'Redo requested' : 'Picked ' + d.pick) : el('span', { class: 'chip warn' }, 'Waiting for you')));
   card.append(el('h3', {}, d.title), el('p', { class: 'muted small' }, d.question));
   if (d.shots?.length) card.append(el('div', { class: 'shots' }, d.shots.map(shot)));
   let choice = d.pick || null;
   const opts = el('div', { class: 'opts', role: 'group', 'aria-label': d.title });
   const note = el('textarea', { id: 'note-' + d.id, placeholder: 'Anything to add? (optional, e.g. "C, but with B\'s yellow")' }); note.value = d.note || '';
   const save = el('button', { class: 'btn' }, d.pick ? 'Update' : 'Sign off');
-  const drawOpts = () => { opts.replaceChildren(...(d.options || []).map(o => el('button', { class: 'opt', 'aria-pressed': String(choice === o.key), onclick: () => { choice = o.key; drawOpts(); save.disabled = false; } }, el('b', {}, o.key + ' · ' + o.label), o.desc ? el('span', {}, o.desc) : null, o.key === d.recommend ? el('span', { class: 'rec' }, 'Headmaster\'s pick') : null))); };
+  const REDO = { key: 'Redo', label: 'None of these', desc: 'Try again. Say what you want in the note.' };
+  const needNote = () => choice === 'Redo' && !note.value.trim();
+  const sync = () => { save.disabled = !choice || needNote(); note.placeholder = choice === 'Redo' ? 'What should the next round do differently? (needed)' : 'Anything to add? (optional, e.g. "C, but with B\'s yellow")'; };
+  const drawOpts = () => { opts.replaceChildren(...[...(d.options || []), REDO].map(o => el('button', { class: 'opt' + (o === REDO ? ' redo' : ''), 'aria-pressed': String(choice === o.key), onclick: () => { choice = o.key; drawOpts(); sync(); } }, el('b', {}, o === REDO ? o.label : o.key + ' · ' + o.label), o.desc ? el('span', {}, o.desc) : null, o.key === d.recommend ? el('span', { class: 'rec' }, 'Headmaster\'s pick') : null))); };
   drawOpts();
-  save.disabled = !choice;
+  note.addEventListener('input', sync);
   save.addEventListener('click', async () => {
-    if (!db || !choice) return; save.disabled = true; save.textContent = 'Saving…';
+    if (!db || !choice || needNote()) return; save.disabled = true; save.textContent = 'Saving…';
     try { await db.doc('decisions/' + d.id).update({ pick: choice, note: note.value.trim(), pickedAt: new Date().toISOString() }); }
     catch (e) { save.disabled = false; save.textContent = 'Try again'; $('#status').textContent = 'Could not save: ' + (e.message || e.code || 'unknown error'); }
   });
   card.append(opts, note, save);
-  if (d.pick) card.append(el('p', { class: 'picked' }, 'Saved. The headmaster picks this up on its next check.'));
+  sync();
+  if (d.pick) card.append(el('p', { class: 'picked' }, d.pick === 'Redo' ? 'Saved. The headmaster will come back with a new round.' : 'Saved. The headmaster picks this up on its next check.'));
   if (!db) { save.disabled = true; note.disabled = true; }
   return card;
 }
