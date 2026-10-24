@@ -1,0 +1,85 @@
+/* Lesson 2 */
+LESSONS.push({
+  n: 2, title: 'Your name', theme: 'Name und Herkunft',
+  scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }], place: 'Volkshochschule am Hermannplatz', time: 'Thursday, 9:00', cap: 'Raum 2.04 · Donnerstag, 9:00',
+    intro: [
+      'Thursday, 9:00, the same room. Herr Weber has a class list in his hand and is going through the names.',
+      'Today you say who you are and where you come from. He is your teacher, so he gets Sie.' ] },
+  notice: { de: 'Ich bin Herr Weber. Sie sind Student.', g: 'Ich=I | bin=am | Herr=Mr | Weber.=Weber | Sie=you (formal) | sind=are | Student.=(a) student',
+    sketch: { type: 'swap', from: ['ich', 'bin'], to: ['Sie', 'sind'] },
+    q: 'Both halves use the same verb, "to be". What happens to it when ich becomes Sie?',
+    note: 'The verb changes with the person: <em>ich bin</em>, <em>Sie sind</em>. Capital-S <em>Sie</em> is the polite "you" for teachers, shop staff and anyone you do not know yet. It works like Spanish <em>usted</em>, but takes the plural verb: <em>Sie sind</em>.', grammar: 'sein' },
+  can: 'give your name and where you are from, say what you are, and answer yes or no.',
+  sound: { focus: 'ch after i / e', mouth: 'mouth.ich', say: 'A soft hiss, like the h in English "huge". It is not the Spanish j, and not a k.', words: [['ich', 'I'], ['mich', 'me'], ['nicht', 'not'], ['sprechen', 'to speak']] },
+  warmup: ['Guten Morgen', 'danke', 'Tschüss', 'Entschuldigung'],
+  words: [
+    { de: 'Freut mich', en: ['nice to meet you', 'pleased to meet you'], type: 'phrase', ipa: 'fʁɔʏ̯t mɪç', resp: 'FROYT mikh', syl: 'Freut mich', ex: '[Freut mich], Frau Klein.', exEn: 'Nice to meet you, Mrs Klein.', exG: 'Freut mich,=nice to meet you | Frau=Mrs | Klein.=Klein' },
+    { de: 'heißen', en: ['to be called', 'to be named'], type: 'v', ipa: 'ˈhaɪ̯sn̩', resp: 'HY·sen', syl: 'hei·ßen', ex: 'Ich [heiße] Anna.', exEn: 'My name is Anna.', exG: 'Ich heiße=my name is | Anna.=Anna', forms: { ich: 'heiße', du: 'heißt', er: 'heißt', wir: 'heißen', ihr: 'heißt', Sie: 'heißen' } },
+    { de: 'sein', en: ['to be'], type: 'v', ipa: 'zaɪ̯n', resp: 'ZINE', syl: 'sein', ex: 'Ich [bin] Student.', exEn: 'I am a student.', exG: 'Ich=I | bin=am | Student.=(a) student', forms: { ich: 'bin', du: 'bist', er: 'ist', wir: 'sind', ihr: 'seid', Sie: 'sind' } },
+    { de: 'kommen', en: ['to come'], type: 'v', ipa: 'ˈkɔmən', resp: 'KOM·en', syl: 'kom·men', ex: 'Maria [kommt] aus Madrid.', exEn: 'Maria comes from Madrid.', exG: 'Maria=Maria | kommt=comes | aus=from | Madrid.=Madrid', forms: { ich: 'komme', du: 'kommst', er: 'kommt', wir: 'kommen', ihr: 'kommt', Sie: 'kommen' } },
+    { de: 'aus', en: ['from', 'out of'], type: 'prep', ipa: 'aʊ̯s', resp: 'OWSS', syl: 'aus', ex: 'Ich komme [aus] Berlin.', exEn: 'I come from Berlin.', exG: 'Ich=I | komme=come | aus=from | Berlin.=Berlin' },
+    { de: 'wie', en: ['how'], type: 'adv', ipa: 'viː', resp: 'VEE', syl: 'wie', ex: '[Wie] heißen Sie?', exEn: 'What is your name?', exG: 'Wie=how | heißen=are called | Sie?=you (formal)' },
+    { de: 'woher', en: ['where from'], type: 'adv', ipa: 'voˈheːɐ̯', resp: 'vo·HAIR', syl: 'wo·her', ex: '[Woher] kommen Sie?', exEn: 'Where are you from?', exG: 'Woher=where from | kommen=come | Sie?=you (formal)' },
+    { de: 'ja', en: ['yes'], type: 'interj', ipa: 'jaː', resp: 'YAH', syl: 'ja', ex: '[Ja], ich bin Student.', exEn: 'Yes, I am a student.', exG: 'Ja,=yes | ich=I | bin=am | Student.=(a) student' },
+    { de: 'nein', en: ['no'], type: 'interj', ipa: 'naɪ̯n', resp: 'NINE', syl: 'nein', ex: '[Nein], ich komme aus Berlin.', exEn: 'No, I come from Berlin.', exG: 'Nein,=no | ich=I | komme=come | aus=from | Berlin.=Berlin' },
+    { de: 'der Lehrer', en: ['teacher'], type: 'n', g: 'm', pl: 'die Lehrer', ipa: 'ˈleːʁɐ', resp: 'LAY·ruh', syl: 'Leh·rer', ex: 'Herr Weber ist [der Lehrer].', exEn: 'Mr Weber is the teacher.', exG: 'Herr=Mr | Weber=Weber | ist=is | der=the | Lehrer.=teacher', pic: 'lehrer' },
+    { de: 'der Student', en: ['student', 'university student'], type: 'n', g: 'm', pl: 'die Studenten', ipa: 'ʃtuˈdɛnt', resp: 'shtoo·DENT', syl: 'Stu·dent', ex: 'Paul ist [Student] in Berlin.', exEn: 'Paul is a student in Berlin.', exG: 'Paul=Paul | ist=is | Student=(a) student | in=in | Berlin.=Berlin', pic: 'student' },
+    { de: 'die Stadt', en: ['city', 'town'], type: 'n', g: 'f', pl: 'die Städte', ipa: 'ʃtat', resp: 'SHTAT', syl: 'Stadt', ex: 'Berlin ist eine große [Stadt].', exEn: 'Berlin is a big city.', exG: 'Berlin=Berlin | ist=is | eine=a | große=big | Stadt.=city', pic: 'stadt' },
+  ],
+  build: [
+    { type: 'tiles', de: 'Ich komme aus Berlin.', en: 'I come from Berlin.', g: 'Ich=I | komme=come | aus=from | Berlin.=Berlin', extra: ['kommen'] },
+    { type: 'gap', de: 'Wie heißen Sie?', en: 'What is your name?', g: 'Wie=how | heißen=are called | Sie?=you (formal)', gaps: [1] },
+    { type: 'tiles', de: 'Sie sind Student.', en: 'You are a student.', g: 'Sie=you (formal) | sind=are | Student.=(a) student', extra: ['bin'] },
+    { type: 'gap', de: 'Woher kommen Sie?', en: 'Where are you from?', g: 'Woher=where from | kommen=come | Sie?=you (formal)', gaps: [0] },
+    { type: 'tiles', de: 'Nein, ich bin Lehrer.', en: 'No, I am a teacher.', g: 'Nein,=no | ich=I | bin=am | Lehrer.=teacher', extra: ['sind'] },
+  ],
+  conv: [
+    { w: 'Guten Morgen! Ich bin Herr Weber. Wie heißen Sie?', g: 'Guten Morgen!=good morning | Ich=I | bin=am | Herr=Mr | Weber.=Weber | Wie=how | heißen=are called | Sie?=you (formal)', mood: 'pleased' },
+    { l: true, de: 'Guten Morgen! Ich heiße {name}.', en: 'Good morning! My name is {name}.', g: 'Guten Morgen!=good morning | Ich heiße=my name is | {name}.={name}', type: 'tiles', gaps: [2], extra: ['bin'], alts: ['Guten Morgen! Ich bin {name}.', 'Guten Tag! Ich heiße {name}.', 'Hallo! Ich heiße {name}.', 'Guten Morgen, ich heiße {name}.'], react: 'Freut mich.=nice to meet you' },
+    { w: 'Freut mich, {name}. Woher kommen Sie?', g: 'Freut mich,=nice to meet you | {name}.={name} | Woher=where from | kommen=come | Sie?=you (formal)', mood: 'neutral' },
+    { l: true, de: 'Ich komme aus {city}.', en: 'I come from {city}.', g: 'Ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [1], extra: ['kommen'], alts: ['Aus {city}.', 'Ich bin aus {city}.'], react: 'Aha, aus {city}.=ah, from {city}' },
+    { w: 'Aus {city}, schön! Ich komme aus Berlin. Sind Sie Student?', g: 'Aus=from | {city},={city} | schön!=nice | Ich=I | komme=come | aus=from | Berlin.=Berlin | Sind=are | Sie=you (formal) | Student?=(a) student', mood: 'amused' },
+    { l: true, de: 'Ja, ich bin Student.', en: 'Yes, I am a student.', g: 'Ja,=yes | ich=I | bin=am | Student.=(a) student', type: 'translate', gaps: [2], extra: ['sind'], alts: ['Ja, ich bin ein Student.', 'Ja. Ich bin Student.'], react: 'Gut zu wissen.=good to know' },
+    { w: 'Und ich? Bin ich auch Student?', g: 'Und=and | ich?=I | Bin=am | ich=I | auch=too | Student?=(a) student', mood: 'amused' },
+    { l: true, de: 'Nein, Sie sind Lehrer.', en: 'No, you are a teacher.', g: 'Nein,=no | Sie=you (formal) | sind=are | Lehrer.=teacher', type: 'tiles', gaps: [0,2], extra: ['bin', 'Student'], alts: ['Nein. Sie sind Lehrer.', 'Nein, Sie sind der Lehrer.', 'Nein, Sie sind Lehrer, Herr Weber.'], react: 'Stimmt.=that is right' },
+    { w: 'Gut, dann bis Dienstag, {name}!', g: 'Gut,=good | dann=then | bis Dienstag,=until Tuesday | {name}!={name}', mood: 'pleased' },
+    { l: true, de: 'Auf Wiedersehen, Herr Weber!', en: 'Goodbye, Mr Weber!', g: 'Auf Wiedersehen,=goodbye | Herr=Mr | Weber!=Weber', type: 'tiles', gaps: [0,1], extra: ['Hallo'], alts: ['Auf Wiedersehen, Herr Weber.', 'Auf Wiedersehen!', 'Tschüss, Herr Weber!', 'Bis Dienstag, Herr Weber!'], optional: true, react: 'Bis Dienstag!=see you Tuesday' },
+  ],
+  lex: {
+    verbs: {
+      'heißen': { ich: 'heiße', du: 'heißt', er: 'heißt', wir: 'heißen', ihr: 'heißt', Sie: 'heißen' },
+      'sein': { ich: 'bin', du: 'bist', er: 'ist', wir: 'sind', ihr: 'seid', Sie: 'sind' },
+      'kommen': { ich: 'komme', du: 'kommst', er: 'kommt', wir: 'kommen', ihr: 'kommt', Sie: 'kommen' },
+    },
+    nouns: { 'Lehrer': 'm', 'Student': 'm', 'Stadt': 'f', 'Herr': 'm' },
+    related: { 'gehen': 'kommen', 'von': 'aus', 'bin': 'heiße', 'nicht': 'nein' },
+    sep: {},
+  },
+});
+
+GRAMMAR.push({ id: 'sein', title: 'sein — to be', lesson: 2,
+    body: '<p>The most irregular verb and the most used. Its forms do not look like the dictionary word <em>sein</em> at all, so learn them as a set.</p>',
+    table: [['ich', 'bin'], ['du', 'bist'], ['er / sie / es', 'ist'], ['wir', 'sind'], ['ihr', 'seid'], ['sie / Sie', 'sind']],
+    examples: [
+      { de: 'Ich bin Student.', g: 'Ich=I | bin=am | Student.=(a) student', en: 'I am a student.' },
+      { de: 'Sie sind der Lehrer.', g: 'Sie=you (formal) | sind=are | der=the | Lehrer.=teacher', en: 'You are the teacher.' },
+      { de: 'Berlin ist eine Stadt.', g: 'Berlin=Berlin | ist=is | eine=a | Stadt.=city', en: 'Berlin is a city.' } ],
+    drills: [
+      { q: 'Ich ___ aus Berlin.', a: ['bin'], en: 'I am from Berlin.' },
+      { q: 'Sie ___ der Lehrer.', a: ['sind'], en: 'You (formal) are the teacher.' },
+      { q: 'Herr Weber ___ Lehrer.', a: ['ist'], en: 'Mr Weber is a teacher.' },
+      { q: 'Wir ___ Studenten.', a: ['sind'], en: 'We are students.' },
+      { q: 'Du ___ gut.', a: ['bist'], en: 'You (informal) are good.' } ] });
+GRAMMAR.push({ id: 'v2', title: 'The verb comes second', lesson: 2,
+    body: '<p>In a German statement the conjugated verb is the second element. Not the second word: the second block of meaning. Whatever comes first (the subject, a time, a place), the verb follows it.</p><p>Yes/no questions put the verb first. W-questions (wie, wo, woher…) put the question word first and the verb second.</p>',
+    examples: [
+      { de: 'Ich komme aus Berlin.', g: 'Ich=I | komme=come | aus=from | Berlin.=Berlin', en: 'I come from Berlin.' },
+      { de: 'Heute bin ich in Berlin.', g: 'Heute=today | bin=am | ich=I | in=in | Berlin.=Berlin', en: 'Today I am in Berlin.' },
+      { de: 'Sind Sie Student?', g: 'Sind=are | Sie=you (formal) | Student?=(a) student', en: 'Are you a student?' },
+      { de: 'Woher kommen Sie?', g: 'Woher=where from | kommen=come | Sie?=you (formal)', en: 'Where do you come from?' } ],
+    drills: [
+      { q: 'Put in order: aus / ich / Berlin / komme', a: ['ich komme aus berlin'], en: 'I come from Berlin.' },
+      { q: 'Put in order: Sie / Student / sind / ?', a: ['sind sie student'], en: 'Are you a student?' },
+      { q: 'Put in order: heute / ich / bin / gut', a: ['heute bin ich gut', 'ich bin heute gut'], en: 'Today I am well.' },
+      { q: 'Put in order: heißen / wie / Sie / ?', a: ['wie heißen sie'], en: 'What is your name?' },
+      { q: 'Put in order: der / ist / Lehrer / Herr Weber', a: ['herr weber ist der lehrer'], en: 'Mr Weber is the teacher.' } ] });

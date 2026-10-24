@@ -27,8 +27,8 @@ server/              one Node server for all apps: static files + /api
 
 ## Front end (`apps/deutsch`)
 
-- Plain JS, no build step. Classic `<script>` files share one global scope and **load in order** (see the end of `index.html`): `content` → `core` → `ai` → `ui` → orb → `companion` → `map` → `screens` → `levels` → `tilt` → `boot`. Top-level code may only use things defined in earlier files; functions are called later, from `boot.js`.
-- `content.js` holds the lessons and their conventions (read its header before adding a lesson). Built-in lessons are in `LESSONS`; generated ones in `S.lessonsGen`.
+- Plain JS, no build step. Classic `<script>` files share one global scope and **load in order** (see the end of `index.html`): `content` → `lessons/01.js …` → `art-bundle` → `core` → `ai` → `ui` → orb → `companion` → `map` → `screens` → `levels` → `tilt` → `boot`. Top-level code may only use things defined in earlier files; functions are called later, from `boot.js`.
+- `content.js` holds the conventions and shared tables (read its header before adding a lesson). Each built-in lesson is its own file `js/lessons/NN.js` that pushes onto `LESSONS` (and `GRAMMAR`); add its `<script>` tag in `index.html` after the previous lesson (a test checks). Generated lessons are in `S.lessonsGen`; generated ones in `S.lessonsGen`.
 - State is in `S` (core.js). SRS is SM-2 style with a 45-day cap. JSON import/export (`exportJSON()`) moves progress between copies.
 - Design: frosted glass, one azure accent, light and dark themes via CSS variables on `:root` (`data-theme` override). Three layouts set on `<body>`: `lay-mobile`, `lay-tablet`, `lay-desktop`. CSS files load in order: `base` → `glass` → `depth`; later files override earlier ones on purpose.
 
