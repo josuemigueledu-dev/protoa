@@ -257,11 +257,13 @@ function lessonDone(v, L, ls) {
   const s = ls.summary || { missed: 0, first: 0, total: 0, added: 0 }; const c = courseOf(L.n);
   const acc = s.total ? Math.round(100 * s.first / s.total) : 100;
   v.append(lessonTop(L, ls, 1));
+  const learnedWords = (ls.newWords || []).map(d => L.words.find(w => w.de === d)).filter(Boolean);
   const n1 = h('div', { class: 'n' }, '0'), n2 = h('div', { class: 'n' }, '0'), n3 = h('div', { class: 'n' }, '0');
   v.append(h('div', { class: 'ticket' },
     h('div', { class: 'top' }, h('b', {}, 'Protoa · Fahrschein'), h('span', {}, 'Lesson ' + L.n)),
     h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, c.station), h('div', { class: 'stamp' }, sigEl(c.icon)), h('p', { class: 'muted' }, 'You can now ' + L.can)),
     h('div', { class: 'perf', 'aria-hidden': 'true' }),
+    learnedWords.length ? h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; })) : '',
     h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, 'words added')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'first try')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, 'lines to review')))));
   setTimeout(() => { countUp(n1, s.added ?? L.words.length); countUp(n2, acc); countUp(n3, s.missed); }, 350);
   const weiter = () => { S.progress.lessonState = null; save('progress'); lastSegs = null; NAV = 'fade'; go('learn'); };

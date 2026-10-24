@@ -197,7 +197,8 @@ function renderLessonFlow(v) {
 }
 function wordCard(w, opts = {}) {
   const c = h('div', { class: (opts.bare ? '' : 'card ') + 'wcard' });
-  if (w.pic && PICS[w.pic]) { const i = h('div', { class: 'illus ' + (w.g || '') }); i.innerHTML = PICS[w.pic]; c.append(i); }
+  if (w.pic && PICS[w.pic] && !wordPic(w)) { const i = h('div', { class: 'illus ' + (w.g || '') }); i.innerHTML = PICS[w.pic]; c.append(i); }
+  else if (wordPic(w)) c.append(wordArt(w, 168)); // no picture: the word below is the headline, so no tile here
   c.append(h('div', { class: 'de' }, artEl(w.de)), h('div', { class: 'en' }, w.en.join(', ')));
   if (isLearned(w.de) && opts.showYours) c.append(h('span', { class: 'chip yours' }, 'already yours'));
   const meta = h('div', { class: 'meta' }); if (w.ipa) meta.append(h('span', {}, '/' + w.ipa + '/')); if (w.resp) meta.append(h('span', {}, h('b', {}, w.resp))); if (w.syl && w.syl.includes('·')) meta.append(h('span', {}, w.syl)); if (w.pl) meta.append(h('span', {}, 'pl. ', artEl(w.pl))); meta.append(h('span', {}, TYPE_LABEL[w.type] || w.type)); c.append(meta);

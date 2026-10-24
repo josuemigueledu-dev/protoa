@@ -24,10 +24,12 @@ function stampSvg(station, icon) {
 }
 /* the word picture on its article plate, or the word tile when there is no picture: never initials */
 const GLYPH = { phrase: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', verb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' };
+const wordPic = w => w.pic && (ART['word.' + w.pic] || ART[w.pic]) || '';
 function wordArt(w, size) {
-  if (w.pic && ART[w.pic]) {
+  const pic = wordPic(w);
+  if (pic) {
     const d = document.createElement('div'); d.className = 'illus ' + (w.g || ''); d.style.width = d.style.height = size + 'px';
-    d.innerHTML = ART[w.pic]; return d;
+    d.innerHTML = pic; return d;
   }
   const t = document.createElement('div'); t.className = 'wtile'; t.style.width = t.style.height = size + 'px'; t.lang = 'de';
   t.innerHTML = `<b>${w.de}</b>` + (w.type ? `<span>${w.type}</span>` : ''); return t;
@@ -35,7 +37,8 @@ function wordArt(w, size) {
 /* a learned word as a chip: a 28 px picture when it has one, else the word with a small type glyph */
 function wordChip(w) {
   const c = document.createElement('span'); c.className = 'wchip'; c.lang = 'de';
-  if (w.pic && ART[w.pic]) c.append(illusEl(w.pic, 28));
+  const pic = wordPic(w);
+  if (pic) { const i = illusEl('', 28); i.innerHTML = pic; c.append(i); }
   else if (GLYPH[w.type]) c.insertAdjacentHTML('beforeend', `<i class="gl-t" aria-hidden="true">${GLYPH[w.type]}</i>`);
-  c.append(w.g ? { m: 'der ', f: 'die ', n: 'das ' }[w.g] + w.de : w.de); return c;
+  c.append(w.de); return c;
 }
