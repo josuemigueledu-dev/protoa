@@ -20,6 +20,8 @@ export class AIError extends Error {
 
 let client = null;
 export function aiAvailable() { return Boolean(process.env.ANTHROPIC_API_KEY); }
+// Tests hand in a stub; pass nothing to go back to the real client.
+export function setClientForTests(stub = null) { client = stub; }
 function getClient() {
   if (!aiAvailable()) throw new AIError('unavailable', 'AI is not configured on this server.', 503);
   return (client ??= new Anthropic());
