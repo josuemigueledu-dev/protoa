@@ -4,6 +4,7 @@
   "description": "Protoa: a family of learning apps. The German course (apps/deutsch) is the first.",
   "engines": { "node": ">=22.9" },
   "scripts": {
+    "art": "node scripts/art.mjs",
     "setup": "npm install --prefix server",
     "dev": "npm run dev --prefix server",
     "start": "npm start --prefix server",
