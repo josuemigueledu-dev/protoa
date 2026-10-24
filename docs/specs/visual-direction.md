@@ -81,22 +81,35 @@ Today the app uses Sora for headings, Manrope for text and JetBrains Mono for la
 
 ## Don't look AI-made
 
-Research (sources below) lists the patterns that make a product look AI-generated. Seen together, they make it look unplanned. Avoid all of them.
+Research (sources below) lists the patterns that make a product look AI-generated. Seen together, they make it look unplanned.
+
+**The aesthetic and the philosophy stay.** Frosted glass, the orb, the atmospheric ground, one azure accent, light and dark: that's Protoa, and the owner wants it kept. The fixes below are about *finish*, not a new look. Every tell is fixed by doing the existing idea with more care and intent, the way Apple's software does, never by stripping it out. If a fix would make the app look plainer or less premium, it's the wrong fix.
 
 **Visual tells we have today, and the fix:**
 
 | Tell | Where we have it | Fix |
 |---|---|---|
-| Aurora / blurred colour-blob backgrounds | The ground (`--bg` with aurora) | A calm, solid ground tinted toward the azure, with at most a subtle two-stop gradient and fine grain. The orbit lines may stay if they're quiet. |
-| Gradient buttons | The blue "Check" button, other gradient fills | Solid buttons. Depth comes from the press (2 px down, a crisp bottom edge), not from a gradient. |
-| Glass on everything | Every block is a frosted card | Glass only where something floats over art or the scene (the conversation over its band, sheets, the orb's slot). Plain content sits on solid surfaces. |
+| Random colour blobs behind content | The aurora on the ground | Keep the atmospheric ground, but make it deliberate: one light source in the brand's azure (no purple or pink drift), softer and slower, subtle grain against banding, and calmer on screens with dense content. It should read as the light around the orb, not a stock gradient. |
+| Generic gradient buttons | The blue "Check" button | Keep the depth and glow, lose the stock look: a near-solid azure with a fine top highlight and a crisp bottom edge, like a lit glass key; a real pressed state (moves down, edge shortens). |
+| Glass as decoration | Every block is the same frosted card | Keep glass everywhere it is now, but give it a material hierarchy like Apple's: two or three glass thicknesses (thin for chips and controls, regular for cards, thick for sheets and the action bar), each with a consistent blur, tint, edge highlight and shadow, so depth always means something. |
 | Small spaced-out labels above every section | "The conversation · Volkshochschule", "Words you learned", "Station reached" | Drop most of them. A label only where it tells the learner something they need; sentence case, normal tracking. |
 | Floating decorative orbs | (not yet) | Our orb is the product's character, never decoration. It sits in its slot and reacts to the learner; nothing else on screen is a floating sphere or blob. |
 | Everything centred | Done screen, word cards | Left-align text blocks; centre only single big moments (the word on a card, the stamp). |
-| Pure black or white | Black "Continue" button, white surfaces | Tint toward the anchor ink (`#0b1220`) and the azure. |
+| Pure black or white | Black "Continue" button, white surfaces | Keep the ink pane and the light surfaces, tinted toward the anchor ink (`#0b1220`) and the azure, so nothing is flat #000 or #fff. |
 | Mixed icon styles, emoji as icons | (watch for it) | One icon set, drawn in the house style; no emoji in the UI. |
 | Over-bouncy motion, everything animates | (watch for it) | Short, purposeful motion with ease-out rather than elastic bounce, except the orb's own reactions and the stamp. |
 | Generic AI-illustration look | The PR #4 cast | The character redesign above: hand-built shapes, a real point of view. |
+
+**Apple-level detail (the bar for every PR):**
+- **One spacing system.** Every gap and padding on a 4 px grid, from a short token scale; nothing eyeballed. Same component, same spacing, on every screen.
+- **Continuous corners.** The five radius values only, drawn as smooth (squircle-like) corners where the platform allows, and inner radius = outer radius minus padding when shapes nest.
+- **A real type scale.** Each size has its own tracking and line height (tighter for large display, looser for small text), and hierarchy holds on every screen.
+- **Optical alignment.** Icons, the orb and text are centred by eye, not by box; glyphs line up with text baselines.
+- **Every state designed.** Default, hover, pressed, focused, disabled, loading, empty, error and offline, for every control and screen. Nothing appears without a transition; nothing jumps.
+- **Motion with physics.** One spring family for the whole app, interruptible, never linear; transitions show where things came from and went.
+- **Light and dark tuned separately.** Dark mode gets its own values for every surface, shadow and highlight, checked by eye, never just inverted.
+- **Pixel-precise at 1×, 2× and 3×.** Hairlines are real hairlines, no blurry half-pixel edges, icons drawn to their grid.
+- **Accessibility as craft.** Text scales with the system setting without breaking layouts; contrast passes; VoiceOver labels read naturally.
 
 **Copy tells:** no "Let's dive in", "Great job!", "Awesome!", "Unlock", "journey", "seamless", exclamation marks everywhere, or emoji. Praise is specific ("Right: *Sie sind*, formal") or absent. Buttons say exactly what happens ("Check", "Next word"). No invented numbers.
 
