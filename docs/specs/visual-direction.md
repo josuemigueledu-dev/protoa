@@ -196,3 +196,16 @@ Fixing screen by screen has not produced a coherent look. So:
 4. **The orb gets a reserved place** on every screen (a slot in the header or a dock), never over content. It can move to a lesson's focus point only when nothing is there.
 5. **Motion overhaul.** One motion language for the whole app: a single spring for movement and one easing for fades, transform and opacity only (no layout animation that jitters), 60 fps on an iPhone, nothing longer than 400 ms except celebrations. Step changes in a lesson slide as one continuous space (the next step comes from the right, the finished one leaves left), choices respond to the finger instantly (press scale, then settle), right and wrong have a distinct, short signature (a light sweep through the pane for right, a soft shake and dim for wrong), and the orb reacts in sync. Reduced motion swaps all of it for fades. ux writes it down in `docs/specs/motion.md` with the redesign.
 6. **Feedback matches the interface:** the answer bar uses the same type, glass and colour system as the rest of the screen.
+
+# Round 7: the cast looks like Dance Central 2, reimagined (owner, Oct 24, 2026)
+
+The owner: **"I want the characters to have the look aesthetic of Dance Central 2 characters. But reimagined for our use."**
+
+What to take from *Dance Central 2* (Harmonix, 2011), and how to translate it:
+- **Stylised 3D-looking people, not cartoons.** Adult, slightly elongated proportions (long legs, defined shoulders and waist, smallish heads), smooth volumetric shading with a clear key light and a coloured rim light, clean surfaces with few details. Faces are simplified but attractive and adult, with real features and attitude; expressions are confident, never goofy.
+- **Fashion and silhouette carry the character.** Each person has a strong, styled outfit and a silhouette you recognise from across the room, with bold colour blocking and one signature accessory. Translate to our cast as everyday Berlin style, not club costumes: Herr Weber in a tailored cardigan and sharp glasses, Lena in streetwear with her guitar case, Ana in a smart architect's look (structured jacket), Murat with a barista apron over a crisp shirt and rolled sleeves.
+- **Poses with energy.** Weight shifts, a lean, a gesture mid-movement, as if caught between dance moves; never standing stiffly.
+- **Lit like a stage, but in Berlin.** DC2's club lights become blue-hour ambient light plus warm amber from lamps and windows (palette C), with a rim light that separates the figure from the background. That ties straight into Round 6 (light as the material) and the orb as the light source.
+- **Not a copy:** no Dance Central characters, outfits, logos or dance moves; the cast stays our own people from the story guide.
+
+Rounds 4 and 5 still hold (adult proportions, depth, real places, skin and clothes identical in light and dark). This round sets the style; ux uses it for the people in the Round 6 redesign mockups (`mockups/neo/`), drawn in SVG with layered gradients for the 3D shading and rim light.
