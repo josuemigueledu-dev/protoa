@@ -3,28 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cast sheet · Protoa round 2</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Geologica:wght@400;500&display=swap">
+<title>Cast sheet · Protoa round 4</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Onest:wght@500;600&display=swap">
 <style>
 :root{--ink:#0b1220}
 *{box-sizing:border-box}
-body{margin:0;background:#e9eef7;color:var(--ink);font:500 14px/1.45 Geologica,system-ui,sans-serif;padding:24px 16px 48px}
+body{margin:0;background:#e9eef7;color:var(--ink);font:500 14px/1.45 Onest,system-ui,sans-serif;padding:24px 16px 48px}
 .wrap{max-width:1040px;margin:0 auto}
 h1{font:600 28px/1.15 Sora,sans-serif;letter-spacing:-.02em;margin:0 0 6px}
 p{margin:0}
-.lead{color:#3c4a63;max-width:62ch;margin-bottom:28px}
+.lead{color:#3c4a63;max-width:64ch;margin-bottom:28px}
 section{margin-bottom:36px}
 .hd{display:flex;gap:14px;align-items:baseline;margin-bottom:10px}
 .hd b{font:700 40px/1 Sora,sans-serif;color:#1a48a6}
 .hd h2{font:600 20px/1.2 Sora,sans-serif;margin:0}
-.hd p{color:#3c4a63;font-size:13px;max-width:60ch}
+.hd p{color:#3c4a63;font-size:13px;max-width:62ch}
 .panes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.pane{border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.pane{border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px}
 .pane.light{background:linear-gradient(#f4f8ff,#dfeaf8);border:1px solid #c9d8ee}
 .pane.dark{background:linear-gradient(#17233a,#0b1220);border:1px solid #243452;color:#e6edf8}
 .full{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .full svg{width:100%;height:auto;display:block}
-.row40{display:flex;align-items:center;gap:12px}
+.row40{display:flex;align-items:center;gap:10px;font-size:12px}
 .row40 small{opacity:.65}
 .b40{width:40px;height:40px;border-radius:50%;overflow:hidden;display:block;background:rgba(124,198,255,.28)}
 .b40 svg{width:100%;height:100%;display:block}
@@ -37,12 +37,23 @@ section{margin-bottom:36px}
 </head>
 <body>
 <div class="wrap">
-<h1>Cast sheet: pick a style</h1>
-<p class="lead">Herr Weber (teacher, tall, glasses, folder) and the barista (short, apron, cup), in three directions. Each shows full body, a 40 px bust and five moods. Light and dark side by side: people are identical in both.</p>
-<section data-style="A"><div class="hd"><b>A</b><div><h2>Blocks</h2><p>Chunky rounded masses, no outlines, dot eyes with a catchlight. Warm and toy-like, closest to Duolingo's shape language.</p></div></div><div class="panes"></div></section>
-<section data-style="B"><div class="hd"><b>B</b><div><h2>Inked</h2><p>Tall and long-limbed, a navy line with the colour printed slightly off-register. Calm and editorial, closest to the plates.</p></div></div><div class="panes"></div></section>
-<section data-style="C"><div class="hd"><b>C</b><div><h2>Paper-cut</h2><p>Huge heads on stout bodies, flat shapes with a hard shadow, pill eyes and thick brows. Bold, readable at 40 px, most playful.</p></div></div><div class="panes"></div></section>
+<h1>Cast sheet, round 4: pick a rendering</h1>
+<p class="lead">Herr Weber (teacher) and the barista on one adult body: about 7.5 heads, a small head, a real neck, shoulders, waist and knees, weight on one leg, arms mid-gesture. The three directions share the drawing and differ in finish. Full body, 40 px bust and five moods; light and dark side by side, people identical in both.</p>
+<section data-style="D"><div class="hd"><b>D</b><div><h2>Flat</h2><p>Pure flat colour, no shading at all. The calmest and cheapest to keep consistent.</p></div></div><div class="panes"></div></section>
+<section data-style="E"><div class="hd"><b>E</b><div><h2>Soft shade</h2><p>Flat, plus one soft shadow tone along the side away from the light. Gives the body volume.</p></div></div><div class="panes"></div></section>
+<section data-style="F"><div class="hd"><b>F</b><div><h2>Lamp rim</h2><p>Two tones plus a warm amber rim light from a street lamp on the left, tied to the Blaue Stunde palette.</p></div></div><div class="panes"></div></section>
 </div>
-<script src="cast-styles.js"></script>
+<script src="cast-figures.js"></script>
+<script>
+const MOODS = ['neutral', 'pleased', 'thinking', 'amused', 'surprised'];
+document.querySelectorAll('section').forEach(sec => {
+  const st = sec.dataset.style;
+  sec.querySelector('.panes').innerHTML = ['light', 'dark'].map(theme => `<div class="pane ${theme}">
+    <div class="full">${person('weber', st, 'neutral')}${person('barista', st, 'pleased')}</div>
+    <div class="row40"><span class="b40">${person('weber', st, 'neutral', { bust: 1 })}</span><span class="b40">${person('barista', st, 'pleased', { bust: 1 })}</span><small>40 px bust</small></div>
+    ${['weber', 'barista'].map(k => `<div class="moods">${MOODS.map(m => `<figure>${person(k, st, m, { bust: 1 })}<figcaption>${m}</figcaption></figure>`).join('')}</div>`).join('')}
+  </div>`).join('');
+});
+</script>
 </body>
 </html>

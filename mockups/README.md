@@ -7,6 +7,7 @@ Open `mockups/index.html` in a browser: every mockup at 390×844, light beside d
 | File | What it is |
 | --- | --- |
 | `index.html` | Gallery |
+| `cast.html` | Cast sheet, round 4: Herr Weber and the barista on an adult body, three renderings (D flat, E soft shade, F lamp rim); figures in `cast-figures.js` |
 | `style.html` | Art style sheet: palette, word pictures at 168/56/44 px, plates, Herr Weber's moods, icons, stickers, stamp, mouth sketches |
 | `scene.html`, `words.html`, `notice.html`, `sound.html`, `conv.html`, `done.html` | Lesson steps |
 | `today.html`, `practice.html` | Today; Practice with a locked tile, an empty state and a crop of the line |
