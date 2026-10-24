@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protoa visual spec mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;800&family=Manrope:wght@500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Gallery: every mockup at 390x844, light beside dark. Neutral ground so both themes read. */
+:root{--bg:#d9dee6;--ink:#0b1220;--muted:#465266;--line:rgba(11,18,32,.12);color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 Manrope,system-ui,sans-serif}
+header,section{max-width:1760px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-left,0px))}
+h1{font:800 32px/1.1 Sora,sans-serif;letter-spacing:-.02em;margin:0 0 6px}
+h2{font:800 20px/1.2 Sora,sans-serif;margin:0}
+p{margin:0;color:var(--muted);max-width:70ch}
+.n{font:500 12px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+section{border-top:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+.frames{display:flex;gap:24px;overflow-x:auto;padding-bottom:8px}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;flex:none}
+figcaption{font:500 12px 'JetBrains Mono',monospace;color:var(--muted)}
+iframe{width:390px;height:844px;border:0;border-radius:28px;box-shadow:0 0 0 1px var(--line),0 20px 40px -24px rgba(11,18,32,.45);background:#fff;max-width:calc(100vw - 32px)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+nav a{font:600 13px Manrope,sans-serif;color:var(--ink);text-decoration:none;padding:6px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="n">Protoa · visual design spec · mockups</div>
+  <h1>Frosted line, in the app</h1>
+  <p>Ten static mockups built on the app's real CSS (base, glass, depth) and class names, with the spec's UI rules in <code>mockups/rules.css</code> and the art inlined from <code>shared/art</code> and <code>apps/deutsch/art</code>. Each frame is 390×844, light beside dark.</p>
+  <nav id="nav"></nav>
+</header>
+<main id="list"></main>
+<script>
+const MOCKS = [
+  ['style', 'Art style sheet', 'Palette, eight word pictures at 168, 56 and 44 px, two plates with their cast, Herr Weber in five moods, icons, stickers, the stamp and two mouth sketches.', [1]],
+  ['scene', 'Lesson · Scene', 'plate.classroom with Herr Weber in the cast zone, the caption chip, the can-do line and the orb in its 40 px header slot.', [1]],
+  ['words', 'Lesson · Words', 'Frame 1: der Lehrer on the blue der plate, with Herr Weber\'s bust on the sentence. Frame 2: Hallo as a word tile.', [1, 2]],
+  ['notice', 'Lesson · Notice', 'Herr Weber\'s line with his bust, then the swap sketch: ich bin becomes Sie sind.', [1]],
+  ['sound', 'Lesson · Pronunciation', 'Tschüss in large type with stress dots, play and slow, and mouth.round-ue.', [1]],
+  ['conv', 'Lesson · Conversation and twist', 'Frame 1: the plate at full strength under frosted glass, busts on Weber\'s lines, the orb on Protoa\'s coaching line. Frame 2: event.phone pops onto the plate and Weber looks surprised.', [1, 2]],
+  ['done', 'Lesson · Done', 'The Hermannplatz stamp on the ticket and the 14 learned words as 44 px pictures or tiles.', [1]],
+  ['today', 'Today', 'One ink hero with the orb in its 64 px slot, five radius values, English chrome, the new station icon.', [1]],
+  ['practice', 'Practice and map', 'An empty review state with empty.reviews, a locked tile that says why, and a crop of the line with the new station icons.', [1]],
+];
+const nav = document.getElementById('nav'), list = document.getElementById('list');
+MOCKS.forEach(([id, title, note, frames], i) => {
+  nav.insertAdjacentHTML('beforeend', `<a href="#${id}">${i + 2} · ${title}</a>`);
+  const figs = frames.flatMap(f => ['light', 'dark'].map(t => `<figure><iframe src="${id}.html?theme=${t}&frame=${f}" title="${title}, ${t}${frames.length > 1 ? ', frame ' + f : ''}" loading="lazy"></iframe><figcaption>${id}.html · ${t}${frames.length > 1 ? ' · frame ' + f : ''}</figcaption></figure>`)).join('');
+  list.insertAdjacentHTML('beforeend', `<section id="${id}"><div><div class="n">Mockup ${i + 2}</div><h2>${title}</h2></div><p>${note}</p><div class="frames">${figs}</div></section>`);
+});
+</script>
+</body>
+</html>

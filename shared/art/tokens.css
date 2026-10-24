@@ -1,0 +1,25 @@
+/* Protoa illustration palette ("Frosted line"). Light values are the brand strata from shared/brand/README.md.
+   Every fill and stroke in an art file is var(--il-...); load this file before base.css.
+   Art never inverts: the ink stays dark navy in both themes and fills keep their light values, a little dimmer in
+   dark mode (mist and paper one step deeper), so a plate reads like a lit window in a dark room. */
+:root{
+  --il-ink:#0b1220; --il-deep:#132a57; --il-mid:#1a48a6; --il-bright:#3a86f0; --il-ice:#7cc6ff;
+  --il-mist:#dbeaff; --il-paper:#f7f9fc; --il-sand:#ece3d6;
+  /* real skin tones, low chroma, spread across the cast */
+  --il-skin-1:#f1d3b8; --il-skin-2:#dcab86; --il-skin-3:#b47a54; --il-skin-4:#7a4e36;
+  /* natural colour for food, drink and plants only, kept softer than the UI's die/das/correct colours */
+  --il-leaf:#8fae93; --il-fruit:#c47868; --il-wood:#8a6248; --il-butter:#f1e4b8;
+  --il-shadow:rgba(11,18,32,.12); --il-hi:rgba(255,255,255,.55);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --il-ice:#6db4ec; --il-bright:#3479d8; --il-mist:#c3d6f0; --il-paper:#dde5f0; --il-sand:#d6cab9;
+  --il-skin-1:#e3c3a6; --il-skin-2:#cb9b78; --il-skin-3:#a46d49; --il-skin-4:#6e4630;
+  --il-leaf:#82a086; --il-fruit:#b46a5b; --il-wood:#7d5840; --il-butter:#e4d6a8;
+  --il-shadow:rgba(0,0,0,.35); --il-hi:rgba(255,255,255,.4);
+}}
+:root[data-theme="dark"]{
+  --il-ice:#6db4ec; --il-bright:#3479d8; --il-mist:#c3d6f0; --il-paper:#dde5f0; --il-sand:#d6cab9;
+  --il-skin-1:#e3c3a6; --il-skin-2:#cb9b78; --il-skin-3:#a46d49; --il-skin-4:#6e4630;
+  --il-leaf:#82a086; --il-fruit:#b46a5b; --il-wood:#7d5840; --il-butter:#e4d6a8;
+  --il-shadow:rgba(0,0,0,.35); --il-hi:rgba(255,255,255,.4);
+}
