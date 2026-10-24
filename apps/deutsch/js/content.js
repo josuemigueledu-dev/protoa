@@ -7,7 +7,7 @@
    {
      n, title (English), theme (German), scene:{id, place, time, cap, intro:[...]},
      notice:{de, g, q, note, grammar},  can:"...",
-     words:[{de, en:[...], type:'n'|'v'|'adj'|'adv'|'prep'|'phrase'|'interj'|'conj'|'pron',
+     words:[{de, en:[...], type:'n'|'v'|'adj'|'adv'|'prep'|'phrase'|'interj'|'conj'|'pron' (numbers use 'adj'),
              g:'m'|'f'|'n' (nouns), pl, ipa, resp (stressed syllable in CAPS), syl (split with ·),
              ex (word in [brackets]), exEn, exG, pic (illustration id, optional),
              forms:{ich,du,er,wir,ihr,Sie} (verbs, optional)}],

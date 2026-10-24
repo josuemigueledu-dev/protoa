@@ -1,6 +1,6 @@
 # A1 coverage plan (Goethe-Zertifikat A1: Start Deutsch 1)
 
-Status: content.js has lessons 1–8. The first plan had 30 lessons of about 20 words; the owner capped a lesson at 14 words, so every topic is now two lessons and **A1 ends at lesson 60**. A2 starts at 61.
+Status: content.js has lessons 1–9. The first plan had 30 lessons of about 20 words; the owner capped a lesson at 14 words, so every topic is now two lessons and **A1 ends at lesson 60**. A2 starts at 61.
 
 ## What Start Deutsch 1 asks for
 
@@ -80,7 +80,7 @@ Tick when the lesson is merged. One complete lesson per run.
 - [x] 6 Verbs for doing
 - [x] 7 Question words
 - [x] 8 Yes, no and answers
-- [ ] 9 Numbers 0–10
+- [x] 9 Numbers 0–10
 - [ ] 10 Numbers 11–20
 - [ ] 11 Joining words
 - [ ] 12 Not and very
