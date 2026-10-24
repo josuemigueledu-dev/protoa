@@ -48,7 +48,7 @@ function checkJobs(jobs) {
   const heard = JSON.parse(r.stdout), failed = [];
   for (const j of todo) {
     const h = heard[join(outDir, j.file)], v = judge({ text: j.text, heard: h.heard, seconds: h.seconds });
-    if (v.ok) done[j.file] = +v.wer.toFixed(2);
+    if (v.ok) done[j.file] = v.verified ? +v.wer.toFixed(2) : -1; // -1: single word, length checked only
     else { failed.push({ ...j, heard: h.heard, reasons: v.reasons }); rmSync(join(outDir, j.file), { force: true }); }
   }
   writeFileSync(memo, JSON.stringify(done));
@@ -56,7 +56,9 @@ function checkJobs(jobs) {
 }
 
 function report(failed, total) {
-  console.log(`check: ${total - failed.length} of ${total} lines pass`);
+  const memo = join(outDir, 'checked.json'), done = existsSync(memo) ? Object.values(JSON.parse(readFileSync(memo, 'utf8'))) : [];
+  const single = done.filter(w => w === -1).length;
+  console.log(`check: ${total - failed.length} of ${total} lines pass (${done.length - single} multi-word lines verified by Whisper, ${single} single words length-checked only)`);
   for (const f of failed) console.error(`  FAIL [${f.speaker}] "${f.text}": ${f.reasons.join('; ')}`);
   if (failed.length) { console.error('Failing files were deleted; fix the voice or the text and render again.'); process.exitCode = 1; }
 }
