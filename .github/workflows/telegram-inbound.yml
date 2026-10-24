@@ -28,7 +28,7 @@ jobs:
       - run: python3 .github/telegram/relay.py inbound
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_OWNER_ID: ${{ vars.TELEGRAM_OWNER_ID }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
           GITHUB_TOKEN: ${{ github.token }}
           # Messages sent before the relay existed (the bot's setup chat) are skipped.
           RELAY_SINCE: "1792817566"

@@ -11,7 +11,7 @@ connection of their own). Three modes:
 
 Environment:
   TELEGRAM_BOT_TOKEN  bot token (repository secret)
-  TELEGRAM_OWNER_ID   the owner's numeric Telegram user id (repository variable);
+  TELEGRAM_OWNER_ID   the owner's numeric Telegram user id (repository secret);
                       it is also the chat id for private messages
   GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_EVENT_PATH  provided by Actions
   RELAY_SINCE         unix time; inbound ignores messages sent before it
@@ -234,10 +234,11 @@ def inbound():
 
 
 def main():
-    if not TOKEN:
-        die("TELEGRAM_BOT_TOKEN secret is not set.")
-    if not OWNER_ID:
-        die("TELEGRAM_OWNER_ID variable is not set.")
+    if not TOKEN or not OWNER_ID:
+        # Not configured yet: skip quietly instead of failing every few minutes.
+        print("::notice::Telegram relay is not set up yet: add the TELEGRAM_BOT_TOKEN and "
+              "TELEGRAM_OWNER_ID repository secrets.")
+        return
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
     {"outbound-comment": outbound_comment, "outbound-pr": outbound_pr, "inbound": inbound}.get(
         mode, lambda: die(f"Unknown mode {mode!r}"))()

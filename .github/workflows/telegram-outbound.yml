@@ -27,7 +27,7 @@ jobs:
       - run: python3 .github/telegram/relay.py outbound-comment
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_OWNER_ID: ${{ vars.TELEGRAM_OWNER_ID }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
 
   new-pr:
     # Pull requests from forks get no secrets, so only announce the repo's own branches.
@@ -41,4 +41,4 @@ jobs:
       - run: python3 .github/telegram/relay.py outbound-pr
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_OWNER_ID: ${{ vars.TELEGRAM_OWNER_ID }}
+          TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
