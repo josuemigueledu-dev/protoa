@@ -1,0 +1,171 @@
+<title>Protoa Sign-off</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Geologica:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column like a phone feed; decisions first, then the change log. Protoa's own glass, azure and orb. */
+:root{
+  --bg:#e9eef8; --bg-2:#dfe6f4; --card:rgba(255,255,255,.72); --edge:rgba(20,40,90,.10);
+  --ink:#0b1430; --muted:#4d5878; --azure:#2563eb; --azure-soft:rgba(37,99,235,.10);
+  --ok:#0a7d62; --ok-soft:rgba(10,125,98,.12); --warn:#b4560c; --warn-soft:rgba(220,120,30,.14);
+  --hero-1:#0b1440; --hero-2:#1d3aa8; --on-hero:#eef2ff;
+  --display:'Sora',system-ui,sans-serif; --text:'Geologica',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070b1f; --bg-2:#0c1230; --card:rgba(190,206,255,.07); --edge:rgba(190,206,255,.12);
+  --ink:#eef1ff; --muted:#a6afd2; --azure:#7c9cff; --azure-soft:rgba(124,156,255,.16);
+  --ok:#5ddcb2; --ok-soft:rgba(93,220,178,.14); --warn:#ffb36b; --warn-soft:rgba(255,179,107,.14);
+  --hero-1:#070d34; --hero-2:#1b33a0; --on-hero:#eef2ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070b1f; --bg-2:#0c1230; --card:rgba(190,206,255,.07); --edge:rgba(190,206,255,.12);
+  --ink:#eef1ff; --muted:#a6afd2; --azure:#7c9cff; --azure-soft:rgba(124,156,255,.16);
+  --ok:#5ddcb2; --ok-soft:rgba(93,220,178,.14); --warn:#ffb36b; --warn-soft:rgba(255,179,107,.14);
+  --hero-1:#070d34; --hero-2:#1b33a0; --on-hero:#eef2ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:radial-gradient(90% 50% at 85% 0%,var(--azure-soft),transparent 70%),var(--bg);color:var(--ink);font:500 16px/1.5 var(--text);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;min-height:100%}
+main{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.hero{border-radius:24px;padding:22px 20px;color:var(--on-hero);background:radial-gradient(120% 140% at 90% -10%,rgba(124,180,255,.45),transparent 55%),linear-gradient(160deg,var(--hero-2),var(--hero-1));display:flex;gap:16px;align-items:center}
+.orb{flex:none;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#fff 0 6%,#8fc4ff 14%,#2f6bff 30%,rgba(47,107,255,.15) 58%,transparent 62%),radial-gradient(circle at 35% 28%,rgba(255,255,255,.6),rgba(255,255,255,.08) 45%,rgba(255,255,255,.02) 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.25)}
+.hero h1{font-size:24px} .hero p{margin:4px 0 0;opacity:.85;font-size:14px}
+.sec{display:flex;flex-direction:column;gap:14px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-h h2{font-size:20px} .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:24px;padding:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h3{font-size:18px} .card p{margin:0}
+.muted{color:var(--muted)} .small{font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--azure-soft);color:var(--azure);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.opt{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;border:1.5px solid var(--edge);background:var(--card);min-width:0}
+.opt:focus-visible{outline:2px solid var(--azure);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--azure);box-shadow:0 0 0 3px var(--azure-soft)}
+.opt b{font-family:var(--display);font-size:15px} .opt span{font-size:13px;color:var(--muted);line-height:1.4}
+.opt .rec{color:var(--azure);font-weight:600}
+.shots{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
+.shots button{all:unset;cursor:zoom-in;flex:none;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px}
+.shots img{display:block;height:180px;width:auto;max-width:none;border-radius:14px;border:1px solid var(--edge);background:var(--bg-2)}
+.shots small{font-size:12px;color:var(--muted)}
+.picked{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ok)}
+textarea{width:100%;min-height:64px;resize:vertical;border-radius:14px;border:1px solid var(--edge);background:var(--card);color:var(--ink);font:500 15px/1.4 var(--text);padding:10px 12px}
+textarea:focus-visible{outline:2px solid var(--azure)}
+.btn{all:unset;cursor:pointer;align-self:flex-start;padding:10px 18px;border-radius:999px;background:var(--azure);color:#fff;font-weight:600;font-size:15px}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.btn[disabled]{opacity:.45;cursor:default}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pairs figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pairs button{all:unset;cursor:zoom-in;display:block}
+.pairs img{width:100%;border-radius:14px;border:1px solid var(--edge);background:var(--bg-2);display:block}
+.pairs figcaption{font-size:12px;color:var(--muted);font-weight:600}
+.pairlabel{grid-column:1/-1;font-size:13px;font-weight:600;margin-top:4px}
+a{color:var(--azure)}
+.empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;border:1.5px dashed var(--edge);border-radius:24px}
+.status{font-size:13px;color:var(--muted);text-align:center}
+.lb{position:fixed;inset:0;z-index:20;background:rgba(4,8,24,.92);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 56px) max(12px,env(safe-area-inset-right,0px)) 24px max(12px,env(safe-area-inset-left,0px))}
+.lb img{display:block;max-width:none;width:min(1400px,220vw);margin:0 auto;border-radius:12px}
+.lb .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);all:unset;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:8px 16px;font-weight:600}
+.lb .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px)}
+.lb .fit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 12px);all:unset;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:8px 16px;font-weight:600}
+.lb .fit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 12px)}
+.lb.fitted img{width:100%;max-width:1400px}
+@media (prefers-reduced-motion:no-preference){.opt{transition:border-color .2s,box-shadow .2s}}
+</style>
+
+<main>
+  <header class="hero">
+    <div class="orb" aria-hidden="true"></div>
+    <div><h1>Sign-off</h1><p>What needs your call, and every change the team ships, before and after.</p></div>
+  </header>
+
+  <section class="sec" aria-labelledby="h-open">
+    <div class="sec-h"><h2 id="h-open">Needs your sign-off</h2><span class="count" id="n-open"></span></div>
+    <div id="open"><p class="empty">Loading…</p></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-changes">
+    <div class="sec-h"><h2 id="h-changes">Before and after</h2><span class="count" id="n-changes"></span></div>
+    <div id="changes" class="sec"><p class="empty">Loading…</p></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-done">
+    <div class="sec-h"><h2 id="h-done">Signed off</h2><span class="count" id="n-done"></span></div>
+    <div id="done" class="sec"><p class="empty">Nothing signed off yet.</p></div>
+  </section>
+  <p class="status" id="status"></p>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); } for (const k of kids.flat()) if (k != null) e.append(k); return e; };
+let db = null, decisions = [], changes = [];
+
+function lightbox(src, alt) {
+  const box = el('div', { class: 'lb', role: 'dialog', 'aria-label': alt || 'Image' });
+  const close = () => { box.remove(); document.removeEventListener('keydown', esc); };
+  const esc = e => { if (e.key === 'Escape') close(); };
+  box.append(el('img', { src, alt: alt || '' }), el('button', { class: 'fit', onclick: () => box.classList.toggle('fitted') }, 'Fit / zoom'), el('button', { class: 'x', onclick: close }, 'Close'));
+  document.body.append(box); document.addEventListener('keydown', esc); box.querySelector('.x').focus();
+}
+const shot = (s) => el('button', { onclick: () => lightbox(s.src, s.label), 'aria-label': 'Open ' + (s.label || 'image') + ' full size' }, el('img', { src: s.src, alt: s.label || '', loading: 'lazy' }), s.label ? el('small', {}, s.label) : null);
+
+function decisionCard(d) {
+  const card = el('article', { class: 'card' });
+  card.append(el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), d.pick ? el('span', { class: 'chip ok' }, 'Picked ' + d.pick) : el('span', { class: 'chip warn' }, 'Waiting for you')));
+  card.append(el('h3', {}, d.title), el('p', { class: 'muted small' }, d.question));
+  if (d.shots?.length) card.append(el('div', { class: 'shots' }, d.shots.map(shot)));
+  let choice = d.pick || null;
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': d.title });
+  const note = el('textarea', { id: 'note-' + d.id, placeholder: 'Anything to add? (optional, e.g. "C, but with B\'s yellow")' }); note.value = d.note || '';
+  const save = el('button', { class: 'btn' }, d.pick ? 'Update' : 'Sign off');
+  const drawOpts = () => { opts.replaceChildren(...(d.options || []).map(o => el('button', { class: 'opt', 'aria-pressed': String(choice === o.key), onclick: () => { choice = o.key; drawOpts(); save.disabled = false; } }, el('b', {}, o.key + ' · ' + o.label), o.desc ? el('span', {}, o.desc) : null, o.key === d.recommend ? el('span', { class: 'rec' }, 'Headmaster\'s pick') : null))); };
+  drawOpts();
+  save.disabled = !choice;
+  save.addEventListener('click', async () => {
+    if (!db || !choice) return; save.disabled = true; save.textContent = 'Saving…';
+    try { await db.doc('decisions/' + d.id).update({ pick: choice, note: note.value.trim(), pickedAt: new Date().toISOString() }); }
+    catch (e) { save.disabled = false; save.textContent = 'Try again'; $('#status').textContent = 'Could not save: ' + (e.message || e.code || 'unknown error'); }
+  });
+  card.append(opts, note, save);
+  if (d.pick) card.append(el('p', { class: 'picked' }, 'Saved. The headmaster picks this up on its next check.'));
+  if (!db) { save.disabled = true; note.disabled = true; }
+  return card;
+}
+function doneCard(d) {
+  const o = (d.options || []).find(o => o.key === d.pick);
+  return el('article', { class: 'card' }, el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), el('span', { class: 'chip ok' }, 'Signed off')),
+    el('h3', {}, d.title), el('p', { class: 'small' }, 'You picked ' + d.pick + (o ? ' · ' + o.label : '') + (d.note ? '. “' + d.note + '”' : '')), d.outcome ? el('p', { class: 'muted small' }, d.outcome) : null);
+}
+function changeCard(c) {
+  const st = { merged: ['Merged', 'ok'], back: ['Sent back', 'warn'], review: ['In review', ''] }[c.status] || [c.status, ''];
+  const card = el('article', { class: 'card' },
+    el('div', { class: 'meta' }, el('span', { class: 'chip ' + st[1] }, st[0]), el('span', { class: 'chip' }, c.agent), el('span', { class: 'count' }, c.date || '')),
+    el('h3', {}, c.title), el('p', { class: 'small' }, c.summary));
+  for (const p of c.pairs || []) {
+    card.append(el('div', { class: 'pairs' }, p.label ? el('div', { class: 'pairlabel' }, p.label) : null,
+      el('figure', {}, el('button', { onclick: () => lightbox(p.before, 'Before'), 'aria-label': 'Open before full size' }, el('img', { src: p.before, alt: 'Before', loading: 'lazy' })), el('figcaption', {}, 'Before')),
+      el('figure', {}, el('button', { onclick: () => lightbox(p.after, 'After'), 'aria-label': 'Open after full size' }, el('img', { src: p.after, alt: 'After', loading: 'lazy' })), el('figcaption', {}, 'After'))));
+  }
+  if (c.note) card.append(el('p', { class: 'muted small' }, c.note));
+  if (c.pr) card.append(el('a', { href: 'https://github.com/josuemigueledu-dev/protoa/pull/' + c.pr, class: 'small' }, 'PR #' + c.pr + ' on GitHub'));
+  return card;
+}
+function render() {
+  const open = decisions.filter(d => !d.closed).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const done = decisions.filter(d => d.closed);
+  $('#open').replaceChildren(...(open.length ? open.map(decisionCard) : [el('p', { class: 'empty' }, 'Nothing waiting on you right now.')]));
+  $('#n-open').textContent = open.filter(d => !d.pick).length + ' waiting';
+  const ch = [...changes].sort((a, b) => (b.order || 0) - (a.order || 0));
+  $('#changes').replaceChildren(...(ch.length ? ch.map(changeCard) : [el('p', { class: 'empty' }, 'Merged changes with screenshots show up here.')]));
+  $('#n-changes').textContent = ch.length + (ch.length === 1 ? ' change' : ' changes');
+  $('#done').replaceChildren(...(done.length ? done.map(doneCard) : [el('p', { class: 'empty' }, 'Nothing signed off yet.')]));
+  $('#n-done').textContent = done.length ? String(done.length) : '';
+}
+render();
+(async () => {
+  db = await window.claude?.use?.('db');
+  if (!db) { $('#open').replaceChildren(el('p', { class: 'empty' }, 'Open this page in claude.ai, signed in, to see and sign off.')); $('#changes').replaceChildren(); return; }
+  db.collection('decisions').onSnapshot(s => { decisions = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => { $('#status').textContent = 'Could not load decisions.'; });
+  db.collection('changes').onSnapshot(s => { changes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => { $('#status').textContent = 'Could not load changes.'; });
+})();
+</script>

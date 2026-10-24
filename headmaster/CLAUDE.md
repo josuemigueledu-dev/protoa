@@ -53,3 +53,10 @@ The repo is `josuemigueledu-dev/protoa` (public). Pull before you change anythin
 - Latest reports: `gh api "repos/josuemigueledu-dev/protoa/issues/2/comments?per_page=10&sort=created&direction=desc"` (or `gh issue view 2 --comments`)
 - Open PRs: `gh pr list` · merge on Arthur's word: `gh pr merge <n> --squash`
 - Agents only pick up changes at their next run; tell Arthur when that is (see the table above; he is in New York, UTC−4).
+
+## Sign-off board
+
+Arthur's private page: https://claude.ai/artifact/4fzCsBJQoEbeJfgnDVuZ6N (source `board/signoff.html`, published with the `db` and `assets` capabilities). Its database has two collections, written with the ArtifactData tool:
+
+- `decisions`: anything that needs his call (`title`, `question`, `options[{key,label,desc}]`, `recommend`, `shots[{label,src}]`, `order`). He taps an option there, which sets `pick` and `note`. Check for new picks at every PR review; act on them, then set `closed: true` and an `outcome` line.
+- `changes`: one row per reviewed PR with screenshots (`pr`, `agent`, `status` merged|back|review, `title`, `summary`, `pairs[{label,before,after}]`, `note`, `order` = PR number). Upload screenshots first (Artifact publish with `url`, `asset: true`, `file_paths` under this folder) and use the returned `/_blob/<id>` urls. Add a row whenever you merge or send back a PR.
