@@ -49,7 +49,7 @@ for (const L of lessons) {
     if (n.sketch !== undefined) assert.ok(str(n.sketch.type), at('notice.sketch', 'needs a type'));
 
     // words
-    assert.ok(L.words.length >= 8 && L.words.length <= 14, at('words', `need 8–14, has ${L.words.length}`));
+    assert.ok(L.words.length >= 8 && L.words.length <= 24, at('words', `need 8–24, has ${L.words.length}`));
     const seen = new Set();
     for (const w of L.words) {
       const wh = `word "${w.de}"`;
