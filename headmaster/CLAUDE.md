@@ -76,3 +76,11 @@ Never change his `state` or `state/ls` docs.
 ## Image generation (on this PC)
 
 Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\Users\jm480\docker\imagegen` (Arthur's "docker folder": your workspace for downloads and tools, outside the repo): `venv/Scripts/python gen.py "prompt" -o out/name.png --n 4 --w 832 --h 1216`, SDXL base 1.0 with the fp16-fix VAE (commercial use allowed), about 6 s per image, models cached in `hf/`. Prompts are capped at 77 CLIP tokens, so put the important words first. FLUX.1 schnell is gated on Hugging Face; it needs a token from Arthur. Use it for concept art and reference images on the sign-off board and in `docs/designs/`; the cloud agents can't run it.
+
+## Explaining sign-offs (Arthur, Oct 24, 2026)
+
+Arthur wants to understand what he approves, not just approve it. Every `decisions` card ends with a **What this means** paragraph: the plain-English why, the trade-off or risk, and any technical term explained in a few words. Write it for someone learning, never as jargon.
+
+## Station (Arthur's learning app)
+
+https://claude.ai/artifact/3Jr9puBdX6ZhUeyzJmt2cw (source `station/index.html`, capabilities `db` + `user`, progress in `data/users/<id>/station`). It's Arthur's own course: how the team works (git, PRs, CI, sign-offs), Bash, PowerShell and security fundamentals, each lesson tied to real moments from this project, with a simulated practice terminal and quizzes. Add lessons when something new happens that he should understand (a new tool, an incident, a new kind of sign-off).
