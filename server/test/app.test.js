@@ -85,6 +85,30 @@ test('bad requests are rejected before Claude is called', withKey(async () => {
   assert.equal((await post(app, '/api/deutsch/ai/correctSentence', { sentence: 'x'.repeat(300 * 1024) })).status, 413);
 }));
 
+// Every string and list an input accepts has a cap, so one request cannot carry a huge prompt.
+function inflate(value, path = []) {
+  if (typeof value === 'string') return [[path, 'x'.repeat(100_000)]];
+  if (Array.isArray(value)) return [[path, Array(10_000).fill(value[0] ?? 'x')], ...(value.length ? inflate(value[0], [...path, 0]) : [])];
+  if (value && typeof value === 'object') return Object.entries(value).flatMap(([k, v]) => inflate(v, [...path, k]));
+  return [];
+}
+function setAt(obj, path, v) {
+  const copy = structuredClone(obj);
+  let o = copy;
+  path.slice(0, -1).forEach(k => { o = o[k]; });
+  o[path.at(-1)] = v;
+  return path.length ? copy : v;
+}
+
+test('every task rejects an oversized string or list anywhere in its input', () => {
+  for (const [name, t] of Object.entries(tasks)) {
+    assert.ok(t.input.safeParse(SAMPLE[name]).success, `${name}: sample must be valid`);
+    for (const [path, big] of inflate(SAMPLE[name])) {
+      assert.ok(t.input.safeParse(setAt(SAMPLE[name], path, big)).error, `${name}: no size cap at ${path.join('.') || '(root)'}`);
+    }
+  }
+});
+
 test('the lesson prompt lists the art ids it may use, and the list is capped', () => {
   const t = tasks.generateLesson;
   assert.match(t.prompt(t.input.parse(SAMPLE.generateLesson)), /"id":"plate\.cafe"/);
