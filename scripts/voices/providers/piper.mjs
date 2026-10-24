@@ -14,7 +14,7 @@ export function piperProvider({ modelsDir, python = process.env.PIPER_PYTHON || 
   const modelPath = name => join(modelsDir, `${name}.onnx`);
   return {
     id: 'piper',
-    voiceKey: v => `piper:${v.model}:${v.speaker ?? ''}:${v.lengthScale ?? 1}`,
+    voiceKey: v => `piper:${v.model}:${v.speaker ?? ''}:${v.lengthScale ?? 1}:${v.pitch ?? 1}`,
     modelPath,
     missingModels: names => names.filter(n => !existsSync(modelPath(n))),
     async download(names) {

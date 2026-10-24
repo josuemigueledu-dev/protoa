@@ -2,16 +2,18 @@
 // Pre-renders every spoken German line of the course with the cast's voices (docs/research/voices.md).
 //   node scripts/voices.mjs list            what would be rendered, per speaker
 //   node scripts/voices.mjs models          download the Piper models used (about 190 MB, once)
-//   node scripts/voices.mjs render [--limit N]
-// Needs piper-tts (pip install piper-tts) and ffmpeg. Output goes to apps/deutsch/audio/ (not committed):
+//   node scripts/voices.mjs render [--limit N]   renders, then checks every new line
+//   node scripts/voices.mjs check            checks all lines not yet checked
+// Needs piper-tts and faster-whisper (pip install piper-tts faster-whisper) and ffmpeg. Output goes to apps/deutsch/audio/ (not committed):
 // one small Opus file per line plus manifest.json {text: file}, which the page loads to fill VOX_URL.
 // Unchanged lines are skipped, so a re-run after a lesson edit renders only what changed.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SPEAKERS, MODELS } from './voices/cast.mjs';
 import { loadLessons, collectLines, textHash } from './voices/lines.mjs';
+import { judge } from './voices/check.mjs';
 import { piperProvider } from './voices/providers/piper.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
@@ -23,6 +25,40 @@ function plan(lines) {
     const voice = SPEAKERS[l.speaker];
     return { ...l, voice, file: `${textHash(provider.voiceKey(voice), l.text)}.opus` };
   });
+}
+
+// Pitch shift without changing speed: resample the clip faster/slower, then undo the speed change.
+function pitchFilter(wav, pitch) {
+  if (!pitch || pitch === 1) return [];
+  const rate = readFileSync(wav).readUInt32LE(24); // sample rate in the WAV header
+  return ['-af', `asetrate=${Math.round(rate * pitch)},aresample=${rate},atempo=${(1 / pitch).toFixed(4)}`];
+}
+
+// Transcribes the given jobs' files with Whisper and returns the ones that do not sound like their text.
+// Passes are remembered in checked.json, so a re-run only listens to new lines.
+function checkJobs(jobs) {
+  const memo = join(outDir, 'checked.json');
+  const done = existsSync(memo) ? JSON.parse(readFileSync(memo, 'utf8')) : {};
+  const todo = jobs.filter(j => !done[j.file] && existsSync(join(outDir, j.file)));
+  console.log(`checking ${todo.length} lines with Whisper (${jobs.length - todo.length} already passed or missing)`);
+  if (!todo.length) return [];
+  const r = spawnSync(process.env.WHISPER_PYTHON || process.env.PIPER_PYTHON || 'python3', [new URL('./voices/asr_worker.py', import.meta.url).pathname],
+    { input: JSON.stringify({ files: todo.map(j => join(outDir, j.file)) }), encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['pipe', 'pipe', 'inherit'] });
+  if (r.status !== 0) throw new Error('asr worker failed (pip install faster-whisper)');
+  const heard = JSON.parse(r.stdout), failed = [];
+  for (const j of todo) {
+    const h = heard[join(outDir, j.file)], v = judge({ text: j.text, heard: h.heard, seconds: h.seconds });
+    if (v.ok) done[j.file] = +v.wer.toFixed(2);
+    else { failed.push({ ...j, heard: h.heard, reasons: v.reasons }); rmSync(join(outDir, j.file), { force: true }); }
+  }
+  writeFileSync(memo, JSON.stringify(done));
+  return failed;
+}
+
+function report(failed, total) {
+  console.log(`check: ${total - failed.length} of ${total} lines pass`);
+  for (const f of failed) console.error(`  FAIL [${f.speaker}] "${f.text}": ${f.reasons.join('; ')}`);
+  if (failed.length) { console.error('Failing files were deleted; fix the voice or the text and render again.'); process.exitCode = 1; }
 }
 
 const [cmd = 'list', ...rest] = process.argv.slice(2);
@@ -52,17 +88,20 @@ if (cmd === 'list') {
     const items = batch.map((j, i) => ({ text: j.text, out: join(tmp, `${j.file}.${i}.wav`), job: j }));
     await provider.renderBatch({ voice: batch[0].voice, items: items.map(({ text, out }) => ({ text, out })) });
     for (const it of items) {
-      const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', it.out, '-c:a', 'libopus', '-b:a', '24k', '-ac', '1', join(outDir, it.job.file)]);
+      const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', it.out, ...pitchFilter(it.out, it.job.voice.pitch), '-c:a', 'libopus', '-b:a', '24k', '-ac', '1', join(outDir, it.job.file)]);
       if (r.status !== 0) throw new Error(`ffmpeg failed for "${it.text}": ${r.stderr}`);
     }
   }
   rmSync(tmp, { recursive: true, force: true });
+  report(checkJobs(jobs), jobs.length);
   const manifest = {};
   for (const j of jobs) if (existsSync(join(outDir, j.file))) manifest[j.text] = j.file;
   writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest));
   const bytes = readdirSync(outDir).filter(f => f.endsWith('.opus')).reduce((n, f) => n + statSync(join(outDir, f)).size, 0);
   console.log(`manifest: ${Object.keys(manifest).length} lines, ${(bytes / 1e6).toFixed(1)} MB of audio`);
+} else if (cmd === 'check') {
+  report(checkJobs(jobs), jobs.length);
 } else {
-  console.error('usage: node scripts/voices.mjs list | models | render [--limit N]');
+  console.error('usage: node scripts/voices.mjs list | models | render [--limit N] | check');
   process.exit(2);
 }
