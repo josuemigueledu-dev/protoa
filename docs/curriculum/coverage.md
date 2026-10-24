@@ -58,7 +58,7 @@ Each lesson ~20 words, in the new format (see the spec), with a recurring cast: 
 | 29 | Warschauer Straße | City places | prepositions of place in fixed phrases | *Bank, Post, Apotheke, Supermarkt, Park* | |
 | 30 | Oberbaumbrücke | When you get stuck | polite repair phrases | *Wie bitte? Langsamer, bitte. Wie schreibt man das?* | |
 
-\* Mohrenstraße (U2) was renamed Glinkastraße in 2025; use *Glinkastraße* when lesson 23 is built. Station names for 24–30 are provisional; ux owns the final map icons.
+\* Station names for 24–30 are provisional; ux owns the final map icons. Mohrenstraße (lesson 23) may be renamed by the BVG; check before building the lesson.
 
 Review stops follow lessons 3, 6, … 30. The A1 exam follows the last review.
 
