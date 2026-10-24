@@ -15,8 +15,8 @@ export const SPEAKERS = {
   protoa: { model: 'de_DE-thorsten-high', lengthScale: 1.1 },
   weber: { model: 'de_DE-thorsten-medium', lengthScale: 1.2, pitch: 0.93 },
   murat: { model: 'de_DE-thorsten_emotional-medium', speaker: 4, lengthScale: 1.1, pitch: 1.05 },
-  ana: { model: 'de_DE-kerstin-low', lengthScale: 1.15, pitch: 0.96 },
-  lena: { model: 'de_DE-kerstin-low', lengthScale: 1.0, pitch: 1.08 },
+  ana: { model: 'de_DE-kerstin-low', lengthScale: 1.15 },
+  lena: { model: 'de_DE-kerstin-low', lengthScale: 1.0, pitch: 1.04 },
 };
 
 // Content's `cast.*` ids (who / rwho in a conversation) -> speaker. Anyone not listed speaks as Protoa.
