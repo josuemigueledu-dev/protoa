@@ -178,7 +178,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--yellow);outline:none}
 textarea{min-height:88px;resize:vertical}
 .de-input{font-size:var(--t-de);font-weight:700}
 .umlauts{display:flex;gap:8px;flex-wrap:wrap}
-.umlauts button{min-width:44px;min-height:40px;border-radius:var(--r-xs);background:var(--card);font-weight:800;box-shadow:inset 0 0 0 2px var(--line)}
+.umlauts button{min-width:44px;min-height:44px;border-radius:var(--r-xs);background:var(--card);font-weight:800;box-shadow:inset 0 0 0 2px var(--line)}
 .umlauts button:active{transform:scale(.98);box-shadow:inset 0 0 0 2px var(--line)}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px}
 .toggle input{width:48px;height:28px;appearance:none;background:var(--line-2);border-radius:999px;position:relative;cursor:pointer;flex:none;margin:0;transition:background .2s}
@@ -537,10 +537,10 @@ body.lay-mobile .scens{grid-template-columns:1fr}
 .chatbar{display:flex;gap:8px;align-items:center;flex:1;min-width:0}
 .chatbar input{flex:1;min-width:0}
 .chatbar .btn{flex:0 0 auto!important}
-.actionbar .tools .umlauts{gap:4px} .actionbar .tools .umlauts button{min-width:36px;min-height:36px}
+.actionbar .tools .umlauts{gap:4px} .actionbar .tools .umlauts button{min-width:40px;min-height:44px}
 body.in-talk main{padding-bottom:240px}
 .actionbar .tools{max-width:600px;margin:0 auto 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-body.lay-desktop .actionbar .in,body.lay-desktop .actionbar .msg,body.lay-desktop .actionbar .tools .umlauts{gap:4px} .actionbar .tools .umlauts button{min-width:36px;min-height:36px}
+body.lay-desktop .actionbar .in,body.lay-desktop .actionbar .msg,body.lay-desktop .actionbar .tools .umlauts{gap:4px} .actionbar .tools .umlauts button{min-width:40px;min-height:44px}
 body.in-talk main{padding-bottom:240px}
 .actionbar .tools{max-width:680px}
 .summary{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
