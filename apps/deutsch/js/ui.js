@@ -285,7 +285,19 @@ function lessonConv(v, L, ls) {
   if (!ls.conv) { ls.conv = buildConvPlan(L); save('progress'); }
   const C = ls.conv; const lex = mergedLex(L.lex);
   v.append(lessonTop(L, ls, C.queue.length ? C.pos / C.queue.length : 0));
-  const conv = h('div', { class: 'conv' }); const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg);
+  const conv = h('div', { class: 'conv' }); const plate = L.scene.plate, cast = L.scene.cast || [], banded = !!(plate && typeof ART !== 'undefined' && ART[plate]);
+  let band; const moods = {}, twist = L.twist; let popped = false;
+  const speaker = m => m.sp || 'cast.weber';
+  const drawBand = () => { band.innerHTML = sceneArt({ plate, cast: cast.map(c => ({ ...c, mood: moods[c.id] })), event: popped && twist && twist.event, band: true }); };
+  const track = m => { if (m.who !== 'w') return; moods[speaker(m)] = m.mood || 'neutral'; if (twist && m.i === twist.at) popped = true; };
+  if (banded) {
+    band = h('div', { class: 'conv-band', role: 'img', 'aria-label': L.scene.place }); conv.classList.add('has-band'); conv.append(band);
+    C.log.forEach(track); drawBand();
+    // the band sticks under the lesson header and shrinks once the learner scrolls
+    requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) band.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
+    const shrink = () => { if (!band.isConnected) return removeEventListener('scroll', shrink); band.classList.toggle('small', scrollY > 80); };
+    addEventListener('scroll', shrink, { passive: true });
+  } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
   const log = h('div', { class: 'log', role: 'log' }); conv.append(log);
   const modeLabel = { easier: 'shorter, more tiles', default: 'default mix', harder: 'longer, more typing' }[C.mode];
   v.append(h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', {}, h('div', { class: 'eyebrow' }, 'The conversation · ' + L.scene.place), h('div', { class: 'faint' }, 'Difficulty: ' + modeLabel + (S.settings.difficulty === 'auto' ? ' (automatic)' : '') + ' · tap a word to hear it, twice for its card')), h('div', { class: 'seg', role: 'group', 'aria-label': 'Difficulty' }, ['easier', 'default', 'harder'].map(m => h('button', { 'aria-pressed': C.mode === m, onclick: () => { S.settings.difficulty = m; save('settings'); ls.conv = null; save('progress'); render(); } }, m)))));
@@ -295,7 +307,7 @@ function lessonConv(v, L, ls) {
   advance();
   function bubble(m) {
     const b = h('div', { class: 'bub ' + m.who + (m.done ? ' done' : '') });
-    if (m.who === 'w') b.dataset.mood = m.mood || 'neutral';
+    if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && ART[speaker(m)]) b.append(bustEl(speaker(m), m.mood, 40)); }
     const box = h('div', { class: 'box' });
     const ul = glossEl(m.de, m.g); box.append(h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } })));
     if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'show English')); }
@@ -306,7 +318,7 @@ function lessonConv(v, L, ls) {
     turnbox.innerHTML = ''; KEYS = null;
     if (C.pos >= C.queue.length) { C.finished = true; save('progress'); turnbox.append(h('p', { class: 'muted small' }, 'End of the conversation.')); actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => playWhole() }, 'Play it all'), h('button', { class: 'btn', onclick: () => finishLesson(L, ls) }, 'Finish the lesson')] }); KEYS = e => { if (e.key === 'Enter') finishLesson(L, ls); }; return; }
     const q = C.queue[C.pos], t = L.conv[q.i];
-    if (!t.l) { const m = { who: 'w', de: fill(t.w), g: t.g, mood: t.mood }; C.log.push(m); C.pos++; save('progress'); log.append(bubble(m)); Voice.mood(t.mood); advance(); return; }
+    if (!t.l) { const m = { who: 'w', de: fill(t.w), g: t.g, mood: t.mood, sp: t.who || 'cast.weber', i: q.i }; C.log.push(m); C.pos++; save('progress'); log.append(bubble(m)); if (banded) { track(m); drawBand(); } Voice.mood(t.mood); advance(); return; }
     learnerTurn(q, t);
   }
   function learnerTurn(q, t) {

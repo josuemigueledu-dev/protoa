@@ -204,3 +204,13 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .nextcard .sig,.wcard .illus,.wcard .illus.m,.wcard .illus.f,.wcard .illus.n{background:var(--field-2)}
 .talkrow{background:linear-gradient(var(--field-4),var(--field-4)),var(--card)}
 .scene svg,.conv .bgscene svg{filter:none!important}
+
+/* conversation: the plate is a band at the top, partners keep their bust beside each line */
+.conv.has-band{overflow:clip}
+.conv-band{position:sticky;top:calc(var(--lt-h,0px) + env(safe-area-inset-top,0px));z-index:3;height:200px;background:var(--il-mist);box-shadow:0 1px 0 var(--line);transition:height .3s var(--spring)}
+.conv-band.small{height:120px}
+.conv-band svg{display:block;width:100%;height:100%}
+.conv.has-band .log{padding-top:20px}
+.bub.w .bust{align-self:flex-end;width:40px;height:40px}
+@media (min-width:700px){.conv-band{height:300px}.conv-band.small{height:200px}}
+@media (prefers-reduced-motion:reduce){.conv-band{transition:none}}
