@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<title>Lumen · neo-futurist direction 1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Onest:wght@500;600;700&family=Unbounded:wght@500;600&display=swap">
+<link rel="stylesheet" href="neo.css"></head><body><div id="app"></div>
+<script src="../cast-figures.js"></script><script src="people.js"></script>
+<script>
+const q = new URLSearchParams(location.search), theme = q.get('theme') || 'dark', frame = +(q.get('frame') || 1);
+document.documentElement.dataset.theme = theme;
+const skyline = `<svg viewBox="0 0 390 210" preserveAspectRatio="none" aria-hidden="true">
+<path class="far" d="M0 120h22v-22h18v22h14v-40h20v40h16v-30h24v30h12v-52h6v-30h3v30h6v52h20v-34h26v34h18v-20h22v20h14v-44h24v44h16v-26h22v26h20v-18h28v18h40v90H0z"/>
+<path class="near" d="M0 150h30v-34h26v34h20v-52h28v52h18v-24h30v24h24v-60h32v60h18v-30h26v30h22v-44h30v44h20v-22h30v22h24v-34h26v34h6v60H0z"/>
+${[[40,128],[64,134],[96,112],[104,120],[160,138],[196,100],[202,112],[244,104],[290,116],[314,128],[344,132],[352,142],[128,146],[260,150]].map(([x,y],i)=>`<rect class="w" x="${x}" y="${y}" width="5" height="6" rx="1" opacity="${i%3?1:.5}"/>`).join('')}</svg>`;
+const orb = `<div class="slot"><div class="orb"></div></div>`;
+const head = (t, s) => `<div class="head">${orb}<h1>${t}<small>${s}</small></h1><span class="pill"><i></i>12</span></div>`;
+const tab = (on) => `<div class="pane tab">${['Today','Course','Practice','Talk','You'].map((n,i)=>`<span class="${i===on?'on':''}">${n}</span>`).join('')}</div>`;
+const sun = `<svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ea8ff"/><stop offset="1" stop-color="#ffd0a0"/></linearGradient></defs><rect x="6" y="14" width="84" height="68" rx="18" fill="url(#sk)"/><circle cx="48" cy="60" r="19" fill="#ffd27a"/><circle cx="43" cy="55" r="7" fill="#fff6dc" opacity=".8"/><path d="M6 66h84v8a18 18 0 0 1-18 8H24A18 18 0 0 1 6 74z" fill="#1d3a78"/><path d="M14 62h68" stroke="#ffe3b0" stroke-width="2" opacity=".7"/></svg>`;
+const weber = (m, bust) => person('weber', 'G', m, bust ? {bust: true} : {});
+const frames = {
+1: () => `<div class="screen win">${bgs()}${head('Guten Abend, Arthur','Tuesday · 2 lessons to go')}
+ <div class="pane stack"><div class="eyebrow">Next stop</div><div class="hero">Hallo!<br>Guten&nbsp;Tag</div><p class="body">Lesson 3 · Station Kottbusser Tor. Herr Weber is waiting in room 2.04.</p><div class="btn">Continue</div></div>
+ <div class="pane" style="margin-top:16px;display:flex;gap:20px;align-items:center"><div class="ring"><svg viewBox="0 0 84 84"><circle class="bg" cx="42" cy="42" r="36"/><circle class="fg" cx="42" cy="42" r="36" stroke-dasharray="226" stroke-dashoffset="86"/></svg><b>62%</b></div><div style="flex:1"><div class="eyebrow">Today's goal</div><div class="de" style="font-size:20px;margin:4px 0 8px">12 of 20 min</div><div class="bar"><i></i></div></div></div>
+ <div class="pane hud" style="margin-top:16px;padding:16px 24px"><div><b>41</b><span>words</span></div><div><b>6</b><span>day streak</span></div><div><b>A1</b><span>level</span></div></div>
+ ${tab(0)}</div>`,
+2: () => `<div class="screen">${bgs()}${head('Lesson 1','Guten Morgen')}
+ <div class="plate"><div class="room"></div><div class="win"></div><div class="sign">Raum 2.04</div><div class="floor"></div><div class="who">${weber('amused')}</div></div>
+ <div class="pane cap stack"><div class="eyebrow">Scene</div><div class="de">„Guten Morgen!“</div><p class="body">Tuesday, 9:00. Herr Weber opens the door of room 2.04 and looks at the clock.</p></div>
+ <div class="pane tab" style="padding:0 8px"><div class="btn" style="flex:1;height:48px;border-radius:16px">Weiter</div></div></div>`,
+3: () => `<div class="screen">${bgs()}${head('Lesson 1 · Words','1 of 12')}
+ <div class="pane wcard stack" style="text-align:center;height:auto;padding:28px"><div class="wpic" style="margin:0 auto">${sun}</div><div class="de" style="margin-top:20px;font-size:32px">Guten Morgen</div><div class="say">▶ GOO·ten MOR·gen</div><p class="body">Good morning. Said until about 10.</p></div>
+ <div class="pane" style="margin-top:16px;padding:16px 24px"><div class="eyebrow">Spanish contrast</div><p class="body" style="margin-top:6px"><b style="color:var(--ink)">Buenos días</b> is plural; German <b style="color:var(--ink)">Morgen</b> stays singular.</p></div>
+ <div class="pane tab" style="padding:0 8px"><div class="btn" style="flex:1;height:48px;border-radius:16px">Got it</div></div></div>`,
+4: () => `<div class="screen win">${bgs()}${head('Lesson 1 · Check','4 of 10')}
+ <div class="pane stack"><div class="eyebrow">Choose the German</div><div class="de">Good morning</div></div>
+ <div class="stack" style="margin:16px 16px 0"><div class="opt ok"><span class="k">✓</span>Guten Morgen</div><div class="opt"><span class="k">2</span>Gute Nacht</div><div class="opt"><span class="k">3</span>Tschüss</div><div class="opt"><span class="k">4</span>Danke</div></div>
+ <div class="pane fb ok"><h2>Richtig.</h2><p class="body">Before about 10 a.m., this is the one.</p><div class="btn" style="margin-top:12px">Weiter</div></div></div>`,
+5: () => `<div class="screen slip">${bgs()}${head('Lesson 1 · Check','5 of 10')}
+ <div class="pane stack"><div class="eyebrow">Choose the German</div><div class="de">Good night</div></div>
+ <div class="stack" style="margin:16px 16px 0"><div class="opt"><span class="k">1</span>Guten Morgen</div><div class="opt bad"><span class="k">✕</span>Tschüss</div><div class="opt"><span class="k">3</span>Gute Nacht</div><div class="opt"><span class="k">4</span>Danke</div></div>
+ <div class="pane fb bad"><h2>Not quite.</h2><p class="body">Tschüss is goodbye. Good night is <b style="color:var(--ink)">Gute Nacht</b>.</p><div class="btn" style="margin-top:12px">Weiter</div></div></div>`,
+6: () => `<div class="screen win">${bgs()}${head('Lesson 1 · Talk','Herr Weber')}
+ <div class="plate" style="height:300px"><div class="room"></div><div class="win" style="width:70px;height:96px;right:20px"></div><div class="floor"></div><div class="who" style="height:292px;transform:translateX(-30%)">${weber('pleased')}</div></div>
+ <div class="stack" style="margin:16px 16px 0"><div class="pane bubble l" style="margin:0 56px 0 0;padding:12px 16px">Guten Morgen! Wie heißt du?<small>Good morning! What are you called?</small></div><div class="pane bubble r" style="margin:0 0 0 56px;padding:12px 16px">Ich heiße Arthur.<small>I'm called Arthur.</small></div></div>
+ <div class="pane tab" style="padding:0 8px"><div class="btn" style="flex:1;height:48px;border-radius:16px">Hold to speak</div></div></div>`
+};
+function bgs(){ return `<div class="stars"></div><div class="orbglow"></div><div class="city">${skyline}</div>`; }
+document.getElementById('app').innerHTML = frames[frame]();
+/* light each pane from the orb: the highlight and the rim turn toward it */
+function light(){ const s = document.querySelector('.screen'), o = s.querySelector('.orb').getBoundingClientRect(), ox = o.left + o.width/2, oy = o.top + o.height/2;
+  s.querySelectorAll('.pane').forEach(p => { const r = p.getBoundingClientRect();
+    p.style.setProperty('--lx', Math.max(-20, Math.min(120, (ox - r.left) / r.width * 100)) + '%');
+    p.style.setProperty('--ly', Math.max(-30, Math.min(130, (oy - r.top) / r.height * 100)) + '%');
+    p.style.setProperty('--rimang', (Math.atan2(oy - (r.top + r.height/2), ox - (r.left + r.width/2)) * 180 / Math.PI + 90) + 'deg'); }); }
+document.fonts.ready.then(light); light();
+</script></body></html>
