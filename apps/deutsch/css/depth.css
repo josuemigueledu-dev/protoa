@@ -119,10 +119,10 @@ input[type=range]{width:100%;accent-color:var(--yellow);min-height:32px;backgrou
 .card,.widget,.kpi,.goalmini,.lv,.notice-line,.coach .say,.bub.w .box{
   background:var(--card);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-hi),0 1px 2px rgba(10,16,28,.04),0 10px 24px -18px var(--lift);
-  transform:none;border-radius:20px}
-.widget{border-radius:18px}
+  transform:none;border-radius:var(--r-sm)}
+.widget{border-radius:var(--r-sm)}
 .card.soft{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
-.mode,.scen,.btile{background:var(--card);box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-hi),0 8px 20px -16px var(--lift);border-radius:18px}
+.mode,.scen,.btile{background:var(--card);box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-hi),0 8px 20px -16px var(--lift);border-radius:var(--r-sm)}
 .mode:hover,.scen:hover,.btile:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1px var(--line-2),inset 0 1px 0 var(--glass-hi),0 16px 30px -18px var(--lift)}
 .card::after,.widget::after,.kpi::after,.lv::after,.mode::after,.scen::after,.btile::after,.goalmini::after{display:none}
 .lv.ready{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--yellow),inset 0 1px 0 var(--glass-hi),0 10px 24px -18px var(--lift)}
@@ -132,7 +132,7 @@ input[type=range]{width:100%;accent-color:var(--yellow);min-height:32px;backgrou
 .card.primary,.examcard,.view > .lesson-top ~ .card,.view > .lesson-top ~ .conv,.ticket,.card.summary,.wrap > .view > .card.crash{
   -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
   background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 40%,var(--curve) 100%),linear-gradient(155deg,var(--sheen) 0%,transparent 46%),var(--card);
-  border-radius:28px;
+  border-radius:var(--r);
   box-shadow:inset 0 0 0 1px var(--glass-edge),inset 1.5px 1.5px 0 -.5px var(--rim),inset -1px -1px 0 var(--rim-lo),inset 0 -1.5px 0 -.5px var(--edge-1),
     0 1px 0 0 var(--edge-1),0 3px 0 -1px var(--edge-2),0 18px 30px -16px var(--drop-1),0 46px 80px -34px var(--drop-2),0 60px 100px -50px var(--caustic);
   transform:perspective(1100px) translateY(var(--ly,0px)) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .45s var(--ease),box-shadow .35s var(--ease)}
@@ -141,7 +141,7 @@ input[type=range]{width:100%;accent-color:var(--yellow);min-height:32px;backgrou
 .card.primary.tilting::after,.examcard.tilting::after,.ticket.tilting::after{display:block}
 
 /* ---- the black weight: hero panes and the learner's own words ---- */
-.today-hero,.talkhero{background:radial-gradient(120% 160% at 92% -20%,rgba(90,150,255,.20),transparent 52%),linear-gradient(160deg,var(--pane-2),var(--pane-1));border-radius:28px;animation:none}
+.today-hero,.talkhero{background:radial-gradient(120% 160% at 92% -20%,rgba(90,150,255,.20),transparent 52%),linear-gradient(160deg,var(--pane-2),var(--pane-1));border-radius:var(--r);animation:none}
 .bub.l .box{background:linear-gradient(160deg,var(--pane-2),var(--pane-1));color:var(--pane-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 24px -16px rgba(0,0,0,.45)}
 .bub.l .box .gl .e,.bub.l .box .faint,.bub.l .box .en-after,.bub.l .box .muted{color:var(--pane-muted)}
 :root[data-theme="dark"] .bub.l .box{color:var(--pane-ink)} :root[data-theme="dark"] .bub.l .box .gl .e,:root[data-theme="dark"] .bub.l .box .faint{color:var(--pane-muted)}
