@@ -73,7 +73,7 @@ Tick when the lesson is merged. One complete lesson per run.
 
 - [x] 1 Greetings (correction pass + new format)
 - [x] 2 People
-- [ ] 3 Everyday verbs
+- [x] 3 Everyday verbs
 - [ ] 4 Questions
 - [ ] 5 Numbers
 - [ ] 6 Small words
