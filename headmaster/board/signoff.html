@@ -44,6 +44,20 @@ h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.
 .opt b{font-family:var(--display);font-size:15px} .opt span{font-size:13px;color:var(--muted);line-height:1.4}
 .opt .rec{color:var(--azure);font-weight:600}
 .opt.redo{border-style:dashed}
+.card{position:relative}
+.check{all:unset;cursor:pointer;position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px -6px var(--ok)}
+.check svg{width:22px;height:22px}
+.check:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.card.has-check .meta{padding-right:52px}
+.del{all:unset;cursor:pointer;align-self:flex-end;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);border:1px solid var(--edge)}
+.del svg{width:16px;height:16px}
+.del.arm{color:#fff;background:#c3304c;border-color:transparent}
+.del:focus-visible{outline:2px solid var(--azure);outline-offset:2px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.group{display:flex;flex-direction:column;gap:12px}
+.group h3.gh{font-size:15px;color:var(--muted);display:flex;gap:8px;align-items:baseline}
+.group h3.gh span{font-family:var(--text);font-weight:500;font-size:13px}
+@media (prefers-reduced-motion:no-preference){.check{animation:pop .35s cubic-bezier(.3,1.6,.5,1)}@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}}
 .shots{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
 .shots button{all:unset;cursor:zoom-in;flex:none;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px}
 .shots img{display:block;height:180px;width:auto;max-width:none;border-radius:14px;border:1px solid var(--edge);background:var(--bg-2)}
@@ -100,6 +114,16 @@ a{color:var(--azure)}
 const $ = s => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); } for (const k of kids.flat()) if (k != null) e.append(k); return e; };
 let db = null, decisions = [], changes = [];
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+const KINDS = ['Colour & style', 'Fonts & text', 'Animation & motion', 'Layout & screens', 'Characters & art', 'Accessibility', 'Lessons', 'Tests & safety'];
+/* the green check: hides a signed-off item for good */
+function checkBtn(d) {
+  const b = el('button', { class: 'check', 'aria-label': 'Done with ' + d.title + ', remove it' });
+  b.innerHTML = CHECK_SVG;
+  b.addEventListener('click', async () => { b.disabled = true; try { await db.doc('decisions/' + d.id).update({ dismissed: true }); } catch (e) { b.disabled = false; $('#status').textContent = 'Could not remove: ' + (e.message || e.code || 'unknown error'); } });
+  return b;
+}
 
 function lightbox(src, alt) {
   const box = el('div', { class: 'lb', role: 'dialog', 'aria-label': alt || 'Image' });
@@ -132,14 +156,15 @@ function decisionCard(d) {
   });
   card.append(opts, note, save);
   sync();
-  if (d.pick) card.append(el('p', { class: 'picked' }, d.pick === 'Redo' ? 'Saved. The headmaster will come back with a new round.' : 'Saved. The headmaster picks this up on its next check.'));
+  if (d.pick) card.append(el('p', { class: 'picked' }, d.pick === 'Redo' ? 'Saved. The headmaster will come back with a new round.' : 'Saved. Tap the green check to clear it from this page.'));
+  if (d.pick && d.pick !== 'Redo' && db) { card.classList.add('has-check'); card.append(checkBtn(d)); }
   if (!db) { save.disabled = true; note.disabled = true; }
   return card;
 }
 function doneCard(d) {
   const o = (d.options || []).find(o => o.key === d.pick);
-  return el('article', { class: 'card' }, el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), el('span', { class: 'chip ok' }, 'Signed off')),
-    el('h3', {}, d.title), el('p', { class: 'small' }, 'You picked ' + d.pick + (o ? ' · ' + o.label : '') + (d.note ? '. “' + d.note + '”' : '')), d.outcome ? el('p', { class: 'muted small' }, d.outcome) : null);
+  return el('article', { class: 'card has-check' }, el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), el('span', { class: 'chip ok' }, 'Signed off')),
+    el('h3', {}, d.title), el('p', { class: 'small' }, 'You picked ' + d.pick + (o ? ' · ' + o.label : '') + (d.note ? '. “' + d.note + '”' : '')), d.outcome ? el('p', { class: 'muted small' }, d.outcome) : null, db ? checkBtn(d) : null);
 }
 function changeCard(c) {
   const st = { merged: ['Merged', 'ok'], back: ['Sent back', 'warn'], review: ['In review', ''] }[c.status] || [c.status, ''];
@@ -152,16 +177,28 @@ function changeCard(c) {
       el('figure', {}, el('button', { onclick: () => lightbox(p.after, 'After'), 'aria-label': 'Open after full size' }, el('img', { src: p.after, alt: 'After', loading: 'lazy' })), el('figcaption', {}, 'After'))));
   }
   if (c.note) card.append(el('p', { class: 'muted small' }, c.note));
-  if (c.pr) card.append(el('a', { href: 'https://github.com/josuemigueledu-dev/protoa/pull/' + c.pr, class: 'small' }, 'PR #' + c.pr + ' on GitHub'));
+  const del = el('button', { class: 'del', 'aria-label': 'Delete ' + c.title });
+  const label = t => { del.innerHTML = TRASH_SVG; del.append(t); };
+  label('Delete');
+  let armed = null;
+  del.addEventListener('click', async () => {
+    if (!armed) { del.classList.add('arm'); label('Tap again to delete'); armed = setTimeout(() => { armed = null; del.classList.remove('arm'); label('Delete'); }, 3000); return; }
+    clearTimeout(armed); del.disabled = true; label('Deleting…');
+    try { await db.doc('changes/' + c.id).delete(); } catch (e) { del.disabled = false; armed = null; del.classList.remove('arm'); label('Delete'); $('#status').textContent = 'Could not delete: ' + (e.message || e.code || 'unknown error'); }
+  });
+  card.append(el('div', { class: 'foot' }, c.pr ? el('a', { href: 'https://github.com/josuemigueledu-dev/protoa/pull/' + c.pr, class: 'small' }, 'PR #' + c.pr + ' on GitHub') : el('span'), db ? del : null));
   return card;
 }
 function render() {
-  const open = decisions.filter(d => !d.closed).sort((a, b) => (a.order || 0) - (b.order || 0));
-  const done = decisions.filter(d => d.closed);
+  const live = decisions.filter(d => !d.dismissed);
+  const open = live.filter(d => !d.closed).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const done = live.filter(d => d.closed);
   $('#open').replaceChildren(...(open.length ? open.map(decisionCard) : [el('p', { class: 'empty' }, 'Nothing waiting on you right now.')]));
   $('#n-open').textContent = open.filter(d => !d.pick).length + ' waiting';
   const ch = [...changes].sort((a, b) => (b.order || 0) - (a.order || 0));
-  $('#changes').replaceChildren(...(ch.length ? ch.map(changeCard) : [el('p', { class: 'empty' }, 'Merged changes with screenshots show up here.')]));
+  const kinds = [...KINDS, ...new Set(ch.map(c => c.kind || 'Other').filter(k => !KINDS.includes(k)))];
+  const groups = kinds.map(k => [k, ch.filter(c => (c.kind || 'Other') === k)]).filter(([, list]) => list.length);
+  $('#changes').replaceChildren(...(groups.length ? groups.map(([k, list]) => el('div', { class: 'group' }, el('h3', { class: 'gh' }, k, el('span', {}, String(list.length))), list.map(changeCard))) : [el('p', { class: 'empty' }, 'All clear. New changes with screenshots show up here.')]));
   $('#n-changes').textContent = ch.length + (ch.length === 1 ? ' change' : ' changes');
   $('#done').replaceChildren(...(done.length ? done.map(doneCard) : [el('p', { class: 'empty' }, 'Nothing signed off yet.')]));
   $('#n-done').textContent = done.length ? String(done.length) : '';
