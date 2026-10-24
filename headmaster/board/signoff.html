@@ -1,6 +1,6 @@
 <title>Protoa Sign-off</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Geologica:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600&family=Sora:wght@600;700&family=Onest:wght@500;600&display=swap">
 <style>
 /* Layout: one narrow column like a phone feed; decisions first, then the change log. Protoa's own glass, azure and orb. */
 :root{
@@ -8,7 +8,7 @@
   --ink:#0b1430; --muted:#4d5878; --azure:#2563eb; --azure-soft:rgba(37,99,235,.10);
   --ok:#0a7d62; --ok-soft:rgba(10,125,98,.12); --warn:#b4560c; --warn-soft:rgba(220,120,30,.14);
   --hero-1:#0b1440; --hero-2:#1d3aa8; --on-hero:#eef2ff;
-  --display:'Sora',system-ui,sans-serif; --text:'Geologica',system-ui,sans-serif;
+  --hero:'Unbounded','Sora',system-ui,sans-serif; --display:'Sora',system-ui,sans-serif; --text:'Onest',system-ui,sans-serif; --amber:#ffb85c;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#070b1f; --bg-2:#0c1230; --card:rgba(190,206,255,.07); --edge:rgba(190,206,255,.12);
@@ -27,7 +27,17 @@ main{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
 .hero{border-radius:24px;padding:22px 20px;color:var(--on-hero);background:radial-gradient(120% 140% at 90% -10%,rgba(124,180,255,.45),transparent 55%),linear-gradient(160deg,var(--hero-2),var(--hero-1));display:flex;gap:16px;align-items:center}
 .orb{flex:none;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#fff 0 6%,#8fc4ff 14%,#2f6bff 30%,rgba(47,107,255,.15) 58%,transparent 62%),radial-gradient(circle at 35% 28%,rgba(255,255,255,.6),rgba(255,255,255,.08) 45%,rgba(255,255,255,.02) 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.25)}
-.hero h1{font-size:24px} .hero p{margin:4px 0 0;opacity:.85;font-size:14px}
+.hero h1{font:600 24px/1.1 var(--hero);letter-spacing:-.02em} .hero p{margin:4px 0 0;opacity:.85;font-size:14px}
+.hero .txt{flex:1;min-width:0}
+.refresh{all:unset;cursor:pointer;flex:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--on-hero);background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.refresh svg{width:20px;height:20px}
+.refresh:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.refresh[aria-busy="true"] svg{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.refresh[aria-busy="true"] svg{animation:none}}
+.summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.summary span{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.14)}
+.summary .hot{background:var(--amber);color:#1a1200}
+.q{white-space:pre-line}
 .sec{display:flex;flex-direction:column;gap:14px}
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .sec-h h2{font-size:20px} .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -80,9 +90,7 @@ a{color:var(--azure)}
 .lb{position:fixed;inset:0;z-index:20;background:rgba(4,8,24,.92);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 56px) max(12px,env(safe-area-inset-right,0px)) 24px max(12px,env(safe-area-inset-left,0px))}
 .lb img{display:block;max-width:none;width:min(1400px,220vw);margin:0 auto;border-radius:12px}
 .lb .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);all:unset;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:8px 16px;font-weight:600}
-.lb .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px)}
 .lb .fit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 12px);all:unset;cursor:pointer;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:8px 16px;font-weight:600}
-.lb .fit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 12px)}
 .lb.fitted img{width:100%;max-width:1400px}
 @media (prefers-reduced-motion:no-preference){.opt{transition:border-color .2s,box-shadow .2s}}
 </style>
@@ -90,7 +98,8 @@ a{color:var(--azure)}
 <main>
   <header class="hero">
     <div class="orb" aria-hidden="true"></div>
-    <div><h1>Sign-off</h1><p>What needs your call, and every change the team ships, before and after.</p></div>
+    <div class="txt"><h1>Sign-off</h1><p>What needs your call, and every change the team ships, before and after.</p><div class="summary" id="summary"></div></div>
+    <button class="refresh" id="refresh" type="button" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
   </header>
 
   <section class="sec" aria-labelledby="h-open">
@@ -113,7 +122,7 @@ a{color:var(--azure)}
 <script>
 const $ = s => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); } for (const k of kids.flat()) if (k != null) e.append(k); return e; };
-let db = null, decisions = [], changes = [];
+let db = null, decisions = [], changes = [], lastSync = null;
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
 const KINDS = ['Colour & style', 'Fonts & text', 'Animation & motion', 'Layout & screens', 'Characters & art', 'Accessibility', 'Lessons', 'Tests & safety'];
@@ -136,19 +145,20 @@ const shot = (s) => el('button', { onclick: () => lightbox(s.src, s.label), 'ari
 
 function decisionCard(d) {
   const card = el('article', { class: 'card' });
-  card.append(el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), d.pick ? el('span', { class: 'chip ' + (d.pick === 'Redo' ? 'warn' : 'ok') }, d.pick === 'Redo' ? 'Redo requested' : 'Picked ' + d.pick) : el('span', { class: 'chip warn' }, 'Waiting for you')));
-  card.append(el('h3', {}, d.title), el('p', { class: 'muted small' }, d.question));
+  card.append(el('div', { class: 'meta' }, el('span', { class: 'chip' }, d.area || 'Decision'), d.pick ? el('span', { class: 'chip ' + (d.pick === 'Redo' || d.pick === 'Changes' ? 'warn' : 'ok') }, d.pick === 'Redo' ? 'Redo requested' : d.pick === 'Changes' ? 'Changes requested' : 'Picked ' + d.pick) : el('span', { class: 'chip warn' }, 'Waiting for you')));
+  card.append(el('h3', {}, d.title), el('p', { class: 'muted small q' }, d.question));
   if (d.shots?.length) card.append(el('div', { class: 'shots' }, d.shots.map(shot)));
   let choice = d.pick || null;
   const opts = el('div', { class: 'opts', role: 'group', 'aria-label': d.title });
   const note = el('textarea', { id: 'note-' + d.id, placeholder: 'Anything to add? (optional, e.g. "C, but with B\'s yellow")' }); note.value = d.note || '';
   const save = el('button', { class: 'btn' }, d.pick ? 'Update' : 'Sign off');
   const REDO = { key: 'Redo', label: 'None of these', desc: 'Try again. Say what you want in the note.' };
-  const needNote = () => choice === 'Redo' && !note.value.trim();
-  const sync = () => { save.disabled = !choice || needNote(); note.placeholder = choice === 'Redo' ? 'What should the next round do differently? (needed)' : 'Anything to add? (optional, e.g. "C, but with B\'s yellow")'; };
-  const drawOpts = () => { opts.replaceChildren(...[...(d.options || []), REDO].map(o => el('button', { class: 'opt' + (o === REDO ? ' redo' : ''), 'aria-pressed': String(choice === o.key), onclick: () => { choice = o.key; drawOpts(); sync(); } }, el('b', {}, o === REDO ? o.label : o.key + ' · ' + o.label), o.desc ? el('span', {}, o.desc) : null, o.key === d.recommend ? el('span', { class: 'rec' }, 'Headmaster\'s pick') : null))); };
+  const needNote = () => (choice === 'Redo' || choice === 'Changes') && !note.value.trim();
+  const sync = () => { save.disabled = !choice || needNote(); note.placeholder = choice === 'Redo' || choice === 'Changes' ? 'What should the next round do differently? (needed)' : 'Anything to add? (optional, e.g. "C, but with B\'s yellow")'; };
+  const drawOpts = () => { const list = (d.options || []).some(o => o.key === 'Changes') ? (d.options || []) : [...(d.options || []), REDO];
+    opts.replaceChildren(...list.map(o => el('button', { class: 'opt' + (o === REDO ? ' redo' : ''), 'aria-pressed': String(choice === o.key), onclick: () => { choice = o.key; drawOpts(); sync(); } }, el('b', {}, o === REDO || o.key === o.label ? o.label : o.key + ' · ' + o.label), o.desc ? el('span', {}, o.desc) : null, o.key === d.recommend ? el('span', { class: 'rec' }, 'Headmaster\'s pick') : null))); };
   drawOpts();
-  note.addEventListener('input', sync);
+  note.addEventListener('input', e => { if (e.isTrusted) note.dataset.dirty = '1'; sync(); });
   save.addEventListener('click', async () => {
     if (!db || !choice || needNote()) return; save.disabled = true; save.textContent = 'Saving…';
     try { await db.doc('decisions/' + d.id).update({ pick: choice, note: note.value.trim(), pickedAt: new Date().toISOString() }); }
@@ -156,8 +166,8 @@ function decisionCard(d) {
   });
   card.append(opts, note, save);
   sync();
-  if (d.pick) card.append(el('p', { class: 'picked' }, d.pick === 'Redo' ? 'Saved. The headmaster will come back with a new round.' : 'Saved. Tap the green check to clear it from this page.'));
-  if (d.pick && d.pick !== 'Redo' && db) { card.classList.add('has-check'); card.append(checkBtn(d)); }
+  if (d.pick) card.append(el('p', { class: 'picked' }, d.pick === 'Redo' || d.pick === 'Changes' ? 'Saved. The headmaster will come back with a new version.' : 'Saved. Tap the green check to clear it from this page.'));
+  if (d.pick && d.pick !== 'Redo' && d.pick !== 'Changes' && db) { card.classList.add('has-check'); card.append(checkBtn(d)); }
   if (!db) { save.disabled = true; note.disabled = true; }
   return card;
 }
@@ -190,6 +200,8 @@ function changeCard(c) {
   return card;
 }
 function render() {
+  // keep anything typed in a note across live updates and refreshes
+  const drafts = {}; document.querySelectorAll('textarea[id^="note-"]').forEach(t => { if (document.activeElement === t || t.dataset.dirty) drafts[t.id] = t.value; });
   const live = decisions.filter(d => !d.dismissed);
   const open = live.filter(d => !d.closed).sort((a, b) => (a.order || 0) - (b.order || 0));
   const done = live.filter(d => d.closed);
@@ -201,13 +213,29 @@ function render() {
   $('#changes').replaceChildren(...(groups.length ? groups.map(([k, list]) => el('div', { class: 'group' }, el('h3', { class: 'gh' }, k, el('span', {}, String(list.length))), list.map(changeCard))) : [el('p', { class: 'empty' }, 'All clear. New changes with screenshots show up here.')]));
   $('#n-changes').textContent = ch.length + (ch.length === 1 ? ' change' : ' changes');
   $('#done').replaceChildren(...(done.length ? done.map(doneCard) : [el('p', { class: 'empty' }, 'Nothing signed off yet.')]));
+  for (const [id, v] of Object.entries(drafts)) { const t = document.getElementById(id); if (t) { t.value = v; t.dataset.dirty = '1'; t.dispatchEvent(new Event('input')); } }
   $('#n-done').textContent = done.length ? String(done.length) : '';
+  const waiting = open.filter(d => !d.pick).length;
+  $('#summary').replaceChildren(el('span', { class: waiting ? 'hot' : '' }, waiting ? waiting + ' waiting for you' : 'Nothing waiting'), el('span', {}, ch.length + (ch.length === 1 ? ' change' : ' changes')), ...(lastSync ? [el('span', {}, 'Updated ' + lastSync.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))] : []));
 }
 render();
 (async () => {
   db = await window.claude?.use?.('db');
   if (!db) { $('#open').replaceChildren(el('p', { class: 'empty' }, 'Open this page in claude.ai, signed in, to see and sign off.')); $('#changes').replaceChildren(); return; }
-  db.collection('decisions').onSnapshot(s => { decisions = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => { $('#status').textContent = 'Could not load decisions.'; });
-  db.collection('changes').onSnapshot(s => { changes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, e => { $('#status').textContent = 'Could not load changes.'; });
+  db.collection('decisions').onSnapshot(s => { decisions = s.docs.map(d => ({ id: d.id, ...d.data() })); lastSync = new Date(); render(); }, e => { $('#status').textContent = 'Could not load decisions.'; });
+  db.collection('changes').onSnapshot(s => { changes = s.docs.map(d => ({ id: d.id, ...d.data() })); lastSync = new Date(); render(); }, e => { $('#status').textContent = 'Could not load changes.'; });
 })();
+/* refresh: re-reads both lists now (live updates also arrive on their own); a typed note is kept */
+async function refresh() {
+  const b = $('#refresh'); if (!db || b.getAttribute('aria-busy') === 'true') return;
+  b.setAttribute('aria-busy', 'true');
+  try {
+    const [ds, cs] = await Promise.all([db.collection('decisions').get(), db.collection('changes').get()]);
+    decisions = ds.docs.map(d => ({ id: d.id, ...d.data() })); changes = cs.docs.map(d => ({ id: d.id, ...d.data() })); lastSync = new Date(); render();
+    $('#status').textContent = '';
+  } catch (e) { $('#status').textContent = 'Could not refresh: ' + (e.message || e.code || 'unknown error'); }
+  finally { b.setAttribute('aria-busy', 'false'); }
+}
+$('#refresh').addEventListener('click', refresh);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(); });
 </script>
