@@ -276,6 +276,12 @@ const VoiceLight = {
 // (see RENDER NOTES at the end of this file). Sprites would be shipped as base64 MP3 in VOX_FILES.
 const VOX = {};
 const VOX_FILES = {};
+// Pre-rendered lines from `node scripts/voices.mjs render`: text -> audio/<hash>.opus, filled by loadVoxManifest().
+// Absent (no manifest, or opened as a file) means every line uses the device voice.
+const VOX_URL = {};
+async function loadVoxManifest() {
+  try { const r = await fetch('audio/manifest.json'); if (r.ok) Object.assign(VOX_URL, await r.json()); } catch (e) { }
+}
 let actx = null, voxBuffers = {}, curSource = null, curUtter = null, onWordCb = null;
 function ctx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; }
 /* ---------- Protoa's voice ----------
@@ -305,13 +311,25 @@ function voiceTuning(v) {
   const base = info.sex === 'm' ? (info.score >= 80 ? .97 : .93) : 1;
   return { pitch: Math.max(.72, Math.min(1.15, base - (depth - .5) * .18)), rate: +S.settings.voiceRate || .92 };
 }
+let audioSeq = 0; // bumped by every stopAudio(), so a clip still being fetched is dropped
 function stopAudio() {
+  audioSeq++;
   if (curSource) { try { curSource.stop(); } catch (e) { } curSource = null; }
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   curUtter = null; Voice.talk(false); VoiceLight.end(); highlightWord(null);
 }
 let hlTimers = [];
 function highlightWord(i) { hlTimers.forEach(clearTimeout); hlTimers = []; document.querySelectorAll('.gl .w.speaking').forEach(e => e.classList.remove('speaking')); if (i === null) return; }
+async function playVoxUrl(text, rate) {
+  const c = ctx(), url = 'audio/' + VOX_URL[text], seq = audioSeq;
+  try {
+    if (!voxBuffers[url]) voxBuffers[url] = await fetch(url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); }).then(b => c.decodeAudioData(b));
+  } catch (e) { delete VOX_URL[text]; return false; }
+  if (seq !== audioSeq) return true;
+  const src = c.createBufferSource(); src.buffer = voxBuffers[url]; src.playbackRate.value = rate || 1; VoiceLight.audio(src, c);
+  curSource = src; src.start(); Voice.talk(true);
+  return new Promise(res => { src.onended = () => { if (curSource === src) { curSource = null; Voice.talk(false); VoiceLight.end(); } res(true); }; });
+}
 async function playVox(text, rate) {
   const e = VOX[text]; if (!e) return false;
   const [file, start, len] = e; const c = ctx();
@@ -325,6 +343,10 @@ function speak(text, opts = {}) {
   text = fill(text); stopAudio();
   const rate = opts.rate || 1;
   if (VOX[text]) return playVox(text, rate).then(() => { });
+  if (VOX_URL[text]) return playVoxUrl(text, rate).then(ok => ok ? undefined : speakDevice(text, opts, rate));
+  return speakDevice(text, opts, rate);
+}
+function speakDevice(text, opts, rate) {
   if (!('speechSynthesis' in window)) return Promise.resolve();
   return new Promise(res => {
     const u = new SpeechSynthesisUtterance(text); u.lang = 'de-DE'; const v = germanVoice(); if (v) u.voice = v;
