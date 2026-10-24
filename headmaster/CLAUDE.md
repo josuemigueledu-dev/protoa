@@ -72,3 +72,7 @@ Ship a new build after a review hour that merged app changes (not for test-only 
 2. Publish `learn/index.html` with `root` = `learn` and `files` = every file under `b/<id>/` (older builds stay published; never remove them, Arthur may still be on one).
 3. ArtifactData batch: set `builds/<id>` and `builds/latest` to `{id, date, notes: [plain one-line notes on what changed for him]}`.
 Never change his `state` or `state/ls` docs.
+
+## Image generation (on this PC)
+
+Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\Users\jm480\docker\imagegen` (Arthur's "docker folder": your workspace for downloads and tools, outside the repo): `venv/Scripts/python gen.py "prompt" -o out/name.png --n 4 --w 832 --h 1216`, SDXL base 1.0 with the fp16-fix VAE (commercial use allowed), about 6 s per image, models cached in `hf/`. Prompts are capped at 77 CLIP tokens, so put the important words first. FLUX.1 schnell is gated on Hugging Face; it needs a token from Arthur. Use it for concept art and reference images on the sign-off board and in `docs/designs/`; the cloud agents can't run it.
