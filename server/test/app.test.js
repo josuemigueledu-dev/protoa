@@ -187,3 +187,9 @@ test('parseJSONText accepts bare, fenced and wrapped JSON', () => {
   assert.deepEqual(parseJSONText('Here it is: {"a":{"b":2}} done'), { a: { b: 2 } });
   assert.throws(() => parseJSONText('no json here'), e => e.code === 'bad_output');
 });
+
+test('the voice manifest is an empty object, not a 404, until audio has been rendered', async () => {
+  const res = await createApp().request('/deutsch/audio/manifest.json');
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {});
+});
