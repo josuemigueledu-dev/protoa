@@ -19,8 +19,20 @@
    (fixed phrases). Punctuation stays attached to the German span. Particles in parentheses.
    Meaning in context, never dictionary sense. Coverage check (checkGlosses) runs at load.
    PLACEHOLDERS: {name} {city} {field} filled from the profile (defaults below).
-   ILLUSTRATION STYLE: flat, 2–4 colours from the palette (cream, U-Bahn yellow, Berlin red,
-   Spree blue, chalk green), thick rounded strokes, one German detail each, viewBox 0 0 100 100.
+   ART (Frosted line, see docs/specs/visual-spec.md and visual-direction.md): pictures are SVG
+   files named in apps/deutsch/art/manifest.json, never inline. Ids: plate.*, cast.*, word.*,
+   event.*, mouth.*. Fills are --il-* tokens (no hex), one --il-hi highlight per object, art
+   never inverts in dark mode. Content picks ids, ux draws plates/cast (docs/curriculum/art-needs.md).
+   NEW FIELDS (lesson 1 is the model): scene.plate + scene.cast:[{id,x}] (x on the 1600-wide plate);
+   words[].pic (concrete nouns; short key of PICS now, 'word.*' id once art.js is in the app);
+   notice.sketch:{type:'swap'|..., from, to}; sound:{focus, mouth, say, words:[[de,en]...]};
+   twist:{at (index in conv of the partner line that triggers it), event:'event.*', mood:'surprised'};
+   warmup:[3-5 earlier word headwords] (absent in lesson 1, nothing to review yet).
+   scene.id stays until the app reads scene.plate. ~20 words per lesson (A1 gate: coverage.md).
+   TEACHING RULES (visual-direction.md, "Don't look AI-made"): the same people in the same Berlin,
+   with continuity between lessons (Herr Weber, Tuesday 9:00, room 2.04); what Germans really say
+   (Wie geht's?, Kein Problem, Bis Dienstag); one gloss per word, reused; one short grammar rule;
+   mix production and recognition; no hollow praise, no emoji, no exclamation marks for effect.
    HINT WORDING: one sentence, names the exact form, German in <em>, Spanish parallel only
    as an extra ("like usted").  AUDIO: VOX index is empty until rendered (see §11); fallback
    speechSynthesis de-DE at rate 0.9.
@@ -87,49 +99,60 @@ const SOUNDS = [
 const LESSONS = [
 {
   n: 1, title: 'Greetings', theme: 'Begrüßung',
-  scene: { id: 'classroom', place: 'Volkshochschule am Hermannplatz', time: 'Tuesday, 9:00', cap: 'Hermannplatz · Dienstag, 9:00',
+  scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }], place: 'Volkshochschule am Hermannplatz', time: 'Tuesday, 9:00', cap: 'Hermannplatz · Dienstag, 9:00',
     intro: [
-      'First morning of your German course, room 2.04. The teacher, Herr Weber, is already at the board.',
-      'Before anything else you need to say hello, say who you are, and leave politely.' ] },
-  notice: { de: 'Ich bin der Lehrer. Sie sind der Student.', g: 'Ich=I | bin=am | der=the | Lehrer.=teacher | Sie=you (formal) | sind=are | der=the | Student.=student',
-    q: 'Both halves use the same verb (to be). What changes about it when the person changes from ich to Sie?',
-    note: 'German verbs change their ending with the person: <em>ich bin</em>, <em>Sie sind</em>, <em>er ist</em>. <em>Sie</em> (capital S) is the polite "you", used with strangers and in formal settings, like <em>usted</em> in Spanish. It always takes the same verb form as "they": <em>Sie sind</em>, <em>Sie heißen</em>, <em>Sie kommen</em>.', grammar: 'sein' },
-  can: 'greet someone politely, say your name, say where you come from and what you do, and say goodbye.',
+      'Tuesday, 9:00. Room 2.04 at the Volkshochschule, and the first German course of your life. Herr Weber is writing the date on the board.',
+      'He will ask your name and where you are from. Answer, and see what happens when his phone rings.' ] },
+  notice: { de: 'Ich bin Herr Weber. Sie sind Student.', g: 'Ich=I | bin=am | Herr=Mr | Weber.=Weber | Sie=you (formal) | sind=are | Student.=(a) student',
+    sketch: { type: 'swap', from: ['ich', 'bin'], to: ['Sie', 'sind'] },
+    q: 'Both halves use the same verb, "to be". What happens to it when ich becomes Sie?',
+    note: 'The verb changes with the person: <em>ich bin</em>, <em>Sie sind</em>. Capital-S <em>Sie</em> is the polite "you" for teachers, shop staff and anyone you do not know yet. It works like Spanish <em>usted</em>, but takes the plural verb: <em>Sie sind</em>.', grammar: 'sein' },
+  can: 'greet and say goodbye, give your name and where you are from, answer "How are you?", and excuse yourself politely.',
+  sound: { focus: 'ü', mouth: 'mouth.round-ue', say: 'Say "ee", then round your lips without moving your tongue.', words: [['Tschüss', 'bye'], ['für', 'for'], ['Tür', 'door']] },
   words: [
-    { de: 'Hallo', en: ['hello', 'hi'], type: 'interj', ipa: 'haˈloː', resp: 'ha·LO', syl: 'Hal·lo', ex: '[Hallo], ich bin Tom.', exEn: 'Hello, I am Tom.', exG: 'Hallo,=hello | ich=I | bin=am | Tom.=Tom' },
-    { de: 'Guten Tag', en: ['hello', 'good day', 'good afternoon'], type: 'phrase', ipa: 'ˌɡuːtn̩ ˈtaːk', resp: 'GOO·ten TAHK', syl: 'Gu·ten Tag', ex: '[Guten Tag], Herr Weber!', exEn: 'Hello, Mr Weber!', exG: 'Guten Tag,=hello (formal) | Herr=Mr | Weber!=Weber' },
+    { de: 'Hallo', en: ['hello', 'hi'], type: 'interj', ipa: 'haˈloː', resp: 'ha·LO', syl: 'Hal·lo', ex: '[Hallo], ich bin Tom.', exEn: 'Hi, I am Tom.', exG: 'Hallo,=hi | ich=I | bin=am | Tom.=Tom' },
+    { de: 'Guten Morgen', en: ['good morning'], type: 'phrase', ipa: 'ˌɡuːtn̩ ˈmɔʁɡn̩', resp: 'GOO·ten MOR·gen', syl: 'Gu·ten Mor·gen', ex: '[Guten Morgen], Herr Weber!', exEn: 'Good morning, Mr Weber!', exG: 'Guten Morgen,=good morning | Herr=Mr | Weber!=Weber' },
+    { de: 'Guten Tag', en: ['hello', 'good day', 'good afternoon'], type: 'phrase', ipa: 'ˌɡuːtn̩ ˈtaːk', resp: 'GOO·ten TAHK', syl: 'Gu·ten Tag', ex: '[Guten Tag], Frau Klein.', exEn: 'Hello, Mrs Klein.', exG: 'Guten Tag,=hello (formal) | Frau=Mrs | Klein.=Klein' },
+    { de: 'Wie geht\'s?', en: ['how are you (informal)', 'how are you'], type: 'phrase', ipa: 'viː ˈɡeːts', resp: 'vee GAYTS', syl: 'Wie geht\'s', ex: 'Hallo, Tom! [Wie geht\'s]?', exEn: 'Hi, Tom! How are you?', exG: 'Hallo,=hi | Tom!=Tom | Wie geht\'s?=how are you (informal)' },
+    { de: 'Tschüss', en: ['bye'], type: 'phrase', ipa: 'tʃʏs', resp: 'CHÜSS', syl: 'Tschüss', ex: '[Tschüss], bis bald!', exEn: 'Bye, see you soon!', exG: 'Tschüss,=bye | bis bald!=see you soon' },
+    { de: 'Auf Wiedersehen', en: ['goodbye'], type: 'phrase', ipa: 'aʊ̯f ˈviːdɐˌzeːən', resp: 'owf VEE·der·zay·en', syl: 'Auf Wie·der·se·hen', ex: '[Auf Wiedersehen], Herr Weber.', exEn: 'Goodbye, Mr Weber.', exG: 'Auf Wiedersehen,=goodbye | Herr=Mr | Weber.=Weber' },
+    { de: 'danke', en: ['thank you', 'thanks'], type: 'interj', ipa: 'ˈdaŋkə', resp: 'DAHNG·kuh', syl: 'dan·ke', ex: 'Gut, [danke].', exEn: 'Fine, thank you.', exG: 'Gut,=fine | danke.=thank you' },
+    { de: 'bitte', en: ['please', "you're welcome"], type: 'interj', ipa: 'ˈbɪtə', resp: 'BIT·tuh', syl: 'bit·te', ex: 'Einen Moment, [bitte].', exEn: 'One moment, please.', exG: 'Einen Moment,=one moment | bitte.=please' },
+    { de: 'Entschuldigung', en: ['excuse me', 'sorry'], type: 'interj', ipa: 'ɛntˈʃʊldɪɡʊŋ', resp: 'ent·SHUL·di·gung', syl: 'Ent·schul·di·gung', ex: '[Entschuldigung], Herr Weber!', exEn: 'Excuse me, Mr Weber!', exG: 'Entschuldigung,=excuse me | Herr=Mr | Weber!=Weber' },
+    { de: 'Freut mich', en: ['nice to meet you', 'pleased to meet you'], type: 'phrase', ipa: 'fʁɔʏ̯t mɪç', resp: 'FROYT mikh', syl: 'Freut mich', ex: '[Freut mich], Frau Klein.', exEn: 'Nice to meet you, Mrs Klein.', exG: 'Freut mich,=nice to meet you | Frau=Mrs | Klein.=Klein' },
     { de: 'heißen', en: ['to be called', 'to be named'], type: 'v', ipa: 'ˈhaɪ̯sn̩', resp: 'HY·sen', syl: 'hei·ßen', ex: 'Ich [heiße] Anna.', exEn: 'My name is Anna.', exG: 'Ich heiße=my name is | Anna.=Anna', forms: { ich: 'heiße', du: 'heißt', er: 'heißt', wir: 'heißen', ihr: 'heißt', Sie: 'heißen' } },
-    { de: 'wie', en: ['how', 'what (in "what is your name")'], type: 'adv', ipa: 'viː', resp: 'VEE', syl: 'wie', ex: '[Wie] heißen Sie?', exEn: 'What is your name?', exG: 'Wie=how | heißen=are called | Sie?=you (formal)' },
     { de: 'sein', en: ['to be'], type: 'v', ipa: 'zaɪ̯n', resp: 'ZINE', syl: 'sein', ex: 'Ich [bin] Student.', exEn: 'I am a student.', exG: 'Ich=I | bin=am | Student.=(a) student', forms: { ich: 'bin', du: 'bist', er: 'ist', wir: 'sind', ihr: 'seid', Sie: 'sind' } },
-    { de: 'kommen', en: ['to come'], type: 'v', ipa: 'ˈkɔmən', resp: 'KOM·en', syl: 'kom·men', ex: 'Woher [kommen] Sie?', exEn: 'Where do you come from?', exG: 'Woher=where from | kommen=come | Sie?=you (formal)', forms: { ich: 'komme', du: 'kommst', er: 'kommt', wir: 'kommen', ihr: 'kommt', Sie: 'kommen' } },
+    { de: 'kommen', en: ['to come'], type: 'v', ipa: 'ˈkɔmən', resp: 'KOM·en', syl: 'kom·men', ex: 'Maria [kommt] aus Madrid.', exEn: 'Maria comes from Madrid.', exG: 'Maria=Maria | kommt=comes | aus=from | Madrid.=Madrid', forms: { ich: 'komme', du: 'kommst', er: 'kommt', wir: 'kommen', ihr: 'kommt', Sie: 'kommen' } },
     { de: 'aus', en: ['from', 'out of'], type: 'prep', ipa: 'aʊ̯s', resp: 'OWSS', syl: 'aus', ex: 'Ich komme [aus] Berlin.', exEn: 'I come from Berlin.', exG: 'Ich=I | komme=come | aus=from | Berlin.=Berlin' },
+    { de: 'wie', en: ['how'], type: 'adv', ipa: 'viː', resp: 'VEE', syl: 'wie', ex: '[Wie] heißen Sie?', exEn: 'What is your name?', exG: 'Wie=how | heißen=are called | Sie?=you (formal)' },
+    { de: 'woher', en: ['where from'], type: 'adv', ipa: 'voˈheːɐ̯', resp: 'vo·HAIR', syl: 'wo·her', ex: '[Woher] kommen Sie?', exEn: 'Where are you from?', exG: 'Woher=where from | kommen=come | Sie?=you (formal)' },
+    { de: 'und', en: ['and'], type: 'conj', ipa: 'ʊnt', resp: 'OONT', syl: 'und', ex: 'Gut, danke. [Und] Sie?', exEn: 'Fine, thanks. And you?', exG: 'Gut,=fine | danke.=thank you | Und=and | Sie?=you (formal)' },
+    { de: 'gut', en: ['good', 'well', 'fine'], type: 'adj', ipa: 'ɡuːt', resp: 'GOOT', syl: 'gut', ex: 'Mir geht es [gut], danke.', exEn: 'I am fine, thank you.', exG: 'Mir geht es=I am | gut,=fine | danke.=thank you' },
     { de: 'der Lehrer', en: ['teacher'], type: 'n', g: 'm', pl: 'die Lehrer', ipa: 'ˈleːʁɐ', resp: 'LAY·ruh', syl: 'Leh·rer', ex: 'Herr Weber ist [der Lehrer].', exEn: 'Mr Weber is the teacher.', exG: 'Herr=Mr | Weber=Weber | ist=is | der=the | Lehrer.=teacher', pic: 'lehrer' },
     { de: 'der Student', en: ['student', 'university student'], type: 'n', g: 'm', pl: 'die Studenten', ipa: 'ʃtuˈdɛnt', resp: 'shtoo·DENT', syl: 'Stu·dent', ex: 'Paul ist [Student] in Berlin.', exEn: 'Paul is a student in Berlin.', exG: 'Paul=Paul | ist=is | Student=(a) student | in=in | Berlin.=Berlin', pic: 'student' },
     { de: 'die Stadt', en: ['city', 'town'], type: 'n', g: 'f', pl: 'die Städte', ipa: 'ʃtat', resp: 'SHTAT', syl: 'Stadt', ex: 'Berlin ist eine große [Stadt].', exEn: 'Berlin is a big city.', exG: 'Berlin=Berlin | ist=is | eine=a | große=big | Stadt.=city', pic: 'stadt' },
-    { de: 'Freut mich', en: ['nice to meet you', 'pleased to meet you'], type: 'phrase', ipa: 'fʁɔʏ̯t mɪç', resp: 'FROYT mikh', syl: 'Freut mich', ex: '[Freut mich], Frau Schmidt!', exEn: 'Nice to meet you, Mrs Schmidt!', exG: 'Freut mich,=nice to meet you | Frau=Mrs | Schmidt!=Schmidt' },
-    { de: 'gut', en: ['good', 'well', 'fine'], type: 'adj', ipa: 'ɡuːt', resp: 'GOOT', syl: 'gut', ex: 'Das ist [gut].', exEn: 'That is good.', exG: 'Das=that | ist=is | gut.=good' },
-    { de: 'danke', en: ['thank you', 'thanks'], type: 'interj', ipa: 'ˈdaŋkə', resp: 'DAHNG·kuh', syl: 'dan·ke', ex: '[Danke], Herr Weber.', exEn: 'Thank you, Mr Weber.', exG: 'Danke,=thank you | Herr=Mr | Weber.=Weber' },
-    { de: 'Auf Wiedersehen', en: ['goodbye'], type: 'phrase', ipa: 'aʊ̯f ˈviːdɐˌzeːən', resp: 'owf VEE·der·zay·en', syl: 'Auf Wie·der·se·hen', ex: '[Auf Wiedersehen], bis morgen!', exEn: 'Goodbye, see you tomorrow!', exG: 'Auf Wiedersehen,=goodbye | bis morgen!=see you tomorrow' },
   ],
   build: [
     { type: 'tiles', de: 'Ich komme aus Berlin.', en: 'I come from Berlin.', g: 'Ich=I | komme=come | aus=from | Berlin.=Berlin', extra: ['kommen'] },
     { type: 'gap', de: 'Wie heißen Sie?', en: 'What is your name?', g: 'Wie=how | heißen=are called | Sie?=you (formal)', gaps: [1] },
-    { type: 'tiles', de: 'Sie sind der Lehrer.', en: 'You are the teacher.', g: 'Sie=you (formal) | sind=are | der=the | Lehrer.=teacher', extra: ['die'] },
-    { type: 'gap', de: 'Die Stadt ist gut.', en: 'The city is good.', g: 'Die=the | Stadt=city | ist=is | gut.=good', gaps: [1, 3] },
+    { type: 'tiles', de: 'Einen Moment, bitte.', en: 'One moment, please.', g: 'Einen Moment,=one moment | bitte.=please', extra: ['danke'] },
+    { type: 'gap', de: 'Woher kommen Sie?', en: 'Where are you from?', g: 'Woher=where from | kommen=come | Sie?=you (formal)', gaps: [0] },
+    { type: 'tiles', de: 'Sie sind Student.', en: 'You are a student.', g: 'Sie=you (formal) | sind=are | Student.=(a) student', extra: ['bin'] },
   ],
+  twist: { at: 8, event: 'event.phone', mood: 'surprised' },
   conv: [
-    { w: 'Guten Tag! Ich bin Herr Weber, der Lehrer. Wie heißen Sie?', g: 'Guten Tag!=hello | Ich=I | bin=am | Herr=Mr | Weber,=Weber | der=the | Lehrer.=teacher | Wie=how | heißen=are called | Sie?=you (formal)', mood: 'pleased' },
-    { l: true, de: 'Guten Tag! Ich heiße {name}.', en: 'Hello! My name is {name}.', g: 'Guten Tag!=hello | Ich heiße=my name is | {name}.={name}', type: 'tiles', gaps: [2], extra: ['bin'], alts: ['Guten Tag! Ich bin {name}.', 'Hallo! Ich heiße {name}.', 'Guten Tag, ich heiße {name}.'], react: 'Sehr gut.=very good' },
-    { w: 'Freut mich, {name}! Woher kommen Sie?', g: 'Freut mich,=nice to meet you | {name}!={name} | Woher=where from | kommen=come | Sie?=you (formal)', mood: 'pleased' },
-    { l: true, de: 'Ich komme aus {city}.', en: 'I come from {city}.', g: 'Ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [1], extra: ['kommen'], alts: ['Aus {city}.'], react: 'Aha, aus {city}.=ah, from {city}' },
+    { w: 'Guten Morgen! Ich bin Herr Weber. Wie heißen Sie?', g: 'Guten Morgen!=good morning | Ich=I | bin=am | Herr=Mr | Weber.=Weber | Wie=how | heißen=are called | Sie?=you (formal)', mood: 'pleased' },
+    { l: true, de: 'Guten Morgen! Ich heiße {name}.', en: 'Good morning! My name is {name}.', g: 'Guten Morgen!=good morning | Ich heiße=my name is | {name}.={name}', type: 'tiles', gaps: [2], extra: ['bin'], alts: ['Guten Morgen! Ich bin {name}.', 'Guten Tag! Ich heiße {name}.', 'Hallo! Ich heiße {name}.', 'Guten Morgen, ich heiße {name}.'], react: 'Freut mich.=nice to meet you' },
+    { w: 'Freut mich, {name}. Woher kommen Sie?', g: 'Freut mich,=nice to meet you | {name}.={name} | Woher=where from | kommen=come | Sie?=you (formal)', mood: 'neutral' },
+    { l: true, de: 'Ich komme aus {city}.', en: 'I come from {city}.', g: 'Ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [1], extra: ['kommen'], alts: ['Aus {city}.', 'Ich bin aus {city}.'], react: 'Aha, aus {city}.=ah, from {city}' },
     { w: 'Aus {city}, schön! Ich komme aus Berlin. Sind Sie Student?', g: 'Aus=from | {city},={city} | schön!=nice | Ich=I | komme=come | aus=from | Berlin.=Berlin | Sind=are | Sie=you (formal) | Student?=(a) student', mood: 'amused' },
     { l: true, de: 'Ja, ich bin Student.', en: 'Yes, I am a student.', g: 'Ja,=yes | ich=I | bin=am | Student.=(a) student', type: 'translate', gaps: [2], extra: ['sind'], alts: ['Ja, ich bin ein Student.', 'Ja. Ich bin Student.'], react: 'Gut zu wissen.=good to know' },
-    { w: 'Sehr gut. Und wie geht es Ihnen heute?', g: 'Sehr=very | gut.=good | Und=and | wie geht es Ihnen=how are you (formal) | heute?=today', mood: 'neutral' },
-    { l: true, de: 'Gut, danke.', en: 'Good, thank you.', g: 'Gut,=good | danke.=thank you', type: 'translate', gaps: [0], extra: ['Hallo'], alts: ['Danke, gut.', 'Mir geht es gut, danke.', 'Es geht mir gut, danke.', 'Gut, danke!'], react: 'Das freut mich.=I am glad' },
-    { w: 'Das freut mich. Also: Ich bin der Lehrer, und Sie sind der Student. Richtig?', g: 'Das freut mich.=I am glad | Also:=so | Ich=I | bin=am | der=the | Lehrer,=teacher | und=and | Sie=you (formal) | sind=are | der=the | Student.=student | Richtig?=right', mood: 'amused', optional: true },
-    { l: true, de: 'Ja, Sie sind der Lehrer.', en: 'Yes, you are the teacher.', g: 'Ja,=yes | Sie=you (formal) | sind=are | der=the | Lehrer.=teacher', type: 'tiles', gaps: [2, 3], extra: ['die', 'bin'], alts: ['Ja. Sie sind der Lehrer.', 'Richtig, Sie sind der Lehrer.'], optional: true, react: 'Richtig!=right' },
-    { w: 'Richtig! Das ist alles für heute. Auf Wiedersehen, {name}!', g: 'Richtig!=right | Das=that | ist=is | alles=all | für=for | heute.=today | Auf Wiedersehen,=goodbye | {name}!={name}', mood: 'pleased' },
-    { l: true, de: 'Auf Wiedersehen, Herr Weber!', en: 'Goodbye, Mr Weber!', g: 'Auf Wiedersehen,=goodbye | Herr=Mr | Weber!=Weber', type: 'tiles', gaps: [0, 1], extra: ['Hallo'], alts: ['Auf Wiedersehen, Herr Weber.', 'Auf Wiedersehen!', 'Tschüss, Herr Weber!'], react: 'Bis morgen!=see you tomorrow' },
+    { w: 'Und wie geht es Ihnen heute?', g: 'Und=and | wie geht es Ihnen=how are you (formal) | heute?=today', mood: 'neutral' },
+    { l: true, de: 'Gut, danke.', en: 'Fine, thank you.', g: 'Gut,=fine | danke.=thank you', type: 'translate', gaps: [0], extra: ['Hallo'], alts: ['Danke, gut.', 'Mir geht es gut, danke.', 'Es geht mir gut, danke.', 'Gut, danke!'], react: 'Das freut mich.=I am glad' },
+    { w: 'Oh, Entschuldigung! Mein Handy. Einen Moment, bitte.', g: 'Oh,=oh | Entschuldigung!=excuse me | Mein=my | Handy.=phone | Einen Moment,=one moment | bitte.=please', mood: 'surprised' },
+    { l: true, de: 'Kein Problem, Herr Weber.', en: 'No problem, Mr Weber.', g: 'Kein Problem,=no problem | Herr=Mr | Weber.=Weber', type: 'tiles', gaps: [0, 1], extra: ['Danke'], alts: ['Kein Problem.', 'Kein Problem, Herr Weber!', 'Bitte, Herr Weber.'], react: 'Danke.=thanks' },
+    { w: 'So. Das war\'s für heute. Auf Wiedersehen, {name}. Bis Dienstag!', g: 'So.=right | Das war\'s=that was it | für=for | heute.=today | Auf Wiedersehen,=goodbye | {name}.={name} | Bis Dienstag!=see you Tuesday', mood: 'pleased' },
+    { l: true, de: 'Auf Wiedersehen, Herr Weber!', en: 'Goodbye, Mr Weber!', g: 'Auf Wiedersehen,=goodbye | Herr=Mr | Weber!=Weber', type: 'tiles', gaps: [0, 1], extra: ['Hallo'], alts: ['Auf Wiedersehen, Herr Weber.', 'Auf Wiedersehen!', 'Tschüss, Herr Weber!', 'Tschüss!'], react: 'Bis Dienstag!=see you Tuesday' },
   ],
   lex: {
     verbs: {
@@ -137,8 +160,8 @@ const LESSONS = [
       'sein': { ich: 'bin', du: 'bist', er: 'ist', wir: 'sind', ihr: 'seid', Sie: 'sind' },
       'kommen': { ich: 'komme', du: 'kommst', er: 'kommt', wir: 'kommen', ihr: 'kommt', Sie: 'kommen' },
     },
-    nouns: { 'Lehrer': 'm', 'Student': 'm', 'Stadt': 'f', 'Herr': 'm' },
-    related: { 'gehen': 'kommen', 'von': 'aus', 'Hallo': 'Guten Tag', 'Tschüss': 'Auf Wiedersehen', 'bin': 'heiße' },
+    nouns: { 'Lehrer': 'm', 'Student': 'm', 'Stadt': 'f', 'Herr': 'm', 'Moment': 'm', 'Handy': 'n', 'Problem': 'n' },
+    related: { 'gehen': 'kommen', 'von': 'aus', 'Hallo': 'Guten Tag', 'Morgen': 'Tag', 'bin': 'heiße' },
     sep: {},
   },
 },
