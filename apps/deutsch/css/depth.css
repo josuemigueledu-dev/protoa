@@ -178,3 +178,14 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
   .aurora i,.aurora::before,.orb .float,.orb .shadow,.orb .core,.rail .widget,.today-hero,.talkhero,.orb.talking .halo,.wrap>*{animation:none!important}
 }
 .crash{display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+
+/* ---- the Protoa mark (shared/brand): a dense core inside a sphere, the orbiter's ring crossing in front ---- */
+:root{--mk-shell:#0b1220;--mk-mid:#2559c4;--mk-ring:#eef2f7}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--mk-shell:#1a2640}}
+:root[data-theme="dark"]{--mk-shell:#1a2640}
+.brand{font-weight:800;letter-spacing:-.045em}
+.brand .dot{width:30px;height:30px;border-radius:0;background:none;box-shadow:none;flex:none}
+.brand .dot svg{display:block;width:100%;height:100%}
+.brand .mk-shell{fill:var(--mk-shell)} .brand .mk-mid{fill:var(--mk-mid)} .brand .mk-nuc{fill:#fff}
+.brand .mk-gap,.brand .mk-ring{fill:none;stroke-linecap:round}
+.brand .mk-gap{stroke:var(--mk-shell);stroke-width:18} .brand .mk-ring{stroke:var(--mk-ring);stroke-width:8.5}

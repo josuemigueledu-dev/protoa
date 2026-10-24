@@ -1,6 +1,6 @@
 # Protoa
 
-Protoa is an umbrella for a family of learning apps, represented by the orb: a thin glass sphere with a small blue core of light. The German course is the first app; more will follow and share the orb, the visual language and the server. Build with a large user base in mind.
+Protoa is an umbrella for a family of learning apps, represented by the orb: a polished, clear glass sphere around a dense core of light whose hue shows its mood, orbited by a solid sphere with a moon of its own. The logo (`shared/brand`) is the same object drawn flat; read `shared/brand/README.md` before changing either. The German course is the first app; more will follow and share the orb, the visual language and the server. Build with a large user base in mind.
 
 ## The first app: German (`apps/deutsch`)
 
@@ -11,6 +11,7 @@ A course for an English speaker (fluent in Spanish) aiming for spoken B1. Lesson
 ```
 apps/deutsch/        German course (static: index.html, css/, js/)
 shared/orb/          the Protoa orb (WebGL), shared by every app
+shared/brand/        logo files (mark, lockups, favicon, app icons) and the brand/character spec
 server/              one Node server for all apps: static files + /api
   src/app.js           routes; apps register their AI tasks in APPS
   src/claude.js        the only place that calls the Claude API

@@ -16,7 +16,7 @@ window.addEventListener('resize', () => { const m = layoutMode(); if (m !== last
 function navBadge(id) { if (id === 'practice') { const n = dueCards().length; return n ? h('span', { class: 'badge', 'aria-label': n + ' due' }, n > 99 ? '99+' : n) : ''; } return ''; }
 function renderSidebar() {
   const sb = document.getElementById('sidebar'); if (!sb) return; sb.innerHTML = '';
-  sb.append(h('div', { class: 'brand' }, h('span', { class: 'dot', 'aria-hidden': 'true' }, 'P'), h('span', { class: 'name' }, 'Protoa')));
+  sb.append(h('div', { class: 'brand' }, h('span', { class: 'dot', 'aria-hidden': 'true', html: BRAND_MARK }), h('span', { class: 'name' }, 'protoa')));
   NAV_ITEMS.forEach(([id, label]) => sb.append(h('button', { class: 'nav', 'aria-current': (route === id || (id === 'profile' && route === 'more')) ? 'page' : null, onclick: () => go(id), title: label }, h('span', { html: ICONS[id === 'learn' ? 'learn' : id], style: 'display:contents' }), h('span', {}, label), navBadge(id))));
   sb.append(h('div', { class: 'spacer' }));
   const t = todayInfo();

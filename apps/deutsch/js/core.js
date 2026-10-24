@@ -320,12 +320,15 @@ async function speakSyllables(syl, whole) { for (const s of syl.split('·')) { a
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { const f = document.getElementById('voice-select'); if (f && f._fill) f._fill(); };
 
 /* ---------- UI sounds (WebAudio, soft) ---------- */
-function uiSound(kind) {
-  if (kind === 'ok') Voice.nod(); else if (kind === 'bad') Voice.tilt();
+/* a wrong answer that is half right (right word, wrong form or spelling) turns the orb yellow instead of red */
+const NEAR_MISS = new Set(['spelling', 'order', 'gender', 'case', 'verb', 'sep', 'related', 'extra']);
+function uiSound(kind, r) {
+  if (kind === 'bad' && r && NEAR_MISS.has(r.kind)) kind = 'near';
+  if (kind === 'ok') Voice.nod(); else if (kind === 'bad') Voice.tilt(); else if (kind === 'near') Voice.almost();
   if (!S.settings.uiSounds || curUtter || curSource) return;
   try { const c = ctx(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); const t = c.currentTime; g.gain.setValueAtTime(0.0001, t);
     if (kind === 'ok') { o.frequency.setValueAtTime(660, t); o.frequency.setValueAtTime(880, t + .09); g.gain.exponentialRampToValueAtTime(.12, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .25); o.start(t); o.stop(t + .26); }
-    else if (kind === 'bad') { o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.linearRampToValueAtTime(180, t + .18); g.gain.exponentialRampToValueAtTime(.1, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .22); o.start(t); o.stop(t + .23); }
+    else if (kind === 'bad' || kind === 'near') { o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.linearRampToValueAtTime(180, t + .18); g.gain.exponentialRampToValueAtTime(.1, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .22); o.start(t); o.stop(t + .23); }
     else { [523, 659, 784, 1046].forEach((f, i) => { const o2 = c.createOscillator(), g2 = c.createGain(); o2.connect(g2); g2.connect(c.destination); o2.frequency.value = f; g2.gain.setValueAtTime(.0001, t + i * .1); g2.gain.exponentialRampToValueAtTime(.1, t + i * .1 + .03); g2.gain.exponentialRampToValueAtTime(.0001, t + i * .1 + .4); o2.start(t + i * .1); o2.stop(t + i * .1 + .42); }); }
   } catch (e) { }
 }
@@ -336,6 +339,7 @@ const Voice = {
   talk(on) { this.all().forEach(s => s.classList.toggle('talking', !!on)); },
   nod() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.flash(); this.all().forEach(s => { s.classList.remove('nod'); void s.offsetWidth; s.classList.add('nod'); setTimeout(() => s.classList.remove('nod'), 700); }); },
   busy(on) { if (typeof TEACHER !== 'undefined') TEACHER.classList.toggle('busy', !!on); },
+  almost() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.almost(); this.all().forEach(s => { s.classList.remove('tilt'); void s.offsetWidth; s.classList.add('tilt'); setTimeout(() => s.classList.remove('tilt'), 900); }); },
   tilt() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.shiver(); this.all().forEach(s => { s.classList.remove('tilt'); void s.offsetWidth; s.classList.add('tilt'); setTimeout(() => s.classList.remove('tilt'), 900); }); },
   mood(m) { if (typeof TEACHER === 'undefined') return; TEACHER.classList.remove('neutral', 'pleased', 'thinking'); TEACHER.classList.add(m || 'neutral'); },
 };

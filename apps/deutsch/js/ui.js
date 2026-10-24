@@ -44,6 +44,8 @@ function renderCrash(v, err) {
 }
 
 /* ---------- shared pieces ---------- */
+/* the Protoa mark at badge size (shared/brand/protoa-mark-small.svg); its colours come from depth.css so it follows the theme */
+const BRAND_MARK = '<svg viewBox="0 0 120 120"><circle class="mk-shell" cx="60" cy="60" r="46"/><circle class="mk-mid" cx="60" cy="60" r="18"/><circle class="mk-nuc" cx="60" cy="60" r="9"/><g transform="rotate(-18 60 60)"><path class="mk-gap" d="M26 60 A34 10 0 0 0 94 60"/><path class="mk-ring" d="M26 60 A34 10 0 0 0 94 60"/></g></svg>';
 /* ---------- the teacher: ONE glossy orb that lives in the first slot of each learning screen ---------- */
 const TEACHER = h('div', { class: 'orb companion neutral', 'aria-hidden': 'true' }, h('i', { class: 'shadow' }), h('div', { class: 'float' }, h('i', { class: 'ball' }, h('i', { class: 'caustic' }), h('i', { class: 'core' }), h('i', { class: 'glare' }), h('i', { class: 'spark' }))));
 function teacherSlot(size = 56, mood = 'neutral') { return h('div', { class: 'tslot', 'data-size': size, 'data-mood': mood, style: `width:${size}px;height:${size}px` }); }
@@ -258,7 +260,7 @@ function lessonBuild(v, L, ls) {
     if (done) return; const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g);
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: '✓ ' + (r.note || 'Richtig.'), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
-    else { ls.battempts++; save('progress'); uiSound('bad'); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
+    else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
   actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] });
@@ -348,9 +350,9 @@ function lessonConv(v, L, ls) {
         log.append(bubble(C.log[C.log.length - 1])); if (r.note) log.append(h('div', { class: 'fb ok', style: 'align-self:flex-end;max-width:90%', html: '✓ ' + r.note }));
         turnbox.innerHTML = ''; document.querySelector('.actionbar')?.remove(); setTimeout(advance, r.note ? 1200 : 500);
       } else {
-        attempts.n++; C.attempts = attempts.n; save('progress'); uiSound('bad');
+        attempts.n++; C.attempts = attempts.n; save('progress'); uiSound('bad', r);
         if (attempts.n === 1) { ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>')); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
-        else if (attempts.n === 2) { ladder.append(fbEl('hint', r.hint)); Voice.tilt(); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
+        else if (attempts.n === 2) { ladder.append(fbEl('hint', r.hint)); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
         else {
           const ul = glossEl(t.de, t.g); ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'The line is:'), h('div', { class: 'row' }, ul, playBtn(t.de)))); ladder.append(explainBtn(ans, fill(t.de), fill(t.en))); speak(t.de, { el: ul });
           C.firstTry.push(0); S.progress.recent = S.progress.recent.concat(0).slice(-40); if (!q.again) C.missed.push(q.i);
@@ -418,7 +420,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return; fb.innerHTML = '';
       if (it.kind === 'r') { result = checkEnglish(a, def ? def.en : []); if (result.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ ' + esc(def.en.join(', ')) + (result.note ? ' — ' + esc(result.note) : '')); } else { uiSound('bad'); fb.append(exRow()); showGrades(0, 'bad', '<em lang="de">' + esc(it.id) + '</em> = ' + esc(def ? def.en.join(', ') : '?')); } }
-      else { const target = it.kind === 'ls' ? sentence : it.id; const r = diagnose(a, target, mergedLex({}), def ? def.exG : null, it.kind === 'ls' ? [] : [bare]); result = r; if (r.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ <em lang="de">' + esc(target) + '</em> — ' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + (r.note ? ' ' + r.note : '')); } else { uiSound('bad'); fb.append(exRow()); showGrades(0, 'bad', 'It was <em lang="de">' + esc(target) + '</em> (' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + ').'); } }
+      else { const target = it.kind === 'ls' ? sentence : it.id; const r = diagnose(a, target, mergedLex({}), def ? def.exG : null, it.kind === 'ls' ? [] : [bare]); result = r; if (r.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ <em lang="de">' + esc(target) + '</em> — ' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + (r.note ? ' ' + r.note : '')); } else { uiSound('bad', r); fb.append(exRow()); showGrades(0, 'bad', 'It was <em lang="de">' + esc(target) + '</em> (' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + ').'); } }
     };
     card.append(inp, it.kind === 'r' ? '' : h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, check)), fb); setTimeout(() => inp.focus(), 50);
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
@@ -430,7 +432,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return; const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
       if (r.ok) { uiSound('ok'); const noArt = def.type === 'n' && !/^(der|die|das)\b/i.test(a); showGrades(noArt ? 1 : 2, 'ok', '✓ <em lang="de">' + esc(it.id) + '</em>' + (noArt ? ' — say the article with it: ' + { m: 'der', f: 'die', n: 'das' }[def.g] : '') + (r.note ? ' ' + r.note : '')); }
-      else { uiSound('bad'); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>. ' + (r.hint || '')); }
+      else { uiSound('bad', r); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>. ' + (r.hint || '')); }
     };
     card.append(w.el, fb); setTimeout(() => inp.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   } else { // conversation line with the help ladder
@@ -443,7 +445,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = widget.value().trim(); if (!a) return; const r = diagnose(a, s.de, mergedLex(L.lex), s.g, s.alts || []); fb.innerHTML = '';
       if (r.ok) { result = r; uiSound('ok'); fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); showGrades(attempts ? 1 : 2, 'ok', '✓ ' + (r.note || 'Richtig.')); }
-      else { attempts++; uiSound('bad'); if (attempts === 1) actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
+      else { attempts++; uiSound('bad', r); if (attempts === 1) actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
     };
     card.append(widget.el, fb); if (widget.focus) setTimeout(() => widget.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   }
