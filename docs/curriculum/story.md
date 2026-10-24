@@ -1,4 +1,6 @@
-# Story bible
+# Story guide
+
+**Nothing religious or political anywhere in the app** (owner rule, brief #1): no religion, faith, churches or religious holidays, no politics, parties, elections, protests or political figures, in lessons, examples, scenes, art or the exam. Keep life in Berlin everyday: cafés, work, family, sport, transport, food, weather.
 
 One cast, one Berlin, one slow story that runs under the whole course. Content writes lessons from this file; story keeps it. Every lesson adds facts to the continuity log (bottom) when it merges. If a lesson needs a fact that is not here, it adds it to its PR and story approves it in the review.
 
