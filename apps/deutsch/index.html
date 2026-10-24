@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Protoa</title>
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/depth.css">
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i>
+<svg class="orrery" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <g transform="translate(1180 230) rotate(-17)">
+    <ellipse rx="190" ry="64"/><ellipse rx="330" ry="112"/><ellipse rx="500" ry="170"/><ellipse rx="720" ry="246"/><ellipse rx="990" ry="338"/><ellipse class="far" rx="1320" ry="452"/>
+    <path class="hi" d="M -500 0 A 500 170 0 0 1 120 -165"/>
+    <path class="hi" d="M 720 0 A 720 246 0 0 1 300 224"/>
+    <circle class="body" cx="-330" cy="-8" r="4"/><circle class="body" cx="560" cy="152" r="3"/><circle class="body sm" cx="-860" cy="166" r="2.2"/>
+  </g>
+  <g transform="translate(180 930) rotate(12)">
+    <ellipse rx="260" ry="90"/><ellipse rx="460" ry="160"/><ellipse class="far" rx="700" ry="240"/>
+  </g>
+</svg></div>
+<div id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Sections"></aside>
+  <div class="col">
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="brand"><span class="dot" aria-hidden="true">P</span>Protoa</div>
+      <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    </div>
+  </header>
+  <main><div class="wrap" id="view" aria-live="polite"></div></main>
+  </div>
+  <aside class="rail" id="rail" aria-label="Your day"></aside>
+</div>
+<div id="overlay"></div>
+<script src="js/content.js"></script>
+<script src="js/core.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+<script src="../../shared/orb/glorb.js"></script>
+<script src="js/companion.js"></script>
+<script src="js/map.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/tilt.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
