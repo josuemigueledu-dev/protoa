@@ -8,6 +8,7 @@
     "setup": "npm install --prefix server",
     "dev": "npm run dev --prefix server",
     "start": "npm start --prefix server",
-    "test": "npm test --prefix server"
+    "test": "npm test --prefix server",
+    "smoke": "node scripts/smoke.mjs"
   }
 }
