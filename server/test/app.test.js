@@ -131,6 +131,34 @@ test('AI calls are rate limited per client', withKey(async () => {
   if (old === undefined) delete process.env.AI_RATE_LIMIT; else process.env.AI_RATE_LIMIT = old;
 }));
 
+test('an unexpected error answers 502 without leaking its message', withKey(async () => {
+  const log = console.error; console.error = () => {};
+  try {
+    const app = createApp({ runJSON: async () => { throw new Error('secret internal detail sk-ant-123'); } });
+    const r = await post(app, '/api/deutsch/ai/correctSentence', SAMPLE.correctSentence);
+    const text = await r.text();
+    assert.equal(r.status, 502); assert.equal(JSON.parse(text).error.code, 'upstream');
+    assert.doesNotMatch(text, /secret|sk-ant/);
+  } finally { console.error = log; }
+}));
+
+test('X-Forwarded-For picks the rate-limit client only when TRUST_PROXY is set', withKey(async () => {
+  const keep = { limit: process.env.AI_RATE_LIMIT, proxy: process.env.TRUST_PROXY };
+  process.env.AI_RATE_LIMIT = '1';
+  const send = (app, ip) => app.request('/api/deutsch/ai/correctSentence', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': `${ip}, 10.0.0.1` }, body: JSON.stringify(SAMPLE.correctSentence) }).then(r => r.status);
+  const run = async () => ({ corrected: '', error: '', extend: '' });
+  try {
+    delete process.env.TRUST_PROXY;
+    let app = createApp({ runJSON: run });
+    assert.deepEqual([await send(app, '1.1.1.1'), await send(app, '2.2.2.2')], [200, 429], 'a spoofed header must not dodge the limit');
+    process.env.TRUST_PROXY = '1';
+    app = createApp({ runJSON: run });
+    assert.deepEqual([await send(app, '1.1.1.1'), await send(app, '2.2.2.2'), await send(app, '1.1.1.1')], [200, 200, 429]);
+  } finally {
+    for (const [k, v] of [['AI_RATE_LIMIT', keep.limit], ['TRUST_PROXY', keep.proxy]]) if (v === undefined) delete process.env[k]; else process.env[k] = v;
+  }
+}));
+
 test('serves the app, the shared orb, and nothing outside them', async () => {
   const app = createApp();
   assert.equal((await app.request('/')).headers.get('location'), '/deutsch/');
