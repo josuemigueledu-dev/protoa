@@ -3,6 +3,11 @@ const Q = new URLSearchParams(location.search);
 const THEME = Q.get('theme') === 'dark' ? 'dark' : 'light';
 const FRAME = Q.get('frame') || '1';
 document.documentElement.setAttribute('data-theme', THEME);
+/* ?palette=a|b|c loads a palette direction from palettes.css, after every other stylesheet */
+if (/^[abc]$/.test(Q.get('palette') || '')) {
+  document.documentElement.dataset.palette = Q.get('palette');
+  document.addEventListener('DOMContentLoaded', () => document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="palettes.css">'));
+}
 const MARK = '<svg viewBox="0 0 120 120"><circle class="mk-shell" cx="60" cy="60" r="46"/><circle class="mk-mid" cx="60" cy="60" r="18"/><circle class="mk-nuc" cx="60" cy="60" r="9"/><g transform="rotate(-18 60 60)"><path class="mk-gap" d="M26 60 A34 10 0 0 0 94 60"/><path class="mk-ring" d="M26 60 A34 10 0 0 0 94 60"/></g></svg>';
 const AURORA = '<i></i><i></i><i></i>';
 const ICON = {

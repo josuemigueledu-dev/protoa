@@ -129,3 +129,19 @@ Research (sources below) lists the patterns that make a product look AI-generate
 - [ ] Characters look identical in light and dark mode.
 - [ ] None of the visual tells in the table above remain on any screen.
 - [ ] A lesson's text passes a read-aloud test: nothing a Berliner wouldn't say, no hollow praise.
+
+# Round 3: colour palette (owner pick, Oct 24, 2026)
+
+The owner picked **C · Blaue Stunde** (Berlin at blue hour, the orb's own world) over the old palette and directions A and B. See it with `mockups/palettes.html?p=c` (compare `?p=now`); every mockup page takes `&palette=c`. The values are in `mockups/palettes.css`, under `:root[data-palette="c"]` plus the shared rules at the top.
+
+What changes, and what stays:
+- **Stays:** the glass, the orb, azure as the one action colour, the radius and type rules.
+- **Ground:** cool blue-white `#e8edfa` in light, deep night blue `#060a24` in dark. No grey.
+- **Hero panes** (Today hero, Sprechen hero, chapter banners, "Weiter", tickets, scene captions): ultramarine `#0d1660` to `#2443d6`, with a warm street-lamp glow (`--pane-glow`) in the top corner.
+- **Wins and progress:** amber `#ffb85c` (`--ring`) for the goal ring, progress bars and celebration moments. Azure stays for buttons and links; amber never becomes a button colour.
+- **Fields behind content:** soft blue (`--field-1`, `--field-2`) behind the primary card and word pictures, with amber and ice-cyan fields (`--field-3`, `--field-4`) to tell neighbouring cards apart. They are tints over glass, never solid blocks.
+- **Dark mode never dims the art** (`filter: none` on scene and conversation art).
+
+**Pictures (owner's note):** the art does *not* take the UI palette. Plates, cast and word pictures use colours that suit their subject (a real café's wood and cream, green plants, a yellow U-Bahn, natural food colours, real skin tones), chosen so they stand out against the blue-hour UI without clashing: keep them slightly muted and warm, so they read as lit by the same evening light, never neon and never tinted blue. Skin and clothes are identical in light and dark.
+
+Done when: the app's tokens (`shared/art/tokens.css`, `apps/deutsch/css/*.css`) carry palette C in both themes; Today, a lesson scene, a word card, the conversation and Done match `mockups/palettes.html?p=c` side by side; contrast passes WCAG AA in both themes; no screen still shows the old grey ground.
