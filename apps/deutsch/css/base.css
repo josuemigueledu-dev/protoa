@@ -590,3 +590,11 @@ body.in-talk main{padding-bottom:240px}
 .map-head+.levels{margin-top:-4px}
 
 
+
+/* empty states */
+.empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 16px}
+.empty-icon{width:72px;height:72px;border-radius:var(--r);background:var(--yellow-soft);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.empty-icon .sig{width:52px;height:52px}
+.empty h3{margin:0}
+.empty p{margin:0;max-width:32ch;font-size:var(--t-cap)}
+.empty .btn{margin-top:8px}

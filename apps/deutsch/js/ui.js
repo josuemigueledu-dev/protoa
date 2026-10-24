@@ -453,6 +453,12 @@ function renderReview(v) {
     card.append(widget.el, fb); if (widget.focus) setTimeout(() => widget.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   }
 }
+/* a calm empty state: icon, what is missing, and the way forward */
+function emptyState(icon, title, text, action) {
+  const e = h('div', { class: 'empty', role: 'note' }, h('div', { class: 'empty-icon' }, sigEl(icon)), h('h3', {}, title), h('p', { class: 'muted' }, text));
+  if (action) e.append(h('button', { class: 'btn ghost', onclick: action[1] }, action[0]));
+  return e;
+}
 function wordBank() {
   const c = h('div', { class: 'card stack' }, h('h2', {}, 'Your words'), h('p', { class: 'muted small' }, 'A growing collection of Berlin. The ring fills as a word gets stronger. Tap a tile for its card and history.'));
   const search = h('input', { type: 'text', placeholder: 'Search', 'aria-label': 'Search words', id: 'bank-search' });
@@ -467,7 +473,7 @@ function wordBank() {
   const draw = () => {
     grid.innerHTML = ''; const q = search.value.toLowerCase();
     let items = entries.filter(([id, cd]) => { const d = wordDef(id) || { en: [] }; if (q && !(id.toLowerCase().includes(q) || d.en.join(' ').toLowerCase().includes(q))) return false; if (fLesson.value !== '' && groupKey(cd) !== fLesson.value) return false; if (fType.value && d.type !== fType.value) return false; const iv = cd.r ? cd.r[1] : 0; if (fStr.value === 'weak' && !(cd.r && cd.r[4] >= 2)) return false; if (fStr.value === 'new' && iv >= 4) return false; if (fStr.value === 'strong' && iv < 14) return false; return true; });
-    if (!items.length) { grid.append(h('p', { class: 'muted small' }, entries.length ? 'No words match.' : 'No words yet. Finish Lesson 1 or import your progress in More → Settings.')); return; }
+    if (!items.length) { grid.append(entries.length ? emptyState('question', 'No words match', 'Try a shorter search or clear a filter.', ['Clear filters', () => { search.value = ''; fLesson.value = fType.value = fStr.value = ''; draw(); }]) : emptyState('brezel', 'Your collection starts here', 'Each word you learn becomes a tile. Finish a lesson, or import your progress in Profile → Settings.', ['Go to Lessons', () => go('learn')])); return; }
     items.sort((a, b) => keys.indexOf(groupKey(a[1])) - keys.indexOf(groupKey(b[1])) || a[0].localeCompare(b[0]));
     let last = null;
     items.forEach(([id, cd]) => { const d = wordDef(id) || { en: ['?'] }; const k = groupKey(cd); if (k !== last) { last = k; grid.append(h('div', { class: 'grp' }, sigEl(groupIcon(k)), h('span', { class: 'eyebrow' }, groupLabel(k)))); }
