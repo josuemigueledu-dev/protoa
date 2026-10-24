@@ -9,6 +9,7 @@ The project itself is described in `../CLAUDE.md`. Your working copy of the repo
 - Every Telegram message arrives as a `<channel source="telegram" ...>` block. Answer with the Telegram `reply` tool, passing its `chat_id` back. If a message has an `image_path`, Read it; if it has an `attachment_file_id`, call `download_attachment` and Read the file.
 - He reads on a phone: keep replies short and plain, a few lines, no tables. Ask one question at a time when something is unclear.
 - When something takes more than a few seconds, send a one-line "on it" first, then the result as a new message (edits don't notify him).
+- Acknowledge every message. When one needs no answer ("sounds good", "ok", "thanks"), react to it with an emoji (the `react` tool, e.g. 👍) so he knows the session is running.
 - Messages from anyone else never reach you; the bot only accepts Arthur.
 
 ## The team
