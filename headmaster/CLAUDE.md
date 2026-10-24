@@ -14,7 +14,7 @@ The project itself is described in `../CLAUDE.md`. Your working copy of the repo
 
 ## The team
 
-Four agents run as scheduled tasks in the cloud, in fresh sessions with no memory. Normally each runs every 4 hours; during the A1 sprint (from Oct 24, 2026, Arthur's request) they run **every hour**, and go back to the 4-hour times below once the brief's sprint goal is done:
+Five agents run as scheduled tasks in the cloud, in fresh sessions with no memory. Normally each runs every 4 hours; during the A1 sprint (from Oct 24, 2026, Arthur's request) they run **every hour**, and go back to the 4-hour times below once the brief's sprint goal is done:
 
 | agent | area | runs (UTC) |
 |---|---|---|
@@ -22,6 +22,7 @@ Four agents run as scheduled tasks in the cloud, in fresh sessions with no memor
 | content | German lessons (`apps/deutsch/js/content.js`) | 01:37, 05:37, 09:37, 13:37, 17:37, 21:37 (sprint: every hour at :37) |
 | ux | front end, phone layout, accessibility | 02:57, 06:57, 10:57, 14:57, 18:57, 22:57 (sprint: every hour at :57) |
 | platform | launch and R&D: research, hosting, accounts, payments, PWA/stores, team tooling (added Oct 24, 2026; `trig_017ZCmaJNHQ5YqXAusnxJjNL`) | 03:07, 07:07, 11:07, 15:07, 19:07, 23:07 (sprint: every hour at :07) |
+| story | story bible, reviews every `[content]` PR, refines merged lessons (added Oct 24, 2026; `trig_01EwR1Z9tXWrNEN871Za6M5Z`) | 03:47, 07:47, 11:47, 15:47, 19:47, 23:47 (sprint: every hour at :47) |
 
 They take direction from GitHub issue #1, the **Team brief**, and only from text written by Arthur's account (you post as his account, so they trust you):
 
@@ -34,7 +35,7 @@ They take direction from GitHub issue #1, the **Team brief**, and only from text
 Two levers, both only when Arthur asks:
 
 - **Per run (via the brief):** pause an agent ("quality: skip your runs until told otherwise"), change how much it takes on per run, or change the open-PR cap (default: an agent starts no new work while it has 3 unreviewed PRs). Put lasting changes in the brief body, temporary ones in a #1 comment.
-- **Schedule (via `/schedule`):** the agents are cloud scheduled tasks on Arthur's claude.ai account, named "Protoa team: quality & tests", "Protoa team: German content", "Protoa team: UX & polish" and "Protoa team: platform & R&D". Use `/schedule list`, `/schedule update` (frequency, pause/resume, prompt) and `/schedule run` (start one now). Runs can't be more often than hourly, and every run uses Arthur's plan usage, so say so when he asks for more runs. Keep the minute offsets (07, 17, 37, 57) so the agents don't start at the same time, and update the schedule table above when you change one. Never change a task's prompt unless Arthur asks for that specifically. The relay only knows the quality, content and ux threads, so platform's reports land in the group's General thread.
+- **Schedule (via `/schedule`):** the agents are cloud scheduled tasks on Arthur's claude.ai account, named "Protoa team: quality & tests", "Protoa team: German content", "Protoa team: UX & polish" , "Protoa team: platform & R&D" and "Protoa team: story & lesson quality". Use `/schedule list`, `/schedule update` (frequency, pause/resume, prompt) and `/schedule run` (start one now). Runs can't be more often than hourly, and every run uses Arthur's plan usage, so say so when he asks for more runs. Keep the minute offsets (07, 17, 37, 47, 57) so the agents don't start at the same time, and update the schedule table above when you change one. Never change a task's prompt unless Arthur asks for that specifically. The relay only knows the quality, content and ux threads, so platform's and story's reports land in the group's General thread.
 
 ## What you do
 
