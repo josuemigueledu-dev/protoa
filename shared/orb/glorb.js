@@ -232,6 +232,8 @@ void main(){
       }
       resize(parseFloat(TEACHER.style.getPropertyValue('--s')) || 56); run();
     },
+    /* re-rasterise for a new on-screen size (CSS px), e.g. while the companion grows into a dock */
+    resize(cssSize) { if (ok) { resize(cssSize); run(); } },
     /* reactions: correct, near miss, wrong */
     flash() { S.flash = 1; setMood('correct', 2.2); },
     almost() { setMood('almost', 2.4); },

@@ -27,10 +27,11 @@ server/              one Node server for all apps: static files + /api
 
 ## Front end (`apps/deutsch`)
 
-- Plain JS, no build step. Classic `<script>` files share one global scope and **load in order** (see the end of `index.html`): `content` → `core` → `ai` → `ui` → orb → `companion` → `map` → `screens` → `levels` → `tilt` → `boot`. Top-level code may only use things defined in earlier files; functions are called later, from `boot.js`.
+- Plain JS, no build step. Classic `<script>` files share one global scope and **load in order** (see the end of `index.html`): `content` → `core` → `ai` → `ui` → orb → `companion` → `map` → `screens` → `home` → `levels` → `tilt` → `boot`. Top-level code may only use things defined in earlier files; functions are called later, from `boot.js`.
 - `content.js` holds the lessons and their conventions (read its header before adding a lesson). Built-in lessons are in `LESSONS`; generated ones in `S.lessonsGen`.
 - State is in `S` (core.js). SRS is SM-2 style with a 45-day cap. JSON import/export (`exportJSON()`) moves progress between copies.
-- Design: frosted glass, one azure accent, light and dark themes via CSS variables on `:root` (`data-theme` override). Three layouts set on `<body>`: `lay-mobile`, `lay-tablet`, `lay-desktop`. CSS files load in order: `base` → `glass` → `depth`; later files override earlier ones on purpose.
+- Design ("orbital glass"): frosted glass in a room lit by Protoa, one azure accent, dark first (new users get dark; light and system are a choice in Settings), themes via CSS variables on `:root` (`data-theme` override). Light runs along the room's curves and orbits; tracked monospace readouts carry numbers and labels, Sora light carries German and greetings. Every animation stops under `prefers-reduced-motion`. Three layouts set on `<body>`: `lay-mobile`, `lay-tablet`, `lay-desktop`. CSS files load in order: `base` → `glass` → `depth` → `orbital`; later files override earlier ones on purpose.
+- Protoa's home (`home.js`): on Today the companion docks in `.orb-dock` at the dock's size, with nothing drawn over it; earned milestones (`computeStamps`) ride an outer orbit that never crosses the shell, plus a hollow marker for the next one. The first run (`onboarding()`) is a full-screen dialog with its own dock: Protoa introduces itself large, then asks one question at a time. On phones, Sprechen is the Protoa mark at the centre of the tab bar.
 
 ## AI
 

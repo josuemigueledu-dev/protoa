@@ -16,7 +16,13 @@ const ICONS = {
 const TYPE_LABEL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', prep: 'preposition', phrase: 'phrase', interj: 'interjection', conj: 'conjunction', pron: 'pronoun', part: 'particle', q: 'question word', num: 'number' };
 const TABS = [['today', 'Today'], ['learn', 'Lessons'], ['practice', 'Practice'], ['talk', 'Sprechen'], ['profile', 'Profile']];
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { const b = h('button', { class: 'tab', 'aria-current': (route === id || (id === 'profile' && (route === 'more' || route === 'grammar'))) ? 'page' : null, onclick: () => go(id), html: ICONS[id] + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); }); renderSidebar(); }
+/* on phones Sprechen sits in the middle of the tab bar, drawn as the Protoa mark: talking to Protoa is the main act */
+function renderTabs() {
+  tabsEl.innerHTML = ''; const phone = document.body.classList.contains('lay-mobile');
+  const tabs = phone ? ['today', 'learn', 'talk', 'practice', 'profile'].map(id => TABS.find(t => t[0] === id)) : TABS;
+  tabs.forEach(([id, label]) => { const orb = phone && id === 'talk'; const b = h('button', { class: 'tab' + (orb ? ' orbtab' : ''), 'aria-current': (route === id || (id === 'profile' && (route === 'more' || route === 'grammar'))) ? 'page' : null, onclick: () => go(id), html: (orb ? '<span class="mark">' + BRAND_MARK + '</span>' : ICONS[id]) + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); });
+  renderSidebar();
+}
 function go(r) { if (r !== route) { NAV = 'fade'; if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
@@ -134,18 +140,14 @@ function actionBar(opts) {
 
 /* ---------- TODAY ---------- */
 function renderToday(v) {
-  const name = S.profile.name; const hour = new Date().getHours(); const greet = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
-  const g0 = goalInfo();
-  v.append(h('div', { class: 'today-hero' }, teacherSlot(64, 'pleased'), h('div', {}, h('h1', {}, greet + (name ? ', ' + name : '') + '!'), h('p', {}, g0.today >= g0.perDay ? 'Today\'s words are done. Reviews keep them.' : `${g0.perDay - g0.today} new words to go today.`)), h('div', { class: 'goal' }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner' }, h('span', {}, g0.today), h('small', {}, 'of ' + g0.perDay)))));
+  const ls = S.progress.lessonState, gateT = examGate();
+  const curN = gateT ? (ls && ls.n != null && !lessonBlocked(ls.n) ? ls.n : null) : currentLessonN(), L = lessonById(curN);
+  v.append(todayHero(L));
   v.append(progressHeader());
-  const due = dueCards().length, ls = S.progress.lessonState, nextN = nextLessonN();
-  const gateT = examGate();
+  const due = dueCards().length;
   if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, 'Prüfung ' + gateT.code), h('div', { class: 'faint' }, 'Pass with 90 % to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
-  const curN = gateT ? (ls && ls.n != null && !lessonBlocked(ls.n) ? ls.n : null) : currentLessonN(); const L = lessonById(curN);
-  const next = h('div', { class: 'card stack' + (gateT ? '' : ' primary') }, h('div', { class: 'eyebrow' }, ls && ls.n === curN ? 'Continue your line' : 'Next station'));
-  if (L) { const c = courseOf(L.n); next.append(h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + L.n + ' · ' + L.title + ' · ' + L.words.length + ' words'))), h('button', { class: 'btn wide', onclick: () => openOnMap(L.n) }, ls && ls.n === curN ? 'Continue' : 'Go to station')); }
-  else next.append(h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map'));
-  if (L || !gateT) v.append(next);
+  if (L || !gateT) v.append(stationCard(L, ls, curN, !!gateT));
+  v.append(quickCheck());
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', {}, h('div', { class: 'eyebrow' }, 'Reviews'), h('div', {}, h('span', { class: 'big' }, due), h('span', { class: 'muted' }, due === 1 ? ' card due' : ' cards due'))), h('button', { class: 'btn ' + (due ? '' : 'ghost'), onclick: () => { if (due) startReview(dueCards()); else go('practice'); } }, due ? 'Review now' : 'Open Practice'))));
   if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0: Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
   v.append(h('button', { class: 'card listrow', onclick: () => go('talk') }, h('span', { class: 'sig talkico', html: ICONS.talk }), h('div', { class: 'grow' }, h('b', { lang: 'de' }, 'Sprechen'), h('div', { class: 'faint' }, 'Talk with Protoa at your level. Every line you write is corrected.')), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›')));
@@ -575,16 +577,7 @@ function renderSettings(v) {
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Danger zone'), h('button', { class: 'btn ghost', onclick: () => { const b = h('button', { class: 'btn', style: 'background:var(--bad);color:#fff', onclick: () => { Object.keys(S.cards).forEach(k => { S.cards[k] = { w: {}, updatedAt: Date.now() }; save(null, k); }); S.progress = DEF_PROGRESS(); save('progress'); toast('Progress reset'); go('today'); } }, 'Yes, erase everything'); v.append(h('div', { class: 'card row' }, h('span', {}, 'Erase all German progress on this account?'), b)); } }, 'Reset progress…')));
 }
 
-/* ---------- Onboarding (§5) ---------- */
-function onboarding() {
-  const p = S.profile; const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'About you' }); const inner = h('div', { class: 'in' });
-  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', {}, 'Guten Tag. Ich bin Protoa.'), h('p', { class: 'muted small' }, 'Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
-  const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
-  const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
-  const close = saveIt => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); render(); };
-  inner.append(h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => close(true) }, 'Save and start'), h('button', { class: 'btn ghost', onclick: () => close(false) }, 'Skip for now')));
-  sheet.append(inner); document.body.append(sheet); setTimeout(() => inputs.name.focus(), 100);
-}
+/* ---------- Onboarding (§5): the first run lives in home.js ---------- */
 
 /* ---------- Generate a lesson with Claude (§12) ---------- */
 async function generateLesson() {

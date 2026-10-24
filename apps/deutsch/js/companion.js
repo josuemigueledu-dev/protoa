@@ -1,30 +1,37 @@
 /* ============================================================
    Companion: the teacher floats above the page (screen space) and places itself by what you are doing.
    Priority of what it attends to:
+     0. the first run's dock (it introduces itself there, whatever has focus)
      1. the sentence being read aloud            (speak(..., {el}))
      2. the field you are typing in
      3. an open sheet (station preview, exam rules)
      4. the feedback that just appeared          (right / not quite)
+     4½. its home on Today (.orb-dock): it docks there at the dock's size, with nothing drawn over it,
+        for as long as most of the dock is on screen
      5. in a lesson, review, drill or exam: the task card; in Sprechen: the newest message
      6. on the map: the current station, on the side away from its label
      7. otherwise the block you are reading: the one under a reading line at 36 % of the viewport,
         so it travels down the page with you as you scroll
    It sits in the gutter beside that block (right, else left); where there is no gutter (phones) it perches
    on the block's top-right corner so it does not cover text. Never follows the cursor.
+   Its size eases between its floating size and the dock's, and the GL canvas is re-rasterised as it grows.
    Motion of its own: an underdamped spring (soft overshoot on arrival), a stretch along its travel,
    its core lagging behind inside the glass, and a small hover drift when settled.
    ============================================================ */
 const Companion = (() => {
   const P = { x: -1, y: -1, vx: 0, vy: 0, raf: 0, last: 0, attend: null, sq: 0, ang: 0, seed: Math.random() * 50, a: null, aAt: 0, lookAt: null };
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const size = () => document.body.classList.contains('lay-mobile') ? 58 : 72;
+  const size = () => document.body.classList.contains('lay-mobile') ? 58 : 72;   /* floating size; docked it takes the dock's */
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
+  const mostlyVis = el => { const b = vis(el); if (!b) return null; const seen = Math.min(b.bottom, innerHeight) - Math.max(b.top, 0); return seen >= b.height * .55 ? b : null; };
   function anchor() {
     const view = document.getElementById('view'); let b, el;
+    el = document.querySelector('.firstrun .orb-dock'); if (el && (b = vis(el))) return { b, kind: 'home', el };
     if (P.attend && (b = vis(P.attend))) return { b, kind: 'speak', el: P.attend };
     el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && (b = vis(el))) return { b, kind: 'input', el };
     el = document.querySelector('.sheet:not(.closing) .in'); if (el && (b = vis(el))) return { b, kind: 'sheet', el };
     el = document.querySelector('.actionbar.ok .msg,.actionbar.bad .msg'); if (el && (b = vis(el))) return { b, kind: 'feedback', el };
+    el = view.querySelector('.orb-dock'); if (el && (b = mostlyVis(el))) return { b, kind: 'home', el };
     if (document.body.classList.contains('in-lesson')) {
       const chat = view.querySelectorAll('.chatlog .bub:not([hidden])'); if (chat.length && (b = vis(chat[chat.length - 1]))) return { b, kind: 'task', el: chat[chat.length - 1] };
       el = view.querySelector('.lesson-top ~ .card,.lesson-top ~ .conv,.lesson-top ~ .scene'); if (el && (b = vis(el))) return { b, kind: 'task', el };
@@ -47,6 +54,7 @@ const Companion = (() => {
   }
   function place(a) {
     const s = size(), gap = 22, b = a.b, [L, R] = limits(); let x, y;
+    if (a.kind === 'home') return [b.left + b.width / 2, b.top + b.height / 2];
     if (a.kind === 'feedback') return [Math.min(innerWidth - s * .7, b.right - s * .2), b.top - s * .8];
     if (a.kind === 'station') return [a.left ? b.left - gap - s / 2 : b.right + gap + s / 2, b.top + b.height / 2];
     if (a.kind === 'sheet') { if (b.right + gap + s <= innerWidth - 8) return [b.right + gap + s / 2, b.top + s * .8]; return [b.right - s * .55, b.top - s * .5]; }
@@ -73,7 +81,7 @@ const Companion = (() => {
     if (a) { [x, y] = place(a); P.lookAt = a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
     else { [x, y] = rest(); P.lookAt = null; }
     if (!still()) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
-    const m = s * .62; return [Math.min(innerWidth - m, Math.max(m, x)), Math.min(innerHeight - m, Math.max(m + 4, y))];
+    const m = (a && a.kind === 'home' ? a.b.width : s) * .62; return [Math.min(innerWidth - m, Math.max(m, x)), Math.min(innerHeight - m, Math.max(m + 4, y))];
   }
   /* SmoothDamp (critically damped): eases in and out, never overshoots or bounces */
   function damp(cur, tgt, vel, T, maxV, dt) {
@@ -95,8 +103,15 @@ const Companion = (() => {
   function frame(now) {
     P.raf = 0; if (!TEACHER.isConnected) return;
     const dt = Math.min(.05, (now - (P.last || now)) / 1000) || .016; P.last = now;
-    const [rx, ry] = target(now, now / 1000), s = size(), calm = still();
+    const [rx, ry] = target(now, now / 1000), calm = still();
     if (P.x < 0) { P.x = P.tx = rx; P.y = P.ty = ry; }
+    /* size: ease toward the dock's width or the floating size; re-rasterise the GL canvas in 8 px steps, never below what is shown */
+    const ts = P.a && P.a.kind === 'home' ? P.a.b.width : size();
+    if (!P.s) P.s = ts;
+    [P.s, P.vs] = damp(P.s, ts, P.vs || 0, calm ? .1 : .5, 2000, dt);
+    const s = P.s;
+    if (Math.abs(s - (P.shown || 0)) > .25) { P.shown = s; TEACHER.style.setProperty('--s', s.toFixed(2) + 'px'); }
+    const raster = Math.ceil(Math.max(s, ts) / 8) * 8; if (raster !== P.raster && typeof GLOrb !== 'undefined' && GLOrb.ok) { P.raster = raster; GLOrb.resize(raster); }
     /* ease the target itself, so switching what it attends to never jerks */
     const ke = 1 - Math.exp(-dt / (calm ? .05 : .16)); P.tx += (rx - P.tx) * ke; P.ty += (ry - P.ty) * ke;
     /* a new trip starts when the destination moves far: remember it for the arc */
@@ -132,9 +147,9 @@ const Companion = (() => {
     const c0 = [8, 28, 72], c1 = [0, 0, 0]; T.setProperty('--sh-c', c0.map((v, i) => Math.round(v + (c1[i] - v) * SH.dark)).join(','));
     P.raf = requestAnimationFrame(frame);
   }
-  addEventListener('resize', () => { if (TEACHER.isConnected) TEACHER.style.setProperty('--s', size() + 'px'); });
+  addEventListener('resize', () => { P.aAt = 0; });   /* the next frame re-anchors and eases to the new size */
   return {
-    arrive() { TEACHER.style.setProperty('--s', size() + 'px'); P.aAt = 0; if (!P.raf) { P.last = 0; P.raf = requestAnimationFrame(frame); } },
+    arrive() { if (!P.s) TEACHER.style.setProperty('--s', size() + 'px'); P.aAt = 0; P.raster = 0;   /* GLOrb.attach() rasterises at --s; let the next frame correct it */ if (!P.raf) { P.last = 0; P.raf = requestAnimationFrame(frame); } },
     attend(el) { if (el) { P.attend = el; P.aAt = 0; } },
     release(el) { if (!el || P.attend === el) { P.attend = null; P.aAt = 0; } },
     look() { return P.lookAt; },

@@ -8,5 +8,5 @@ document.addEventListener('keydown', e => { if (e.target.matches('textarea')) re
   render();
   if (!S.settings.onboarded) onboarding();
   await loadRemote(); S.ready = true; flushPendingSaves(); applyTheme();
-  if (!S.settings.onboarded && !document.querySelector('.sheet')) onboarding(); else if (S.settings.onboarded) { document.querySelector('.sheet:not(.word)')?.remove(); render(); }
+  if (!S.settings.onboarded) onboarding(); else { document.querySelector('.firstrun')?.remove(); document.getElementById('app').inert = false; render(); }
 })();
