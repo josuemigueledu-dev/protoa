@@ -186,7 +186,9 @@ function startLesson(n, fresh) {
 }
 function pauseLesson() { stopAudio(); const ls = S.progress.lessonState; if (ls) { ls.paused = true; save('progress'); } go('learn'); toast('Saved. Pick it up again from the map.'); }
 function setStep(step, extra = {}, dir = 'fwd') { Object.assign(S.progress.lessonState, { step }, extra); save('progress'); NAV = dir; render(); }
-function sceneEl(L) { const d = h('div', { class: 'scene' }); d.innerHTML = SCENES[L.scene.id] || SCENES.classroom; d.append(h('span', { class: 'cap' }, L.scene.cap)); return d; }
+function sceneEl(L) {
+  const plate = L.scene.plate || 'plate.' + L.scene.id, art = typeof ART !== 'undefined' && ART[plate];
+  const d = h('div', { class: art ? 'scene art' : 'scene' }); d.innerHTML = art ? sceneArt({ plate, cast: L.scene.cast || [], event: L.scene.event }) : SCENES[L.scene.id] || SCENES.classroom; d.append(h('span', { class: 'cap' }, L.scene.cap)); return d; }
 function renderLessonFlow(v) {
   const ls = S.progress.lessonState, L = lessonById(ls.n);
   const SCREENS = { scene: lessonScene, notice: lessonNotice, words: lessonWords, check: lessonCheck, build: lessonBuild, conv: lessonConv, done: lessonDone };

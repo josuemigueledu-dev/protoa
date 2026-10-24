@@ -189,3 +189,12 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .brand .mk-shell{fill:var(--mk-shell)} .brand .mk-mid{fill:var(--mk-mid)} .brand .mk-nuc{fill:#fff}
 .brand .mk-gap,.brand .mk-ring{fill:none;stroke-linecap:round}
 .brand .mk-gap{stroke:var(--mk-shell);stroke-width:18} .brand .mk-ring{stroke:var(--mk-ring);stroke-width:8.5}
+
+/* ---------- art primitives (js/art.js; palette in shared/art/tokens.css) ---------- */
+.il{display:inline-block;flex:none} .il svg{display:block;width:100%;height:100%}
+.bust{display:inline-block;flex:none;border-radius:50%;overflow:hidden;background:var(--il-mist);box-shadow:inset 0 0 0 1px var(--line)}
+.bust svg{display:block;width:100%;height:100%}
+.scene.art{background:var(--il-mist)}
+.ev-pop{transform-box:fill-box;transform-origin:center;animation:evpop .3s cubic-bezier(.34,1.4,.64,1) both}
+@keyframes evpop{from{transform:scale(.6)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.ev-pop{animation:none}}
