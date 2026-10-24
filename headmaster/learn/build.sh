@@ -6,13 +6,14 @@ cd "$(dirname "$0")"
 REPO=../..
 ID=$(git -C $REPO log -1 --format=%h -- apps/deutsch shared)
 OUT=b/$ID
-rm -rf "$OUT" && mkdir -p "$OUT/css" "$OUT/js"
+rm -rf "$OUT" && mkdir -p "$OUT/css" "$OUT/js/lessons"
 cp $REPO/apps/deutsch/css/*.css "$OUT/css/"
 cp $REPO/shared/art/tokens.css "$OUT/css/tokens.css"
 cp $REPO/apps/deutsch/js/*.js "$OUT/js/"
+[ -d $REPO/apps/deutsch/js/lessons ] && cp $REPO/apps/deutsch/js/lessons/*.js "$OUT/js/lessons/"
 cp $REPO/shared/orb/glorb.js "$OUT/js/glorb.js"
 # the app's own markup (between <body> and the first <script>), and its script and font order
 sed -n '/<body>/,/<script/p' $REPO/apps/deutsch/index.html | sed '1d;$d' > "$OUT/body.html"
-grep -o '<script src="[^"]*"' $REPO/apps/deutsch/index.html | sed 's/<script src="//;s/"$//;s#.*/##' > "$OUT/scripts.txt"
+grep -o '<script src="[^"]*"' $REPO/apps/deutsch/index.html | sed 's/<script src="//;s/"$//;s#^js/##;s#.*/glorb.js#glorb.js#' > "$OUT/scripts.txt"
 grep -o 'https://fonts.googleapis.com/css2[^"]*' $REPO/apps/deutsch/index.html | head -1 > "$OUT/fonts.txt"
 echo "$ID"
