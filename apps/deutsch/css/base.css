@@ -31,7 +31,7 @@
   --shadow-lg:0 2px 4px rgba(16,36,72,.05),0 18px 40px -16px rgba(16,36,72,.28),0 50px 90px -40px rgba(16,36,72,.38);
   --aur-1:rgba(255,255,255,.9); --aur-2:rgba(150,178,255,.55); --aur-3:rgba(255,184,110,.28); --aur-4:rgba(120,210,255,.4); --gridline:rgba(30,40,60,.035); --orbit:rgba(40,56,84,.16); --orbit-hi:rgba(40,110,230,.34);
   /* type */
-  --display:'Sora','Manrope',system-ui,sans-serif; --text:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --hero:'Unbounded','Sora',system-ui,sans-serif; --display:'Sora',system-ui,-apple-system,sans-serif; --text:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
   --t-title:1.625rem; --t-body:1.0625rem; --t-cap:.8125rem; --t-de:1.25rem; --t-small:.8125rem;
   --r:24px; --r-sm:14px; --r-xs:8px; --ease:cubic-bezier(.22,1,.36,1); --spring:cubic-bezier(.2,1.35,.4,1);
   color-scheme:light;
@@ -408,7 +408,7 @@ body:not(.lay-mobile) .weiter{bottom:24px}
 
 /* ---------- today ---------- */
 .today-hero{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:24px;display:flex;align-items:center;gap:16px;overflow:hidden;position:relative}
-.today-hero h1{color:var(--bg)}
+.today-hero h1{color:var(--bg);font-family:var(--hero);font-weight:600;letter-spacing:-.02em}
 body.lay-mobile .today-hero{padding:16px;gap:12px} body.lay-mobile .today-hero h1{font-size:var(--t-de)} body.lay-mobile .today-hero .goal{width:64px;height:64px} body.lay-mobile .today-hero .goal .ring{width:64px!important;height:64px!important} .today-hero p{color:var(--bg);opacity:.8;font-size:var(--t-cap)}
 .today-hero .goal{margin-left:auto;position:relative;width:80px;height:80px;flex:none}
 .today-hero .goal .ring circle.bg{stroke:rgba(255,255,255,.14)} .today-hero .goal .ring circle.fg{stroke:var(--ring)}

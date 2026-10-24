@@ -66,7 +66,7 @@ h2,h3{letter-spacing:-.01em}
 .badge{background:linear-gradient(180deg,var(--badge-1),var(--badge-2));color:var(--white);box-shadow:0 0 0 2px var(--card-solid),0 4px 10px -2px rgba(196,44,72,.55)}
 
 /* ---------- type accents ---------- */
-.eyebrow,.lesson-top .steplbl,.st .lab .soon,.kbd,.choice kbd,.srclabel{font-family:var(--mono);font-weight:600;letter-spacing:.12em}
+.eyebrow,.lesson-top .steplbl,.st .lab .soon,.kbd,.choice kbd,.srclabel{font-family:var(--text);font-weight:600;letter-spacing:.12em}
 .eyebrow{font-size:.71875rem;color:var(--muted)}
 .kbd,.choice kbd{background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line);font-size:.75rem;letter-spacing:0}
 .big,.stat .n,.kpi .n,.lv b{font-weight:600;letter-spacing:-.035em}
