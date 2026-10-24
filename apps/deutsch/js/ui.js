@@ -84,7 +84,7 @@ function openWordSheet(bare) {
   sheet.append(inner); document.body.append(sheet);
 }
 function playBtn(text, label = 'Play', cls = '') { return h('button', { class: 'icon-btn ' + cls, 'aria-label': label + ' ' + text, html: ICONS.play, onclick: () => speak(text) }); }
-function umlautRow(input) { const r = h('div', { class: 'umlauts', 'aria-label': 'German characters' }); 'ä ö ü ß Ä Ö Ü'.split(' ').forEach(c => r.append(h('button', { type: 'button', onclick: () => { const s = input.selectionStart ?? input.value.length, e = input.selectionEnd ?? s; input.value = input.value.slice(0, s) + c + input.value.slice(e); input.focus(); input.setSelectionRange(s + 1, s + 1); input.dispatchEvent(new Event('input')); } }, c))); return r; }
+function umlautRow(input) { const r = h('div', { class: 'umlauts', role: 'group', 'aria-label': 'German characters' }); 'ä ö ü ß Ä Ö Ü'.split(' ').forEach(c => r.append(h('button', { type: 'button', onclick: () => { const s = input.selectionStart ?? input.value.length, e = input.selectionEnd ?? s; input.value = input.value.slice(0, s) + c + input.value.slice(e); input.focus(); input.setSelectionRange(s + 1, s + 1); input.dispatchEvent(new Event('input')); } }, c))); return r; }
 function deInput(attrs = {}) { const i = h('input', Object.assign({ type: 'text', class: 'de-input', lang: 'de', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' }, attrs)); i.addEventListener('input', () => { const v = applyShortcuts(i.value); if (v !== i.value) { const p = i.selectionStart - 1; i.value = v; i.setSelectionRange(p, p); } }); return i; }
 // "Say it": a mic button that dictates German into an input (Chrome's speech recognition; hidden elsewhere)
 function micBtn(input, onDone) {
@@ -157,7 +157,7 @@ function openOnMap(n) { NAV = 'fade'; route = 'learn'; const ls = S.progress.les
 function nextLessonN() { const all = allLessons().map(l => l.n); return all.find(n => !S.progress.lessonsDone.includes(n)) || null; }
 function writeYourOwn() {
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Write your own'), h('p', { class: 'muted small' }, "One German sentence with words you know. You get it back corrected, with the main error named and one way to extend it."));
-  const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input' }); const out = h('div', { class: 'stack' });
+  const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input', 'aria-label': 'Say where you are from, in German' }); const out = h('div', { class: 'stack' });
   const btn = h('button', { class: 'btn', onclick: async () => {
     const s = inp.value.trim(); if (!s) return; if (!S.ai) { out.innerHTML = ''; out.append(fbEl('note', 'Claude is not available right now, so I cannot check this.')); return; }
     btn.disabled = true; Voice.busy(true); out.innerHTML = ''; out.append(fbEl('hint', 'Protoa is reading your sentence…'));
