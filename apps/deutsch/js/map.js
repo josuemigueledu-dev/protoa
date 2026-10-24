@@ -125,7 +125,7 @@ function stationEl(it, W, cx, firstSoon) {
   const room = Math.max(96, right ? W - (it.x + r + 16) - 16 : it.x - r - 16 - 16);
   const tappable = it.state !== 'soon';
   let label, icon, aria;
-  if (it.kind === 'lesson') { label = [h('b', { lang: 'de' }, it.c.station), h('span', {}, it.c.topic)]; icon = sigEl(it.c.icon); aria = `${it.c.station}, lesson ${it.n}: ${it.c.topic}, ${({ done: 'done', now: 'current station', locked: 'locked', soon: 'coming soon' })[it.state]}`; }
+  if (it.kind === 'lesson') { label = [h('b', { lang: 'de' }, it.c.station), h('span', {}, it.c.topic)]; icon = sigEl(it.c.icon); aria = `${it.c.station}, lesson ${it.n}: ${it.c.topic}, ${({ done: 'done', now: 'current station', locked: 'locked, opens after ' + (it.n > 1 ? courseOf(it.n - 1).station : 'the previous lesson'), soon: 'coming soon' })[it.state]}`; }
   else if (it.kind === 'review') { label = [h('b', { lang: 'de' }, 'Wiederholung'), h('span', {}, 'Review of ' + courseOf(it.from).station + ' – ' + courseOf(it.to).station)]; icon = sigEl('review'); aria = 'Review stop, ' + it.state; }
   else if (it.kind === 'exam') { label = [h('b', { lang: 'de' }, 'Prüfung ' + it.code), h('span', {}, it.state === 'done' ? 'bestanden' : it.state === 'now' ? 'Exam ready · pass at 90 %' : 'after this lesson')]; icon = sigEl('exam'); aria = 'Level exam ' + it.code + ', ' + it.state; }
   else if (it.kind === 'start') { label = [h('b', { lang: 'de' }, 'Laute'), h('span', {}, 'Lesson 0 · Sounds')]; icon = sigEl('sound'); aria = 'Lesson 0, Sounds'; }
@@ -136,6 +136,7 @@ function stationEl(it, W, cx, firstSoon) {
   if (it.state === 'locked' && it.kind === 'lesson') { const l = h('span', { class: 'lock', 'aria-hidden': 'true' }); l.innerHTML = LOCK_SVG; mk.append(l); }
   const lab = h('div', { class: 'lab', style: `max-width:${room}px` }, ...label);
   if (it.state === 'soon' && it.kind !== 'term') lab.append(h('span', { class: 'soon' }, 'Bald'));
+  if (it.state === 'locked' && it.kind === 'lesson' && it.n > 1) lab.append(h('span', { class: 'why' }, 'Opens after ' + courseOf(it.n - 1).station));
   if (firstSoon) lab.append(h('button', { class: 'btn ghost sm write', onclick: generateLesson }, 'Write it with Claude'));
   st.append(mk, lab); return st;
 }
