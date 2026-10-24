@@ -199,13 +199,14 @@ Fixing screen by screen has not produced a coherent look. So:
 
 # Round 7: the cast looks like Dance Central 2, reimagined (owner, Oct 24, 2026)
 
-The owner: **"I want the characters to have the look aesthetic of Dance Central 2 characters. But reimagined for our use."**
+The owner: **"I want the characters to have the look aesthetic of Dance Central 2 characters. But reimagined for our use."** And, clarifying: **"I mean in terms of look, design philosophy, not how they dress or act necessarily."**
 
-What to take from *Dance Central 2* (Harmonix, 2011), and how to translate it:
-- **Stylised 3D-looking people, not cartoons.** Adult, slightly elongated proportions (long legs, defined shoulders and waist, smallish heads), smooth volumetric shading with a clear key light and a coloured rim light, clean surfaces with few details. Faces are simplified but attractive and adult, with real features and attitude; expressions are confident, never goofy.
-- **Fashion and silhouette carry the character.** Each person has a strong, styled outfit and a silhouette you recognise from across the room, with bold colour blocking and one signature accessory. Translate to our cast as everyday Berlin style, not club costumes: Herr Weber in a tailored cardigan and sharp glasses, Lena in streetwear with her guitar case, Ana in a smart architect's look (structured jacket), Murat with a barista apron over a crisp shirt and rolled sleeves.
-- **Poses with energy.** Weight shifts, a lean, a gesture mid-movement, as if caught between dance moves; never standing stiffly.
-- **Lit like a stage, but in Berlin.** DC2's club lights become blue-hour ambient light plus warm amber from lamps and windows (palette C), with a rim light that separates the figure from the background. That ties straight into Round 6 (light as the material) and the orb as the light source.
-- **Not a copy:** no Dance Central characters, outfits, logos or dance moves; the cast stays our own people from the story guide.
+So this round is about **how the people are designed and rendered**, not their clothes, poses or personality (those come from the story guide). What to take from *Dance Central 2* (Harmonix, 2011):
+- **Stylised realism.** Believable adults pushed slightly toward the ideal: elongated proportions (long legs, defined shoulders and waist, smallish heads), clean anatomy, no caricature and nothing childlike.
+- **Clean, simplified surfaces with real volume.** Smooth shading that models the form (a clear key light, soft falloff, a coloured rim light separating the figure from the background), few small details, crisp silhouettes. It reads as 3D, polished and graphic at the same time.
+- **Faces:** simplified but attractive and adult, real features (eyes with lids, nose, jaw, lips) drawn with economy, expressions carried by brows, eyes and mouth.
+- **Bold, deliberate colour** per character, with each person readable at a glance by shape and colour, lit by the scene's light.
+- **Lighting as part of the look:** DC2's stage lights become our blue-hour ambient plus warm amber lamp and window light (palette C), so the people belong to the same world as Round 6's glass and light.
+- **Not a copy:** no Dance Central characters, designs or logos.
 
-Rounds 4 and 5 still hold (adult proportions, depth, real places, skin and clothes identical in light and dark). This round sets the style; ux uses it for the people in the Round 6 redesign mockups (`mockups/neo/`), drawn in SVG with layered gradients for the 3D shading and rim light.
+Clothes, poses and behaviour follow the story guide and each scene. Rounds 4 and 5 still hold (adult proportions, depth, real places, skin and clothes identical in light and dark). ux uses this for the people in the Round 6 redesign mockups (`mockups/neo/`), drawn in SVG with layered gradients for the shading and rim light.
