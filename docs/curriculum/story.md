@@ -14,7 +14,7 @@ Rules that keep it from reading like a textbook (also `docs/specs/visual-directi
 
 | Person | Facts | How they talk | What they want |
 |---|---|---|---|
-| **Herr Weber** | Teacher, Volkshochschule am Hermannplatz. From Berlin (Wedding). Mid-50s. Cardigan, chalk on his sleeve. Gets *Sie* from everyone, uses *Sie* with students in class. | Short, precise sentences, dry humour, says *So.* before he changes topic. Never raises his voice. | His students to speak, not to be perfect. A phone call he does not want to miss (see threads). |
+| **Herr Weber** | Teacher, Volkshochschule am Hermannplatz. From Berlin (Wedding). Mid-50s (decided here: from Wedding). Cardigan, chalk on his sleeve. Gets *Sie* from everyone, uses *Sie* with students in class. | Short, precise sentences, dry humour, says *So.* before he changes topic. Never raises his voice. | His students to speak, not to be perfect. A phone call he does not want to miss (see threads). |
 | **Ana** | From Mexico City, 29. Lives in Neukölln. Joined the course in lesson 3. Plays football with Lena. Spanish speaker, so she is the learner's ally on false friends. | Fast, asks questions, corrects herself mid-sentence (*Nein, warte*). | To get her work recognised in Germany (see threads). |
 | **Lena** | From Rome, 24. Plays guitar in a band that plays on Friday evenings. Plays football with Ana. Drinks three coffees a day. Always looking at the clock or her phone. | Blunt, a bit distracted, funny when she is not looking at her phone. Says *Ach so* and *Na gut*. | A gig she is waiting to hear about (see threads). |
 | **Murat** | The barista at the café next to the school, 40s. Calls the learner *Sie*. Already knows the learner's order. Unnamed until lesson 15 (name tag). | Calm, formal, theatrical about coffee. *Bitte schön. Einen Moment.* | The café's regulars to come back; he keeps a stamp card. |
@@ -25,7 +25,7 @@ Pronoun rule: use *you* for the learner in English intros; never *he* or *she*.
 
 ## Places
 
-- **Volkshochschule am Hermannplatz, room 2.04.** Second floor, window onto the U8 line, a board, a map of Europe (from lesson 4), 7 chairs. The radiator knocks. Course days: **Tuesday and Thursday, 9:00.** Teaching blocks last until the break.
+- **Volkshochschule am Hermannplatz, room 2.04.** Second floor, window onto the U8 line, a board, a map of Europe (from lesson 4), 7 chairs. The radiator knocks. Course days: **Tuesday and Thursday, 9:00.** 
 - **The café next to the school** (name on the awning appears in lesson 15: *Café Eck*). Break at 10:30. Counter on the left, one table by the window (Lena's), a chalkboard menu, the stamp card by the till. Murat's espresso machine hisses when someone is about to ask for something.
 - **Neukölln**, where the learner and Ana live. Karl-Marx-Straße is the main street, the U7 runs under it. The learner's flat appears in lessons 17–18.
 - **U-Bahn**: U8 (Hermannplatz), U7 (Karl-Marx-Straße, Rathaus Neukölln). The course takes them to Alexanderplatz, Kottbusser Tor and Schlesisches Tor later.
@@ -33,7 +33,7 @@ Pronoun rule: use *you* for the learner in English intros; never *he* or *she*.
 
 ## Weekly rhythm
 
-Tuesday 9:00 in room 2.04 (lessons in the classroom). Thursday 9:00 the same, and the 10:30 break at the café (lessons set in the café). Lessons alternate, in this pattern: Tuesday classroom, Thursday classroom or café, depending on the topic. Weekends are outside the course; lessons that need them (hobbies, invitations) start on Thursday with a plan for Saturday and end on the next Tuesday with what happened.
+Course days are Tuesday and Thursday, 9:00, room 2.04. The break at 10:30 is at the café. A lesson is set in the classroom or, when the topic is food, money or small talk, in the café, and the day is always named in the scene. Weekends are outside the course: lessons that need one (hobbies, invitations) start on Thursday with a plan for Saturday and the next Tuesday says what happened.
 
 ## Running threads (small mysteries, with where they pay off)
 
@@ -41,7 +41,7 @@ Tuesday 9:00 in room 2.04 (lessons in the classroom). Thursday 9:00 the same, an
 2. **Lena's phone and clock (lessons 6–8, 9).** Lena is waiting for an answer from a venue about a Saturday slot. We never say what until lesson 39. Small signs: she checks the time, turns her phone face down when Weber looks, and says *Ach so* when someone mentions Friday. Payoff in lessons 39–40 (hobbies, music) and 45–46 (invitation): the bar says yes, she invites the whole course.
 3. **Ana's reason (lesson 3 onwards).** Ana joined late in a hurry and avoids saying why she came to Berlin. Reveal in lessons 25–26 (jobs): she is an architect in Mexico City; in Germany her degree needs recognition, which needs B1. Until then she works at a bakery. Callback: she measures things with her hands and counts rooms.
 4. **Murat's stamp card (lesson 5 onwards, "he knows your order").** From lesson 15 the card has stamps. At lesson 16 (paying) it has nine; the tenth coffee is free. The Done stamp in the app can echo it.
-5. **The seventh chair (lesson 9).** Ana counts the room twice and gets *sechs*, then *sieben* when Tomasz arrives. Tomasz is late every Thursday after that, and always has an excuse in a number (*Die U8 hatte zehn Minuten Verspätung*, lesson 19). Never explained; it is a running joke.
+5. **The seventh chair (lesson 9).** Ana counts the room twice and gets *sechs*, then *sieben* when Tomasz arrives. Tomasz is late every Thursday after that, and always has an excuse in a number (*Die U8 ist spät*, lesson 19). Never explained; it is a running joke.
 6. **The map of Europe (lesson 4).** Weber hung it beside the board. Pins appear for every country mentioned in the course. By lesson 60 it is full.
 
 ## Chapter arcs (each ends in a review stop, the last in the A1 exam)
@@ -87,7 +87,7 @@ Established facts, by lesson. Add a line per merged lesson.
 - **4** Thursday. Ana and Lena sit next to the learner. A map of Europe beside the board. Lena says she is from Italy; Ana is from Mexico. Language guessing game.
 - **5** Tuesday 10:30, the café next to the school. Ana lives in Neukölln, so does the learner. The barista is a stranger, so *Sie*. The learner works in Berlin.
 - **6** Thursday 10:30, the café. Lena has a guitar case, plays in a band on Friday evenings. The barista already knows the learner's order. Lena drinks coffee, plays football with Ana.
-- **7** Tuesday 9:00. Four question words on the board. Ana asks why the learner learns German; Lena looks at the clock. The learner goes to the café.
+- **7** Tuesday 9:00. Four question words on the board. The learner asks Ana why she learns German; Lena asks where everyone goes and looks at the clock. The learner goes to the café.
 - **8** Thursday 10:30, outside the café. Lena keeps looking at her phone; Ana is late. Lena is from Rome, not Spain (Ana's quiz). Lena and Ana play football "tomorrow".
 - **9** (in PR #36) Tuesday 9:00. The class counts. Room 2.04 is *zwei null vier*. Lena drinks three coffees a day. See the story review for the fixes that make it consistent with this file.
 
