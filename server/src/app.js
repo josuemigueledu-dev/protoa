@@ -15,6 +15,9 @@ const rel = p => path.relative(process.cwd(), path.join(ROOT, p)) || '.';
 // Each Protoa app registers its AI tasks under its own name.
 const APPS = { deutsch };
 
+// Own properties only: names like "constructor" or "toString" must not resolve to inherited functions.
+const own = (obj, key) => (obj && Object.hasOwn(obj, key) ? obj[key] : undefined);
+
 function clientKey(c) {
   if (process.env.TRUST_PROXY) {
     const fwd = c.req.header('x-forwarded-for');
@@ -32,7 +35,7 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON } = {}) {
     bodyLimit({ maxSize: 256 * 1024, onError: c => c.json({ error: { code: 'too_large', message: 'Request too large.' } }, 413) }),
     rateLimiter({ limit: Number(process.env.AI_RATE_LIMIT) || 60, windowMs: 10 * 60 * 1000, key: clientKey }),
     async c => {
-      const task = APPS[c.req.param('app')]?.[c.req.param('task')];
+      const task = own(own(APPS, c.req.param('app')), c.req.param('task'));
       if (!task) return c.json({ error: { code: 'not_found', message: 'Unknown task.' } }, 404);
       let body;
       try { body = await c.req.json(); } catch { return c.json({ error: { code: 'bad_request', message: 'Body must be JSON.' } }, 400); }
