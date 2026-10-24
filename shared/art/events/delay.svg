@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Delay of 20 minutes">
+<g style="stroke:var(--il-ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round"><circle cx="80" cy="80" r="72" style="fill:var(--il-mist)"/><circle cx="80" cy="70" r="34" style="fill:var(--il-paper)"/><path d="M80 70v-20M80 70l14 8" style="fill:none"/><rect x="44" y="110" width="72" height="28" rx="14" style="fill:var(--il-bright)"/></g><text x="80" y="130" text-anchor="middle" style="fill:var(--il-ink);font:600 15px Sora,sans-serif">+20 Min</text><path d="M56 56q6-10 16-12" style="fill:none;stroke:var(--il-hi);stroke-width:4;stroke-linecap:round"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Station stamp: {station}">
+<defs><path id="stamp-top" d="M26 80a54 54 0 0 1 108 0"/><path id="stamp-bot" d="M30 84a50 50 0 0 0 100 0"/></defs>
+<g style="fill:none;stroke:var(--il-ink);stroke-width:4"><circle cx="80" cy="80" r="74"/><circle cx="80" cy="80" r="44" style="stroke-width:2"/></g>
+<text style="fill:var(--il-ink);font:600 13px Sora,sans-serif;letter-spacing:.12em"><textPath href="#stamp-top" startOffset="50%" text-anchor="middle">{station}</textPath></text>
+<text style="fill:var(--il-ink);font:600 11px Sora,sans-serif;letter-spacing:.2em"><textPath href="#stamp-bot" startOffset="50%" text-anchor="middle" dominant-baseline="hanging">ANGEKOMMEN</textPath></text>
+<svg x="52" y="52" width="56" height="56" viewBox="0 0 64 64">{icon}</svg>
+</svg>

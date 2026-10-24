@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="der Kaffee">
+<ellipse cx="60" cy="106" rx="42" ry="6" style="fill:var(--il-shadow)"/><g style="stroke:var(--il-ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><ellipse cx="60" cy="96" rx="42" ry="9" style="fill:var(--il-ice)"/><path d="M86 54h5a13 13 0 0 1 0 26h-7" style="fill:none"/><path d="M30 46h58v22a26 26 0 0 1-26 26h-6a26 26 0 0 1-26-26z" style="fill:var(--il-paper)"/><ellipse cx="59" cy="46" rx="29" ry="7" style="fill:var(--il-deep)"/><path d="M46 32q-5-6 0-12M60 30q-5-6 0-12M74 32q-5-6 0-12" style="fill:none"/></g><path d="M37 58q0 16 9 26" style="fill:none;stroke:var(--il-hi);stroke-width:5;stroke-linecap:round"/>
+</svg>

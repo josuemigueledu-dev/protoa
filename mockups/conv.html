@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lesson · Conversation · Protoa mockup</title>
+<script src="mock.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="../shared/art/tokens.css">
+<link rel="stylesheet" href="../apps/deutsch/css/base.css">
+<link rel="stylesheet" href="../apps/deutsch/css/glass.css">
+<link rel="stylesheet" href="../apps/deutsch/css/depth.css">
+<link rel="stylesheet" href="rules.css">
+</head>
+<body class="lay-mobile in-lesson mock">
+<div class="aurora" aria-hidden="true"></div>
+<div id="app"><div class="col"><main><div class="wrap" id="view"><div class="view stack" style="gap:16px">
+<div class="lesson-top">
+  <div class="who"><span class="sig" data-art="icon.hand" data-size="32"></span><div style="min-width:0;display:flex;flex-direction:column"><b lang="de">Hermannplatz</b><span>Lesson 1 · Greetings</span></div></div>
+  <button class="icon-btn sm close" aria-label="Leave lesson" data-icon="x"></button>
+  <div class="segs" role="progressbar" aria-label="Lesson progress"><i title="Scene"><b style="width:100%"></b></i><i title="Words"><b style="width:100%"></b></i><i title="Check"><b style="width:100%"></b></i><i title="Build"><b style="width:100%"></b></i><i title="Conversation"><b style="width:55%"></b></i></div>
+  <span class="oslot s40" data-orb="neutral"></span>
+  <div class="steplbl">Conversation</div>
+</div><div data-frame="1" class="stack" style="gap:12px">
+<div class="row" style="justify-content:space-between"><div><div class="eyebrow">The conversation · Volkshochschule</div><div class="faint">Tap a word to hear it</div></div></div>
+<div class="conv"><div class="bgscene" data-scene="{&quot;plate&quot;: &quot;plate.classroom&quot;, &quot;cast&quot;: [{&quot;id&quot;: &quot;cast.weber&quot;, &quot;x&quot;: 1230, &quot;mood&quot;: &quot;amused&quot;}]}"></div><div class="log" role="log"><div class="bub w" data-mood="amused"><span data-bust="cast.weber#amused" data-size="40"></span><div class="box"><div class="de" lang="de">Aus Orlando, schön! Sind Sie Student?</div><div class="en-after small muted">From Orlando, nice! Are you a student?</div></div></div>
+<div class="bub l done"><div class="box"><div class="de" lang="de">Ja, ich bin Student.</div><span class="check" aria-label="correct">✓</span></div></div>
+<div class="bub p"><span class="oslot s40" data-orb="correct"></span><div class="box"><div class="eyebrow">Protoa</div><div class="small">No article before a job or role: <em lang="de">ich bin Student</em>, not <em lang="de">ein Student</em>.</div></div></div></div><div class="turnbox"><div class="prompt">Herr Weber asks how you are. Answer: <i>Good, thank you.</i></div><div class="tiles" lang="de"><span class="tile">Gut,</span><span class="tile">danke.</span><span class="tile">Hallo</span></div></div></div></div><div data-frame="2" class="stack" style="gap:12px">
+<div class="row" style="justify-content:space-between"><div><div class="eyebrow">The conversation · Volkshochschule</div><div class="faint">Tap a word to hear it</div></div></div>
+<div class="conv"><div class="bgscene" data-scene="{&quot;plate&quot;: &quot;plate.classroom&quot;, &quot;cast&quot;: [{&quot;id&quot;: &quot;cast.weber&quot;, &quot;x&quot;: 1230, &quot;mood&quot;: &quot;surprised&quot;}], &quot;event&quot;: &quot;event.phone&quot;}"></div><div class="log" role="log"><div class="bub l done"><div class="box"><div class="de" lang="de">Gut, danke.</div><span class="check" aria-label="correct">✓</span></div></div>
+<div class="bub w" data-mood="surprised"><span data-bust="cast.weber#surprised" data-size="40"></span><div class="box"><div class="de" lang="de">Oh! Entschuldigung, mein Telefon …</div><div class="en-after small muted">Oh! Sorry, my phone …</div></div></div>
+<div class="twistnote"><i></i>Twist · a phone rings in the middle of class</div></div><div class="turnbox"><div class="prompt">Tell him it is no problem: <i>Kein Problem.</i></div><div class="tiles" lang="de"><span class="tile">Kein</span><span class="tile">Problem.</span><span class="tile">danke</span></div></div></div></div>
+</div></div></main></div></div>
+<div class="actionbar"><div class="in"><button class="btn">Check</button></div></div><script src="orb.js"></script>
+<script src="art-bundle.js"></script>
+<script src="art.js"></script>
+</body>
+</html>

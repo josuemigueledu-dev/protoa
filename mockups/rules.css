@@ -1,0 +1,178 @@
+/* The spec's UI system rules and new components, layered over base → glass → depth.
+   Everything here is a proposal for the app's CSS; no colour is written as a literal. */
+
+/* ---------- radius: five values only ---------- */
+:root{--r-xs:8px}
+.btn,.btn.sm,.tile,.choice,input[type=text],.umlauts button,.icon-btn.sq{border-radius:var(--r-sm)}
+.kbd,.gl .w,.rule .ex button{border-radius:var(--r-xs)}
+.card,.ticket,.scene,.conv,.widget,.today-hero,.wcard .illus,.notice-line{border-radius:var(--r)}
+.mode,.btile{border-radius:var(--r-sm)}
+
+/* ---------- type weights: 500 body, 600 labels and buttons, 800 Sora headings ---------- */
+body{font-weight:500}
+.btn,.eyebrow,.chip,.tab,.steplbl,label.f,.faint b{font-weight:600}
+.eyebrow{letter-spacing:.08em}
+
+/* ---------- the mockup frame: one phone screen ---------- */
+html,body{min-height:100%}
+body.mock{overflow-x:hidden}
+#view{gap:16px}
+
+/* ---------- orb slot: a reserved circle, never over content ---------- */
+.oslot{flex:none;border-radius:50%;position:relative;display:block}
+.oslot svg{position:absolute;inset:-8%;width:116%;height:116%}
+.oslot.s40{width:40px;height:40px} .oslot.s56{width:56px;height:56px} .oslot.s64{width:64px;height:64px}
+
+/* ---------- lesson header: station | close / progress | orb ---------- */
+.lesson-top{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who close" "segs orb" "lbl lbl";gap:10px 12px}
+.lesson-top .who{grid-area:who} .lesson-top .close{grid-area:close} .lesson-top .segs{grid-area:segs;grid-column:auto;align-self:center}
+.lesson-top .oslot{grid-area:orb} .lesson-top .steplbl{grid-area:lbl;grid-column:auto;margin-top:-6px}
+.lesson-top .who .sig{width:32px;height:32px;flex:none}
+.lesson-top .who .sig svg{width:100%;height:100%}
+
+/* ---------- art primitives ---------- */
+.il{display:inline-block;flex:none} .il svg{display:block;width:100%;height:100%}
+.bust{display:inline-block;flex:none;border-radius:50%;overflow:hidden;background:var(--il-mist);box-shadow:inset 0 0 0 1px var(--line)}
+.bust svg{display:block;width:100%;height:100%}
+
+/* word picture on its article plate (gender lives in the plate, never in the drawing) */
+.illus{display:flex;align-items:center;justify-content:center;flex:none;border-radius:var(--r);background:var(--chip);box-shadow:inset 0 0 0 1.5px var(--line)}
+.illus svg{width:82%;height:82%}
+.illus.m{background:var(--blue-soft);box-shadow:inset 0 0 0 1.5px var(--blue-soft)}
+.illus.f{background:var(--red-soft);box-shadow:inset 0 0 0 1.5px var(--red-soft)}
+.illus.n{background:var(--green-soft);box-shadow:inset 0 0 0 1.5px var(--green-soft)}
+.wcard .illus{width:168px;height:168px}
+.wcard .illus svg{width:136px;height:136px}
+.wcard .illus[style*="44px"],.illus[style*="44px"],.illus[style*="56px"]{border-radius:var(--r-xs)}
+
+/* word tile: a word without a picture */
+.wtile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:none;border-radius:var(--r);padding:8px;text-align:center;background:var(--chip);box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden}
+.wtile b{font-family:var(--display);font-weight:800;font-size:var(--t-de);line-height:1.1;letter-spacing:-.01em;overflow-wrap:anywhere}
+.wtile span{font:600 var(--t-cap) var(--text);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wtile.xs{border-radius:var(--r-xs);padding:3px}
+.wtile.xs b{font-size:var(--t-cap);font-weight:700;line-height:1.05}
+.wcard .wtile{width:168px;height:168px}
+.wcard .wtile b{font-size:2.25rem}
+
+/* ---------- scene frame ---------- */
+.scene{background:var(--il-mist)}
+.scene .cap{left:12px;bottom:12px;border-radius:999px}
+.can{display:flex;gap:10px;align-items:flex-start;font-size:var(--t-body);line-height:1.45}
+.can b{font-weight:600}
+
+/* ---------- notice: speaker bust beside the line ---------- */
+.saidby{display:flex;gap:12px;align-items:flex-start}
+.saidby .gl{flex:1;min-width:0}
+.notice-line{border-left:0;box-shadow:inset 0 0 0 1px var(--glass-edge),var(--shadow)}
+
+/* grammar sketch: swap (ink line plus one azure highlight, drawn on glass) */
+.sketch{background:transparent;border-radius:var(--r);box-shadow:inset 0 0 0 1.5px var(--line);padding:16px;display:flex;flex-direction:column;gap:10px}
+.sk-swap{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center}
+.sk-swap .who{font:600 var(--t-cap) var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sk-row{display:flex;gap:8px;align-items:center}
+.sk-chip{font-family:var(--display);font-weight:700;font-size:var(--t-de);padding:4px 12px;border-radius:var(--r-xs);box-shadow:inset 0 0 0 1.5px var(--il-ink);color:var(--ink)}
+.sk-chip.hi{box-shadow:inset 0 0 0 2px var(--il-bright);color:var(--il-bright)}
+.sk-arrows{grid-column:2;height:34px}
+.sk-arrows svg{display:block;height:34px;width:180px;overflow:visible}
+.sk-note{font-size:var(--t-cap);color:var(--muted)}
+
+/* ---------- pronunciation ---------- */
+.soundcard{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.soundcard .big-de{font-family:var(--display);font-weight:800;font-size:3.25rem;letter-spacing:-.02em;line-height:1}
+.soundcard .big-de u{text-decoration:none;color:var(--yellow);box-shadow:inset 0 -.12em 0 var(--yellow-soft)}
+.stress{display:flex;gap:10px;justify-content:center;font-size:1.1rem;line-height:1;color:var(--muted);letter-spacing:.1em}
+.stress b{color:var(--ink)}
+.mouthbox{display:flex;gap:16px;align-items:center;text-align:left}
+.mouthbox .il{width:96px;height:96px}
+.minis{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.minis .chip{font-family:var(--display);font-size:var(--t-body);padding:6px 12px;color:var(--ink);background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* ---------- conversation: plate at full strength under frosted glass ---------- */
+.conv{background:transparent;box-shadow:inset 0 0 0 1px var(--glass-edge),var(--shadow)}
+.conv .bgscene{opacity:1;inset:0 0 auto 0;aspect-ratio:16/9;height:auto}
+:root[data-theme="dark"] .conv .bgscene svg{filter:none}
+.conv .log{margin-top:120px;background:color-mix(in srgb,var(--card-solid) 72%,transparent);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border-radius:var(--r) var(--r) 0 0;box-shadow:inset 0 1px 0 var(--glass-hi);padding-top:18px}
+.bub .box{box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.bub.w .bust{width:40px;height:40px}
+.bub.p .oslot{margin-bottom:2px}
+.bub.p .box{background:var(--yellow-soft);box-shadow:inset 0 0 0 1px var(--yellow-soft)}
+.bub.p .box .eyebrow{color:var(--yellow);margin-bottom:2px}
+.bub .de{font-family:var(--display);font-weight:600;font-size:var(--t-body);line-height:1.35}
+.bub .en-after{display:block}
+.turnbox{background:color-mix(in srgb,var(--card-solid) 72%,transparent)}
+.ev-pop{transform-box:fill-box;transform-origin:center;animation:evpop .3s var(--spring) both}
+@keyframes evpop{from{transform:scale(.6)}to{transform:scale(1)}}
+.twistnote{display:flex;gap:8px;align-items:center;font-size:var(--t-cap);font-weight:600;color:var(--muted)}
+.twistnote i{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px var(--glow)}
+
+/* ---------- done: stamp and the words learned ---------- */
+.ticket .stamp{border:0;background:none;box-shadow:none;width:150px;height:150px;transform:rotate(-8deg);animation:stampin .24s var(--spring) both}
+.ticket .stamp svg{width:100%;height:100%}
+@keyframes stampin{from{transform:rotate(-8deg) scale(1.4)}to{transform:rotate(-8deg) scale(1)}}
+.learned{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:12px 8px;padding:0 24px 24px}
+.learned figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.learned figcaption{font-size:11px;line-height:1.15;color:var(--muted);font-weight:600}
+
+/* ---------- today: one ink hero, orb in its slot ---------- */
+.today-hero{gap:14px;padding:20px}
+.today-hero h1{font-size:var(--t-de)}
+.nextcard .sig.art,.hubhero .sig.art{width:56px;height:56px;padding:6px;border-radius:var(--r-sm);background:var(--yellow-soft);box-shadow:inset 0 0 0 1px var(--line)}
+.nextcard .sig.art svg,.hubhero .sig.art svg{width:100%;height:100%}
+.talkrow .oslot{margin:-4px 0}
+
+/* ---------- practice: locked and empty states ---------- */
+.hubhero .sig.chipicon{background:var(--yellow-soft);color:var(--yellow);box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r-sm);padding:12px;width:56px;height:56px}
+.hubhero .sig.chipicon svg{width:100%;height:100%}
+.empty{display:flex;align-items:center;gap:16px}
+.empty .il{width:88px;height:88px}
+.mode{min-height:120px;position:relative}
+.mode .il{width:40px;height:40px}
+.mode.locked{opacity:.6;pointer-events:none}
+.mode.locked .why{display:flex;align-items:center;gap:6px;color:var(--ink);font-weight:600;font-size:var(--t-cap);margin-top:auto}
+.mode.locked .why svg{width:14px;height:14px}
+.mode .lockglyph{position:absolute;top:12px;right:12px;width:18px;height:18px;color:var(--ink)}
+.mode .lockglyph svg{width:100%;height:100%}
+
+/* ---------- course map crop ---------- */
+.linecrop{position:relative;display:flex;flex-direction:column;gap:0;padding-left:8px}
+.linecrop .stn{display:flex;align-items:center;gap:14px;min-height:74px;position:relative}
+.linecrop .stn::before{content:"";position:absolute;left:27px;top:0;bottom:0;width:4px;border-radius:2px;background:var(--line-2)}
+.linecrop .stn.done::before,.linecrop .stn.now::before{background:var(--yellow)}
+.linecrop .stn.now::before{bottom:50%}
+.linecrop .stn:first-child::before{top:50%}
+.linecrop .stn:last-child::before{bottom:50%}
+.linecrop .mk{position:relative;z-index:1;width:58px;height:58px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:var(--card-solid);box-shadow:inset 0 0 0 3px var(--line-2)}
+.linecrop .mk .il{width:38px;height:38px}
+.linecrop .done .mk{box-shadow:inset 0 0 0 3px var(--yellow)}
+.linecrop .now .mk{box-shadow:inset 0 0 0 4px var(--yellow),0 0 0 6px var(--yellow-soft)}
+.linecrop .locked .mk .il{opacity:.6}
+.linecrop .lab{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.linecrop .lab b{font-family:var(--display);font-weight:800}
+.linecrop .lab span{font-size:var(--t-cap);color:var(--muted)}
+
+/* ---------- style sheet page ---------- */
+.swatches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sw{display:flex;align-items:center;gap:10px;font-size:var(--t-cap);min-width:0}
+.sw i{width:36px;height:36px;border-radius:var(--r-xs);flex:none;box-shadow:inset 0 0 0 1px var(--line)}
+.sw code{font:500 11px var(--mono);color:var(--muted);display:block}
+.sizes{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sizes figcaption,.cap-s{font:500 11px var(--mono);color:var(--muted)}
+.moods{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.moods figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.moods .bust{width:100%;height:auto;aspect-ratio:1}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid4 figure,.grid3 figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.plate{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.plate>svg{display:block;width:100%;height:100%}
+
+@media (prefers-reduced-motion:reduce){.ev-pop,.ticket .stamp{animation:none}}
+
+/* ---------- fixes found in the screenshots ---------- */
+[hidden]:not([hidden=until-found i]){display:none!important}
+.tab span[lang],p em[lang],.small em[lang],.sk-note span[lang],.minis [lang]{font-size:inherit}
+.oslot svg{inset:-25%;width:150%;height:150%}
+.conv .log{margin-top:150px}
+.minis .chip{gap:0}
+.wtile.xs b{font-size:var(--t-body);font-weight:800;letter-spacing:-.02em}

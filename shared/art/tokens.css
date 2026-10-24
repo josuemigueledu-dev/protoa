@@ -1,0 +1,17 @@
+/* Protoa illustration palette ("Frosted line"). Light values are the brand strata from shared/brand/README.md.
+   Every fill and stroke in an art file is var(--il-...); load this file before base.css. */
+:root{
+  --il-ink:#0b1220; --il-deep:#132a57; --il-mid:#1a48a6; --il-bright:#3a86f0; --il-ice:#7cc6ff;
+  --il-mist:#dbeaff; --il-paper:#f7f9fc; --il-sand:#ece3d6;
+  --il-shadow:rgba(11,18,32,.12); --il-hi:rgba(255,255,255,.55);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --il-ink:#dbe6f5; --il-deep:#1a3466; --il-mid:#2559c4; --il-bright:#5fa9ff; --il-ice:#9ad6ff;
+  --il-mist:#1b2a44; --il-paper:#24324c; --il-sand:#3d3a36;
+  --il-shadow:rgba(0,0,0,.35); --il-hi:rgba(255,255,255,.18);
+}}
+:root[data-theme="dark"]{
+  --il-ink:#dbe6f5; --il-deep:#1a3466; --il-mid:#2559c4; --il-bright:#5fa9ff; --il-ice:#9ad6ff;
+  --il-mist:#1b2a44; --il-paper:#24324c; --il-sand:#3d3a36;
+  --il-shadow:rgba(0,0,0,.35); --il-hi:rgba(255,255,255,.18);
+}

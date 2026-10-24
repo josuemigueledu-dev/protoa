@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Practice and map · Protoa mockup</title>
+<script src="mock.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="../shared/art/tokens.css">
+<link rel="stylesheet" href="../apps/deutsch/css/base.css">
+<link rel="stylesheet" href="../apps/deutsch/css/glass.css">
+<link rel="stylesheet" href="../apps/deutsch/css/depth.css">
+<link rel="stylesheet" href="rules.css">
+</head>
+<body class="lay-mobile mock">
+<div class="aurora" aria-hidden="true"></div>
+<div id="app"><div class="col"><header class="topbar"><div class="topbar-in"><div class="brand"><span class="dot" data-mark aria-hidden="true"></span>protoa</div><nav class="tabs" data-tabs="practice" aria-label="Sections"></nav></div></header><main><div class="wrap" id="view"><div class="view stack" style="gap:16px">
+
+<div class="pagehead"><span class="oslot s56" data-orb="neutral"></span><div><h1>Practice</h1><div class="faint">Every word you know, kept strong.</div></div></div>
+<div class="card stack"><div class="eyebrow">Daily review</div><div class="empty"><span data-art="empty.reviews" data-size="88"></span><div class="stack" style="gap:4px"><b>Nothing due right now</b><span class="faint">Your next 6 cards come back tomorrow morning.</span></div></div></div>
+<div class="modes">
+  <button class="mode"><span data-art="icon.question" data-size="40"></span><b>Word meanings</b><span>Pick the meaning: new and older words</span></button>
+  <button class="mode"><span data-art="icon.pencil" data-size="40"></span><b>Fill the gaps</b><span>Complete real sentences with the right form</span></button>
+  <button class="mode"><span data-art="icon.ticket" data-size="40"></span><b>Say it in German</b><span>Meaning → German word, typed</span></button>
+  <button class="mode locked" disabled aria-disabled="true"><span class="lockglyph" data-icon="lock"></span><span data-art="icon.people" data-size="40"></span><b>Conversation lines</b><span class="why"><span data-icon="lock" style="display:inline-flex"></span>Opens after lesson 3</span></button>
+</div>
+<div class="card stack"><div class="row" style="justify-content:space-between"><h2>Your line</h2><span class="faint">Kapitel 1 · Arriving</span></div>
+<div class="linecrop">
+  <div class="stn done"><span class="mk"><span data-art="icon.hand" data-size="38"></span></span><div class="lab"><b lang="de">Hermannplatz</b><span>Greetings · done</span></div></div>
+  <div class="stn now"><span class="mk"><span data-art="icon.people" data-size="38"></span></span><div class="lab"><b lang="de">Görlitzer Bahnhof</b><span>People · current station</span></div></div>
+  <div class="stn locked"><span class="mk"><span data-art="icon.pencil" data-size="38"></span></span><div class="lab"><b lang="de">Mehringdamm</b><span>Everyday verbs · opens after lesson 2</span></div></div>
+  <div class="stn locked"><span class="mk"><span data-art="icon.question" data-size="38"></span></span><div class="lab"><b lang="de">Südstern</b><span>Questions · opens after lesson 3</span></div></div>
+</div></div>
+</div></div></main></div></div>
+<script src="orb.js"></script>
+<script src="art-bundle.js"></script>
+<script src="art.js"></script>
+</body>
+</html>

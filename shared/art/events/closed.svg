@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Geschlossen sign">
+<g style="stroke:var(--il-ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round"><circle cx="80" cy="80" r="72" style="fill:var(--il-mist)"/><path d="M80 32l-40 36M80 32l40 36" style="fill:none"/><circle cx="80" cy="32" r="5" style="fill:var(--il-deep)"/><rect x="20" y="66" width="120" height="50" rx="8" style="fill:var(--il-paper)"/></g><text x="80" y="98" text-anchor="middle" style="fill:var(--il-ink);font:600 17px Sora,sans-serif">Geschlossen</text><path d="M28 74h30" style="fill:none;stroke:var(--il-hi);stroke-width:4;stroke-linecap:round"/>
+</svg>
