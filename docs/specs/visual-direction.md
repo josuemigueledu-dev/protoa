@@ -2,7 +2,7 @@
 
 Oct 24, 2026 · owner + headmaster
 
-This adds to `docs/specs/visual-spec.md`. Where the two disagree, this file wins. The owner reviewed the mockups on branch `visual-spec-mockups` and kept the idea (frosted glass, the orb, the Frosted line art). What's wrong is the finish: the app should feel as polished as Brilliant or Duolingo, on a phone and on desktop.
+This adds to `docs/specs/visual-spec.md`. Where the two disagree, this file wins. **Round 2** (at the end: characters, type, and not looking AI-made) came after round 1 and wins over it where they differ. The owner reviewed the mockups on branch `visual-spec-mockups` and kept the idea (frosted glass, the orb, the Frosted line art). What's wrong is the finish: the app should feel as polished as Brilliant or Duolingo, on a phone and on desktop.
 
 ## The idea, in one line
 
@@ -42,3 +42,77 @@ Protoa is a sentient, floating entity: the orb. It is the learner's guide throug
 - [ ] Each plate shows a recognisable Berlin place with depth and no accidental cut-offs.
 - [ ] No letter-box placeholders anywhere.
 - [ ] A first-time user on a phone can finish lesson 1 without being unsure what to tap next.
+
+---
+
+# Round 2 (owner review of PR #4, Oct 24, 2026)
+
+The owner's verdict on the merged art: the characters are ugly and bland and need an entire redesign; skin getting darker in dark mode is a bad idea; the type doesn't carry the neo-futuristic look of Protoa and reads as "AI-ish". The whole app must avoid the tells that make a product look AI-generated, in design and in teaching.
+
+## Characters: start over
+
+Herr Weber and the barista from PR #4 are placeholders. Redraw the cast from scratch.
+
+**Process (ux, before drawing the rest):**
+1. Make `mockups/cast.html`: Herr Weber and the barista each drawn in **three clearly different style directions** on one sheet (full body, bust at 40 px, and the five moods), light and dark side by side. Post the screenshot in the Team log and ask the owner to pick one by letter.
+2. After the pick, redraw both in the chosen style and write the style down in a `## Cast style` section here, so every later character matches.
+3. Until the owner picks, keep going with other backlog items; don't block on it.
+
+**What every direction must have:**
+- **A silhouette you'd recognise in black.** Each character has a distinct outline: hair shape, height, build, posture, one role prop. No two characters share a body template with a swapped hair colour.
+- **Built from simple rounded shapes**, as few as possible, with no pointy or ragged edges. Eyes are geometric (dots or rounded shapes, not realistic ovals). Big, readable expressions from eyebrows and mouth, so a 40 px bust still shows the mood.
+- **Personality in the pose.** A weight shift, a hand gesture, a head tilt. Nobody stands straight and symmetrical facing the camera like a mannequin; that's the "bland" the owner means.
+- **Clothes carry the colour.** Within the Frosted line palette, vary clothing so a scene has colour and contrast; one accent per character.
+- **Skin never changes with the theme.** Character art is identical in light and dark mode: `--il-skin-*` and every fill used on people have **no dark-mode value**. Only plate backgrounds (walls, sky, floor) may dim. This replaces round 1's "fills a little dimmer" for anything on a person.
+- Skin tones spread across the cast, with real variety, never one default.
+
+## Typography: one futuristic, consistent type system
+
+Today the app uses Sora for headings, Manrope for text and JetBrains Mono for labels. Manrope is one of the fonts the research names as a default of AI-generated interfaces, and three faces with no clear rule read as unplanned.
+
+- **Sora stays** for the wordmark (it's in the brand files, `shared/brand/`, don't touch) and is the anchor: the type system must feel like it belongs to the "protoa" wordmark.
+- **ux builds `mockups/type.html`**: the same three screens (Today, a lesson Words card, the conversation) set in three candidate systems, light and dark, and posts the screenshot for the owner to pick:
+  - **A.** Sora for display, Geologica for text.
+  - **B.** Funnel Display for display, Funnel Sans for text.
+  - **C.** Unbounded for display (big moments only: station names, the Done screen), Sora for headings, Onest for text.
+  All are free (SIL OFL) on Google Fonts. Check each has ä ö ü ß, tabular figures, and reads well at 14 px on a phone before putting it on the sheet; swap a candidate out if it fails and say why.
+- **Rules, whichever wins:** at most two families, with numbers in tabular figures. Display face for headings, German words and numbers; text face for everything else. Weight and size carry hierarchy. No monospace for decoration: mono only for IPA, if at all. No italic headlines, no gradient text.
+- Then apply it across the app as tokens (`--display`, `--text`) and remove the unused faces from the Google Fonts link.
+
+## Don't look AI-made
+
+Research (sources below) lists the patterns that make a product look AI-generated. Seen together, they make it look unplanned. Avoid all of them.
+
+**Visual tells we have today, and the fix:**
+
+| Tell | Where we have it | Fix |
+|---|---|---|
+| Aurora / blurred colour-blob backgrounds | The ground (`--bg` with aurora) | A calm, solid ground tinted toward the azure, with at most a subtle two-stop gradient and fine grain. The orbit lines may stay if they're quiet. |
+| Gradient buttons | The blue "Check" button, other gradient fills | Solid buttons. Depth comes from the press (2 px down, a crisp bottom edge), not from a gradient. |
+| Glass on everything | Every block is a frosted card | Glass only where something floats over art or the scene (the conversation over its band, sheets, the orb's slot). Plain content sits on solid surfaces. |
+| Small spaced-out labels above every section | "The conversation · Volkshochschule", "Words you learned", "Station reached" | Drop most of them. A label only where it tells the learner something they need; sentence case, normal tracking. |
+| Floating decorative orbs | (not yet) | Our orb is the product's character, never decoration. It sits in its slot and reacts to the learner; nothing else on screen is a floating sphere or blob. |
+| Everything centred | Done screen, word cards | Left-align text blocks; centre only single big moments (the word on a card, the stamp). |
+| Pure black or white | Black "Continue" button, white surfaces | Tint toward the anchor ink (`#0b1220`) and the azure. |
+| Mixed icon styles, emoji as icons | (watch for it) | One icon set, drawn in the house style; no emoji in the UI. |
+| Over-bouncy motion, everything animates | (watch for it) | Short, purposeful motion with ease-out rather than elastic bounce, except the orb's own reactions and the stamp. |
+| Generic AI-illustration look | The PR #4 cast | The character redesign above: hand-built shapes, a real point of view. |
+
+**Copy tells:** no "Let's dive in", "Great job!", "Awesome!", "Unlock", "journey", "seamless", exclamation marks everywhere, or emoji. Praise is specific ("Right: *Sie sind*, formal") or absent. Buttons say exactly what happens ("Check", "Next word"). No invented numbers.
+
+**Teaching tells** (for content, and for prompts in `server/src/apps/deutsch/tasks.js`):
+- **Generic situations.** Every lesson happens to *these* people in *this* Berlin, with continuity: Herr Weber remembers your name, the barista knows your order a few lessons later, the course runs on Tuesday mornings. No "a man goes to a shop".
+- **Textbook German.** Use what people actually say at A1 level: *Wie geht's?*, *Ich hätte gern …*, *Na?*, *Tschüss*, particles like *mal* and *doch* where natural. Every sentence must be something a Berliner would say.
+- **Uneven glosses and translations.** Same word, same gloss, every time; check against earlier lessons.
+- **The same exercise template every time.** Vary the step mix within the lesson structure, mix production and recognition, use the twist.
+- **Walls of explanation.** Grammar is one short rule, one example from the scene, and the sketch. No bullet-point lectures.
+- **Hollow encouragement.** Feedback names the exact form that was right or wrong.
+
+**Sources:** [Hallmark anti-pattern catalogue](https://instagit.com/Nutlope/hallmark/hallmark-anti-patterns-detected.md) · [925 Studios: AI slop design tells](https://www.925studios.co/blog/ai-slop-design-tells) · [925 Studios: spotting generic websites](https://www.925studios.co/blog/ai-slop-web-design-guide) · [Duolingo: shape language](https://blog.duolingo.com/shape-language-duolingos-art-style/) · [Typography defaults in AI design](https://claudeskills.info/zh/skills/curiositech/some_claude_skills/typography-expert/) · [AI-generated exercises can read as generic (Univ. of Turku)](https://www.utupub.fi/items/bcf51d55-ecfd-4aaf-956c-f96d2e553b84/full)
+
+## Round 2 done when
+
+- [ ] The owner has picked a cast style and a type system from the two sheets.
+- [ ] Characters look identical in light and dark mode.
+- [ ] None of the visual tells in the table above remain on any screen.
+- [ ] A lesson's text passes a read-aloud test: nothing a Berliner wouldn't say, no hollow praise.
