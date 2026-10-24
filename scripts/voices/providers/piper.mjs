@@ -14,7 +14,7 @@ export function piperProvider({ modelsDir, python = process.env.PIPER_PYTHON || 
   const modelPath = name => join(modelsDir, `${name}.onnx`);
   return {
     id: 'piper',
-    voiceKey: v => `piper:${v.model}:${v.speaker ?? ''}:${v.lengthScale ?? 1}:${v.pitch ?? 1}`,
+    voiceKey: v => `piper:${v.model}:${v.speaker ?? ''}:${v.lengthScale ?? 1}:${v.pitch ?? 1}:${v.noiseScale ?? ''}:${v.noiseW ?? ''}`,
     modelPath,
     missingModels: names => names.filter(n => !existsSync(modelPath(n))),
     async download(names) {
@@ -32,7 +32,7 @@ export function piperProvider({ modelsDir, python = process.env.PIPER_PYTHON || 
         const p = spawn(python, [WORKER], { stdio: ['pipe', 'inherit', 'inherit'] });
         p.on('error', reject);
         p.on('close', code => (code === 0 ? resolve() : reject(new Error(`piper worker exited ${code}`))));
-        p.stdin.end(JSON.stringify({ model: modelPath(voice.model), speaker: voice.speaker ?? null, length_scale: voice.lengthScale ?? 1, items }));
+        p.stdin.end(JSON.stringify({ model: modelPath(voice.model), speaker: voice.speaker ?? null, length_scale: voice.lengthScale ?? 1, noise_scale: voice.noiseScale ?? null, noise_w: voice.noiseW ?? null, items }));
       });
     },
   };

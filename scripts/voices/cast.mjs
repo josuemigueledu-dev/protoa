@@ -10,13 +10,13 @@ export const MODELS = {
 
 // speaker id -> voice. Only single-speaker CC0 models: the 236-speaker MLS model looped and babbled
 // (docs/research/voices.md). `lengthScale` > 1 slows the voice; `pitch` is a factor applied at encode time
-// (0.93 = 7% lower), kept subtle so the voices stay natural. `speaker` picks a style in thorsten_emotional.
+// (0.93 = 7% lower), kept subtle so the voices stay natural. `speaker` picks a style in thorsten_emotional; lower `noiseScale`/`noiseW` make a voice steadier (kerstin is a low-quality model and mumbles at the defaults).
 export const SPEAKERS = {
   protoa: { model: 'de_DE-thorsten-high', lengthScale: 1.1 },
   weber: { model: 'de_DE-thorsten-medium', lengthScale: 1.2, pitch: 0.93 },
   murat: { model: 'de_DE-thorsten_emotional-medium', speaker: 4, lengthScale: 1.1, pitch: 1.05 },
-  ana: { model: 'de_DE-kerstin-low', lengthScale: 1.15 },
-  lena: { model: 'de_DE-kerstin-low', lengthScale: 1.0, pitch: 1.04 },
+  ana: { model: 'de_DE-kerstin-low', lengthScale: 1.15, noiseScale: 0.4, noiseW: 0.6 },
+  lena: { model: 'de_DE-kerstin-low', lengthScale: 1.0, pitch: 1.04, noiseScale: 0.4, noiseW: 0.6 },
 };
 
 // Content's `cast.*` ids (who / rwho in a conversation) -> speaker. Anyone not listed speaks as Protoa.
