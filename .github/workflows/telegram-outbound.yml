@@ -1,0 +1,44 @@
+# Sends the agent team's Team log posts and new pull requests to the owner's
+# Telegram chat. See .github/telegram/relay.py.
+name: Telegram – agent reports
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-outbound
+  cancel-in-progress: false
+
+jobs:
+  log-post:
+    if: github.event_name == 'issue_comment' && github.event.issue.number == 2
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/telegram
+      - run: python3 .github/telegram/relay.py outbound-comment
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OWNER_ID: ${{ vars.TELEGRAM_OWNER_ID }}
+
+  new-pr:
+    # Pull requests from forks get no secrets, so only announce the repo's own branches.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/telegram
+      - run: python3 .github/telegram/relay.py outbound-pr
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OWNER_ID: ${{ vars.TELEGRAM_OWNER_ID }}
