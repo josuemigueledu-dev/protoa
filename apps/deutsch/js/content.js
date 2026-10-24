@@ -26,6 +26,8 @@
    NEW FIELDS (lesson 1 is the model): scene.plate + scene.cast:[{id,x}] (x on the 1600-wide plate);
    words[].pic (concrete nouns; short key of PICS now, 'word.*' id once art.js is in the app);
    notice.sketch:{type:'swap'|..., from, to}; sound:{focus, mouth, say, words:[[de,en]...]};
+   SPEAKERS: a partner turn has who:'cast.*' (default 'cast.weber'); a learner turn's react is spoken
+   by rwho:'cast.*' (default the previous partner turn's speaker). Every id in who/rwho is in scene.cast.
    twist:{at (index in conv of the partner line that triggers it), event:'event.*', mood:'surprised'};
    warmup:[3-5 earlier word headwords] (absent in lesson 1, nothing to review yet).
    scene.id stays until the app reads scene.plate. ~20 words per lesson (A1 gate: coverage.md).
@@ -167,7 +169,7 @@ const LESSONS = [
 },
 {
   n: 2, title: 'People', theme: 'Leute',
-  scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }], place: 'Volkshochschule am Hermannplatz', time: 'Tuesday, 9:00', cap: 'Görlitzer Bahnhof · Dienstag, 9:00',
+  scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }, { id: 'cast.ana', x: 900 }, { id: 'cast.lena', x: 640 }], place: 'Volkshochschule am Hermannplatz', time: 'Tuesday, 9:00', cap: 'Raum 2.04 · Dienstag, 9:00',
     intro: [
       'Tuesday again, 9:00, room 2.04. Herr Weber remembers your name. Next to you sits someone new: Ana, from Mexico, who arrived this morning.',
       'You are on first-name terms with the other students, so today the word for "you" is du. Herr Weber still gets Sie.' ] },
@@ -211,17 +213,18 @@ const LESSONS = [
   ],
   conv: [
     { w: 'Guten Morgen, {name}. Wir haben heute eine neue Studentin. Das ist Ana.', g: 'Guten Morgen,=good morning | {name}.={name} | Wir=we | haben=have | heute=today | eine=a | neue=new | Studentin.=(female) student | Das ist=this is | Ana.=Ana', mood: 'pleased' },
-    { l: true, de: 'Hallo, Ana! Woher kommst du?', en: 'Hi, Ana! Where are you from?', g: 'Hallo,=hi | Ana!=Ana | Woher=where from | kommst=come | du?=you (informal)', type: 'tiles', gaps: [3], extra: ['kommen', 'Sie'], alts: ['Hallo Ana, woher kommst du?', 'Hallo, Ana. Woher kommst du?'], react: 'Hallo, {name}!=hi, {name}' },
-    { w: 'Ich komme aus Mexiko. Und du? Bist du auch neu?', g: 'Ich=I | komme=come | aus=from | Mexiko.=Mexico | Und=and | du?=you (informal) | Bist=are | du=you (informal) | auch=too | neu?=new', mood: 'neutral' },
-    { l: true, de: 'Ja, ich bin auch neu. Ich komme aus {city}.', en: 'Yes, I am new too. I come from {city}.', g: 'Ja,=yes | ich=I | bin=am | auch=too | neu.=new | Ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [2, 6], extra: ['bist', 'kommst'], alts: ['Ja, ich bin neu. Ich komme aus {city}.', 'Ja, ich bin auch neu, ich komme aus {city}.'], react: 'Ah, aus {city}.=ah, from {city}' },
-    { w: 'Schön. Und das ist Lena, eine Freundin. Sie kommt aus Italien.', g: 'Schön.=nice | Und=and | das ist=this is | Lena,=Lena | eine=a | Freundin.=friend | Sie=she | kommt=comes | aus=from | Italien.=Italy', mood: 'pleased' },
-    { l: true, de: 'Du kommst aus Italien, oder?', en: 'You come from Italy, right?', g: 'Du=you (informal) | kommst=come | aus=from | Italien,=Italy | oder?=right', type: 'translate', gaps: [1], extra: ['kommt'], alts: ['Kommst du aus Italien?', 'Du kommst aus Italien?'], react: 'Ja, aus Rom.=yes, from Rome' },
-    { w: 'Sehr gut. Eine Frage noch: Sind Sie Student oder Studentin?', g: 'Sehr gut.=very good | Eine=one | Frage noch:=question more | Sind=are | Sie=you (formal) | Student=student | oder=or | Studentin?=(female) student', mood: 'amused' },
-    { l: true, de: 'Ich bin Student.', en: 'I am a student.', g: 'Ich=I | bin=am | Student.=(a) student', type: 'translate', gaps: [1], extra: ['sind'], alts: ['Ich bin Studentin.', 'Ich bin ein Student.', 'Ich bin eine Studentin.'], react: 'Gut.=good' },
-    { w: 'Ana und Lena sind neu, und Sie sind auch neu. Wer ist nicht neu?', g: 'Ana=Ana | und=and | Lena=Lena | sind=are | neu,=new | und=and | Sie=you (formal) | sind=are | auch=too | neu.=new | Wer=who | ist=is | nicht=not | neu?=new', mood: 'thinking' },
-    { l: true, de: 'Sie sind der Lehrer, Herr Weber.', en: 'You are the teacher, Mr Weber.', g: 'Sie=you (formal) | sind=are | der=the | Lehrer,=teacher | Herr=Mr | Weber.=Weber', type: 'tiles', gaps: [1], extra: ['ist'], alts: ['Sie sind der Lehrer.', 'Sie sind Lehrer, Herr Weber.', 'Herr Weber, Sie sind der Lehrer.'], react: 'Genau.=exactly' },
-    { w: 'Genau. So, wir sind jetzt ein Kurs. Bis Dienstag, Ana, Lena und {name}!', g: 'Genau.=exactly | So,=right | wir=we | sind=are | jetzt=now | ein=a | Kurs.=course | Bis Dienstag,=see you Tuesday | Ana,=Ana | Lena=Lena | und=and | {name}!={name}', mood: 'pleased' },
-    { l: true, de: 'Tschüss, Ana! Bis Dienstag!', en: 'Bye, Ana! See you Tuesday!', g: 'Tschüss,=bye | Ana!=Ana | Bis Dienstag!=see you Tuesday', type: 'tiles', gaps: [0], extra: ['Hallo'], alts: ['Tschüss, Ana.', 'Tschüss!', 'Tschüss, Ana! Bis Dienstag.'], optional: true, react: 'Tschüss, {name}!=bye, {name}' },
+    { l: true, de: 'Hallo, Ana! Woher kommst du?', en: 'Hi, Ana! Where are you from?', g: 'Hallo,=hi | Ana!=Ana | Woher=where from | kommst=come | du?=you (informal)', type: 'tiles', gaps: [3], extra: ['kommen', 'Sie'], alts: ['Hallo Ana, woher kommst du?', 'Hallo, Ana. Woher kommst du?'], rwho: 'cast.ana', react: 'Hallo, {name}!=hi, {name}' },
+    { who: 'cast.ana', w: 'Ich komme aus Mexiko. Und du? Bist du auch neu?', g: 'Ich=I | komme=come | aus=from | Mexiko.=Mexico | Und=and | du?=you (informal) | Bist=are | du=you (informal) | auch=too | neu?=new', mood: 'neutral' },
+    { l: true, de: 'Ja, ich bin auch neu. Ich komme aus {city}.', en: 'Yes, I am new too. I come from {city}.', g: 'Ja,=yes | ich=I | bin=am | auch=too | neu.=new | Ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [2, 6], extra: ['bist', 'kommst'], alts: ['Ja, ich bin neu. Ich komme aus {city}.', 'Ja, ich bin auch neu, ich komme aus {city}.'], rwho: 'cast.ana', react: 'Ah, aus {city}.=ah, from {city}' },
+    { w: 'Schön. Und das ist Lena.', g: 'Schön.=nice | Und=and | das ist=this is | Lena.=Lena', mood: 'pleased' },
+    { who: 'cast.lena', w: 'Hallo, {name}! Ich komme aus Rom, aus Italien. Kommst du aus Deutschland?', g: 'Hallo,=hi | {name}!={name} | Ich=I | komme=come | aus=from | Rom,=Rome | aus=from | Italien.=Italy | Kommst=come | du=you (informal) | aus=from | Deutschland?=Germany', mood: 'neutral' },
+    { l: true, de: 'Nein, ich komme aus {city}.', en: 'No, I come from {city}.', g: 'Nein,=no | ich=I | komme=come | aus=from | {city}.={city}', type: 'gap', gaps: [2], extra: ['kommst'], alts: ['Nein, ich bin aus {city}.', 'Nein. Ich komme aus {city}.'], rwho: 'cast.lena', react: 'Aha, schön.=I see, nice' },
+    { w: 'Jetzt eine Frage: Wer kommt aus Mexiko?', g: 'Jetzt=now | eine=a | Frage:=question | Wer=who | kommt=comes | aus=from | Mexiko?=Mexico', mood: 'amused' },
+    { l: true, de: 'Ana kommt aus Mexiko.', en: 'Ana comes from Mexico.', g: 'Ana=Ana | kommt=comes | aus=from | Mexiko.=Mexico', type: 'tiles', gaps: [1], extra: ['komme'], alts: ['Ana ist aus Mexiko.', 'Sie kommt aus Mexiko.', 'Ana kommt aus Mexiko, Herr Weber.'], react: 'Richtig.=correct' },
+    { w: 'Und wer kommt aus Italien?', g: 'Und=and | wer=who | kommt=comes | aus=from | Italien?=Italy', mood: 'neutral' },
+    { l: true, de: 'Lena kommt aus Italien.', en: 'Lena comes from Italy.', g: 'Lena=Lena | kommt=comes | aus=from | Italien.=Italy', type: 'translate', gaps: [1], extra: ['kommst'], alts: ['Lena ist aus Italien.', 'Sie kommt aus Italien.', 'Lena kommt aus Italien, Herr Weber.'], react: 'Genau.=exactly' },
+    { w: 'So, wir sind jetzt ein Kurs. Bis Dienstag, Ana, Lena und {name}!', g: 'So,=right | wir=we | sind=are | jetzt=now | ein=a | Kurs.=course | Bis Dienstag,=see you Tuesday | Ana,=Ana | Lena=Lena | und=and | {name}!={name}', mood: 'pleased' },
+    { l: true, de: 'Tschüss, Ana! Bis Dienstag!', en: 'Bye, Ana! See you Tuesday!', g: 'Tschüss,=bye | Ana!=Ana | Bis Dienstag!=see you Tuesday', type: 'tiles', gaps: [0], extra: ['Hallo'], alts: ['Tschüss, Ana.', 'Tschüss!', 'Tschüss, Ana! Bis Dienstag.'], optional: true, rwho: 'cast.ana', react: 'Tschüss, {name}!=bye, {name}' },
   ],
   lex: {
     verbs: {
