@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Type systems · Protoa round 2</title>
+<script src="mock.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Geologica:wght@400;500;600;700&family=Funnel+Display:wght@500;600;700;800&family=Funnel+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../shared/art/tokens.css">
+<link rel="stylesheet" href="../apps/deutsch/css/base.css">
+<link rel="stylesheet" href="../apps/deutsch/css/glass.css">
+<link rel="stylesheet" href="../apps/deutsch/css/depth.css">
+<link rel="stylesheet" href="rules.css">
+<style>
+body.mock{padding:24px 24px 48px}
+.tsheet{width:1218px;margin:0 auto;position:relative;z-index:1}
+.sh-t{font:800 28px/1.15 Sora,sans-serif;margin-bottom:4px;color:var(--ink)}
+.sh-l{color:var(--muted);margin-bottom:20px;max-width:70ch;font:500 14px/1.45 Geologica,sans-serif}
+.sys{margin-bottom:28px}
+.sys-hd{display:flex;gap:14px;align-items:baseline;margin-bottom:10px}
+.sys-hd b{font:800 36px/1 Sora,sans-serif;color:var(--blue)}
+.sys-hd span{font:500 14px/1.4 Geologica,sans-serif;color:var(--muted)}
+.phones{display:grid;grid-template-columns:repeat(3,390px);gap:24px}
+.ph{width:390px;height:720px;overflow:hidden;border-radius:28px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);padding:20px 16px;position:relative}
+.ph .stack{gap:16px}
+.wtile b span{font:inherit;text-transform:none;letter-spacing:0}
+.ph h1{font-size:var(--t-title)}
+.sysA{--display:'Sora',system-ui,sans-serif;--text:'Geologica',system-ui,sans-serif}
+.sysB{--display:'Funnel Display',system-ui,sans-serif;--text:'Funnel Sans',system-ui,sans-serif}
+.sysC{--display:'Sora',system-ui,sans-serif;--text:'Onest',system-ui,sans-serif;--hero:'Unbounded',system-ui,sans-serif}
+.sysC .hero{font-family:var(--hero);letter-spacing:-.02em}
+.ph{font-family:var(--text)}
+.ph *{font-variant-numeric:tabular-nums}
+.chk{margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:12px;color:var(--muted)}
+.chk div{padding:8px 12px;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.chk b{display:block;font-size:15px;color:var(--ink);margin-bottom:2px}
+.ok{color:var(--green)}
+</style>
+</head>
+<body class="mock">
+<div class="aurora" aria-hidden="true"></div>
+<div class="tsheet">
+<div class="sh-t">Type systems: pick one</div>
+<div class="sh-l">The same three screens (Today, a Words card, the conversation) in three candidate systems, <span class="themename"></span> theme. Sora stays for the wordmark. Display face for headings, German words and numbers; text face for everything else; numbers in tabular figures; no mono, no italics.</div>
+<div id="sheet"></div>
+</div>
+<script src="orb.js"></script>
+<script>
+const SYS = [
+  ['A', 'sysA', 'Sora for display, Geologica for text', 'Sora', 'Geologica'],
+  ['B', 'sysB', 'Funnel Display for display, Funnel Sans for text', 'Funnel Display', 'Funnel Sans'],
+  ['C', 'sysC', 'Unbounded for big moments only, Sora for headings, Onest for text', 'Unbounded', 'Onest']
+];
+const H = (c) => c === 'sysC';
+const today = (c) => `<div class="stack">
+<div class="today-hero"><span class="oslot s64" data-orb="neutral"></span><div><h1 lang="de">Guten Morgen, Alex</h1><p>14 new words to go today.</p></div></div>
+<div class="card prog"><div class="nums"><div><span class="big">212</span><span class="muted"> of 2,400 words</span><span class="chip" style="margin-left:10px;vertical-align:middle">A1</span></div><div class="muted small">9%</div></div><div class="bar"><i style="width:9%"></i></div><div class="row small muted" style="justify-content:space-between"><span>6 of 20 new words today</span><span>B1 by Feb 2027</span></div></div>
+<div class="card stack primary"><div class="nextcard"><div class="grow"><h2 lang="de" class="hero" style="font-size:${H(c) ? '1.375rem' : 'var(--t-title)'}">Hermannplatz</h2><div class="faint">Lesson 1 · Greetings · 14 words</div></div></div><button class="btn wide">Continue</button></div>
+<div class="card stack"><div class="row" style="justify-content:space-between"><div><div class="muted small">Reviews</div><div><span class="big">8</span><span class="muted"> cards due</span></div></div><button class="btn">Review now</button></div></div>
+<button class="card listrow talkrow"><span class="oslot s40" data-orb="neutral"></span><div class="grow" style="text-align:left"><b lang="de">Sprechen</b><div class="faint">Talk with Protoa at your level. Every line you write is corrected.</div></div></button>
+</div>`;
+const words = (c) => `<div class="stack">
+<div class="row" style="justify-content:space-between"><b lang="de">Hermannplatz</b><span class="muted small">Words · 8 of 14</span></div>
+<div class="card wcard"><div class="wtile" style="width:168px;height:168px"><b class="hero" style="font-size:${H(c) ? '1.25rem' : '1.75rem'};overflow-wrap:normal;text-transform:none;letter-spacing:0">Lehrer</b></div>
+<div class="de hero" style="${H(c) ? 'font-size:1.75rem' : ''}"><span lang="de"><span class="g-m">der</span> Lehrer</span></div><div class="en">teacher</div>
+<div class="meta"><span>/ˈleːʁɐ/</span><span>pl. <span lang="de"><span class="g-f">die</span> Lehrer</span></span><span>noun</span></div>
+<div class="row" style="justify-content:center"><button class="btn quiet sm">Play</button><button class="btn quiet sm">Slow</button></div>
+<div class="example"><div class="muted small">In the scene</div><div lang="de" style="font-family:var(--display);font-weight:700">Herr Weber ist der Lehrer.</div><div class="muted small">Mr Weber is the teacher.</div></div></div>
+<div class="row" style="justify-content:space-between"><button class="btn ghost">Back</button><button class="btn">Next word</button></div>
+</div>`;
+const conv = (c) => `<div class="stack">
+<div class="row" style="justify-content:space-between"><b lang="de">Volkshochschule</b><span class="muted small">Conversation</span></div>
+<div class="conv"><div class="log" role="log" style="padding:16px;gap:12px"><div class="bub w"><div class="box"><div class="de" lang="de">Aus Orlando, schön! Sind Sie Student?</div><div class="small muted">From Orlando, nice! Are you a student?</div></div></div>
+<div class="bub l done"><div class="box"><div class="de" lang="de">Ja, ich bin Student.</div><span class="check" aria-label="correct">✓</span></div></div>
+<div class="bub p"><span class="oslot s40" data-orb="correct"></span><div class="box"><div class="small">No article before a job or role: <em lang="de" style="font-style:normal;font-weight:700;font-family:var(--display)">ich bin Student</em>, not <em lang="de" style="font-style:normal;font-weight:700;font-family:var(--display)">ein Student</em>.</div></div></div>
+<div class="bub w"><div class="box"><div class="de" lang="de">Und wie geht es Ihnen heute, Alex?</div><div class="small muted">And how are you today, Alex?</div></div></div></div>
+<div class="turnbox"><div class="prompt">Answer: <i style="font-style:normal;font-weight:700">Good, thank you.</i></div><div class="tiles" lang="de"><span class="tile">Gut,</span><span class="tile">danke.</span><span class="tile">Hallo</span></div></div></div>
+<button class="btn wide">Check</button></div>`;
+document.getElementById('sheet').innerHTML = SYS.map(([id, cls, label, d, t]) => `<section class="sys ${cls}"><div class="sys-hd"><b>${id}</b><span>${label}</span></div>
+<div class="phones"><div class="ph">${today(cls)}</div><div class="ph">${words(cls)}</div><div class="ph">${conv(cls)}</div></div>
+<div class="chk" data-d="${d}" data-t="${t}"></div></section>`).join('');
+document.querySelectorAll('[data-orb]').forEach(o => o.innerHTML = protoaOrb({ mood: o.dataset.orb || 'neutral', theme: THEME, label: 'Protoa' }));
+// font checks, measured in this browser: umlauts and ß present, figures tabular
+document.fonts.ready.then(async () => {
+  const cv = document.createElement('canvas').getContext('2d');
+  const w = (font, s) => { cv.font = font; return cv.measureText(s).width; };
+  for (const el of document.querySelectorAll('.chk')) {
+    const out = [];
+    for (const [role, fam, wt] of [['display', el.dataset.d, 700], ['text', el.dataset.t, 500]]) {
+      await document.fonts.load(`${wt} 16px "${fam}"`, 'äöüß1');
+      const f = `${wt} 16px "${fam}", monospace`, fb = `${wt} 16px monospace`;
+      const glyph = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'].every(g => Math.abs(w(f, g) - w(fb, g)) > .01);
+      cv.fontVariantNumeric = 'tabular-nums';
+      const el1 = document.createElement('span'); el1.style.cssText = `font:${wt} 16px "${fam}";font-variant-numeric:tabular-nums;position:absolute;visibility:hidden`;
+      document.body.append(el1); el1.textContent = '1111'; const a = el1.offsetWidth; el1.textContent = '0000'; const b = el1.offsetWidth; el1.remove();
+      out.push(`<div><b style="font-family:'${fam}',sans-serif;font-weight:${wt}">${role}: ${fam}</b>Straße, Käse, Öl, Übung, 1 1 0 0<br>ä ö ü ß: <span class="ok">${glyph ? 'present' : 'MISSING'}</span> · tabular figures: <span class="ok">${a === b ? 'yes' : 'no'}</span> (1111 = ${a}px, 0000 = ${b}px)</div>`);
+    }
+    el.innerHTML = out.join('');
+  }
+  document.documentElement.dataset.ready = '1';
+});
+</script>
+</body>
+</html>
