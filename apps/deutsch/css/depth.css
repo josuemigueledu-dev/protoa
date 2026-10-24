@@ -220,3 +220,16 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .bub.w .bust{align-self:flex-end;width:40px;height:40px}
 @media (min-width:700px){.conv-band{height:300px}.conv-band.small{height:200px}.conv.has-band .log>*,.conv.has-band .turnbox{scroll-margin-top:calc(var(--lt-h,96px) + 212px)}}
 @media (prefers-reduced-motion:reduce){.conv-band{transition:none}}
+
+/* ---- Smoothness: backdrop blur only on chrome ----
+   Every backdrop-filter layer is re-blurred whenever anything behind it moves (the aurora, the orb), so the
+   dozens on cards and tiles made every frame cost a full-screen blur. The ground behind content is already
+   a soft aurora, so a blur on top of it changes nothing visible; the bars, sheets and toasts that float over
+   scrolling content keep theirs. */
+.card,.widget,.kpi,.goalmini,.conv,.ticket,.notice-line,.lv,.mode,.scen,.btile,.coach .say,.bub .box,
+.card.primary,.examcard,.view > .lesson-top ~ .card,.view > .lesson-top ~ .conv,.card.summary,.wrap > .view > .card.crash,
+.st .mk,.chapter,input[type=text],input[type=number],input[type=date],select,textarea{
+  -webkit-backdrop-filter:none;backdrop-filter:none}
+/* sheets cover most of the screen: a near-solid pane and scrim instead of two full-size blurs over the moving ground */
+.sheet,.sheet .in{-webkit-backdrop-filter:none;backdrop-filter:none}
+.sheet .in{background:color-mix(in srgb,var(--card-solid) 95%,transparent)}
