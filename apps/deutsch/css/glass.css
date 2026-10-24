@@ -139,7 +139,7 @@ body.lay-desktop .sidebar{background:var(--card);-webkit-backdrop-filter:var(--b
 .wcard .meta span{box-shadow:inset 0 0 0 1px var(--line)}
 
 /* ---------- lesson chrome ---------- */
-.lesson-top{--band:color-mix(in srgb,var(--bg) 66%,transparent);background:var(--bg);background:var(--band);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:0 0 0 100vmax var(--band);clip-path:inset(0 -100vmax)}
+.lesson-top{--band:color-mix(in srgb,var(--bg) 90%,transparent);background:var(--bg);background:var(--band);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:0 0 0 100vmax var(--band);clip-path:inset(0 -100vmax)}
 .actionbar{background:var(--bg);background:color-mix(in srgb,var(--bg) 62%,transparent);-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);box-shadow:0 -1px 0 var(--line),0 -20px 40px -30px rgba(16,36,72,.3)}
 .actionbar.ok{background:linear-gradient(var(--green-soft),var(--green-soft)),color-mix(in srgb,var(--bg) 80%,transparent);box-shadow:0 -1px 0 var(--green-soft)}
 .actionbar.bad{background:linear-gradient(var(--red-soft),var(--red-soft)),color-mix(in srgb,var(--bg) 80%,transparent);box-shadow:0 -1px 0 var(--red-soft)}
@@ -227,6 +227,7 @@ body:not(.lay-mobile) .sheet{align-items:center} body:not(.lay-mobile) .sheet .i
 /* ---------- the teacher: a thin clear glass orb with a small blue core of light.
    --lvl (0..1) is driven by VoiceLight in time with the voice; at rest the core glows dimly. ---------- */
 .tslot{display:none!important}
+.lesson-top .tslot{display:block!important;visibility:hidden;flex:none} body:not(.lay-mobile) .lesson-top .tslot{display:none!important}   /* phones: the orb docks here; wider layouts keep the gutter */
 .orb{--s:56px;--lvl:0;position:absolute;inset:0;display:block;pointer-events:none}
 .orb.companion{position:fixed;inset:auto;left:0;top:0;width:var(--s);height:var(--s);z-index:22;will-change:transform;animation:orbin .6s var(--ease)}
 @keyframes orbin{from{opacity:.25}to{opacity:1}}

@@ -128,7 +128,7 @@ function dueCards() {
 function actionBar(opts) {
   document.querySelector('.actionbar')?.remove();
   const bar = h('div', { class: 'actionbar ' + (opts.state || '') });
-  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig!' : opts.state === 'bad' ? 'Nicht ganz' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.msg}</span></div>`; bar.append(m); }
+  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig!' : opts.state === 'bad' ? 'Nicht ganz' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
   const inner = h('div', { class: 'in' }); (opts.buttons || []).forEach(b => inner.append(b)); bar.append(inner); document.body.append(bar); return bar;
 }
 
@@ -217,7 +217,12 @@ function lessonCheck(v, L, ls) {
     v.append(c); const next = () => setStep('build', { bi: 0, battempts: 0 }); actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, 'Build it')] }); KEYS = e => { if (e.key === 'Enter') next(); }; return;
   }
   const id = ls.checkQ[0], w = L.words.find(x => x.de === id);
-  const others = shuffle([...allLessons().flatMap(l => l.words), ...V1_WORDS].filter(x => x.de !== id && x.en[0] !== w.en[0]).map(x => x.en[0])).filter((x, i, a) => a.indexOf(x) === i).slice(0, 3);
+  /* distractors: this lesson first, then earlier ones, same word type first; never words from lessons the learner has not reached */
+  const seen = x => x.de !== id && x.en[0] !== w.en[0];
+  const tiers = [L.words.filter(seen), ...allLessons().filter(l => l.n < L.n).sort((a, b) => b.n - a.n).map(l => l.words.filter(seen))];
+  const others = []; const take = pool => shuffle(pool).forEach(x => { if (others.length < 3 && !others.includes(x.en[0])) others.push(x.en[0]); });
+  for (const t of tiers) { take(t.filter(x => x.type === w.type)); take(t.filter(x => x.type !== w.type)); if (others.length >= 3) break; }
+  if (others.length < 3) take(L.words.filter(seen));
   const choices = shuffle([w.en[0], ...others]);
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, `Word check · ${ls.checkQ.length} left`));
   const head = h('div', { class: 'wcard', style: 'padding:6px 0 10px' }); if (w.pic && PICS[w.pic]) { const i = h('div', { class: 'illus' }); i.innerHTML = PICS[w.pic]; head.append(i); }
@@ -227,7 +232,7 @@ function lessonCheck(v, L, ls) {
   const cont = () => { NAV = 'fwd'; render(); };
   choices.forEach((ch, i) => grid.append(h('button', { class: 'choice', onclick: e => {
     if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true);
-    if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); e.currentTarget.classList.add('stamp'); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
+    if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { e.currentTarget.classList.add('bad'); [...grid.children].find(b => b.textContent.endsWith(w.en[0]))?.classList.add('ok'); uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     save('progress'); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   } }, h('kbd', {}, i + 1), ch)));
@@ -262,7 +267,7 @@ function lessonBuild(v, L, ls) {
   const check = () => {
     if (done) return; const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g);
     fb.innerHTML = '';
-    if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: '✓ ' + (r.note || 'Richtig.'), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
+    if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
     else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
@@ -294,7 +299,7 @@ function lessonConv(v, L, ls) {
     band = h('div', { class: 'conv-band', role: 'img', 'aria-label': L.scene.place }); conv.classList.add('has-band'); conv.append(band);
     C.log.forEach(track); drawBand();
     // the band sticks under the lesson header and shrinks once the learner scrolls
-    requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) band.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
+    requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) conv.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
     const shrink = () => { if (!band.isConnected) return removeEventListener('scroll', shrink); band.classList.toggle('small', scrollY > 80); };
     addEventListener('scroll', shrink, { passive: true });
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }

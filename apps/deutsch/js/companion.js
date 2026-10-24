@@ -18,10 +18,12 @@ const Companion = (() => {
   const P = { x: -1, y: -1, vx: 0, vy: 0, raf: 0, last: 0, attend: null, sq: 0, ang: 0, seed: Math.random() * 50, a: null, aAt: 0, lookAt: null };
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const phone = () => document.body.classList.contains('lay-mobile');   /* inside a sheet on a phone the field has no free margin: perch on the sheet's corner instead, clear of its text */
-  const size = () => document.body.classList.contains('lay-mobile') ? 58 : 72;
+  const docked = () => phone() && document.body.classList.contains('in-lesson') && !!document.querySelector('#view .lesson-top .tslot');   /* on a phone a lesson has no free margin: the orb lives in the header slot and never covers a task */
+  const size = () => docked() ? 44 : document.body.classList.contains('lay-mobile') ? 58 : 72;
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
   function anchor() {
     const view = document.getElementById('view'); let b, el;
+    if (docked() && (el = view.querySelector('.lesson-top .tslot')) && (b = el.getBoundingClientRect()).width) return { b, kind: 'dock', el };
     if (P.attend && (b = vis(P.attend))) return { b, kind: 'speak', el: P.attend };
     el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && !(phone() && el.closest('.sheet .in')) && (b = vis(el))) return { b, kind: 'input', el };
     el = document.querySelector('.sheet:not(.closing) .in'); if (el && (b = vis(el))) return { b, kind: 'sheet', el };
@@ -48,6 +50,7 @@ const Companion = (() => {
   }
   function place(a) {
     const s = size(), gap = 22, b = a.b, [L, R] = limits(); let x, y;
+    if (a.kind === 'dock') return [b.left + b.width / 2, b.top + b.height / 2];
     if (a.kind === 'feedback') return [Math.min(innerWidth - s * .7, b.right - s * .2), b.top - s * .8];
     if (a.kind === 'station') return [a.left ? b.left - gap - s / 2 : b.right + gap + s / 2, b.top + b.height / 2];
     if (a.kind === 'sheet') { if (b.right + gap + s <= innerWidth - 8) return [b.right + gap + s / 2, b.top + s * .8]; return [b.right - s * .55, b.top - s * .5]; }
@@ -71,9 +74,9 @@ const Companion = (() => {
     }
     a = P.a; let x, y;
     if (a && a.el && a.el.isConnected) a.b = a.el.getBoundingClientRect();
-    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
+    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'dock' ? null : a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
     else { [x, y] = rest(); P.lookAt = null; }
-    if (!still()) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
+    if (!still() && !(a && a.kind === 'dock')) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
     const m = s * .62; return [Math.min(innerWidth - m, Math.max(m, x)), Math.min(innerHeight - m, Math.max(m + 4, y))];
   }
   /* SmoothDamp (critically damped): eases in and out, never overshoots or bounces */
@@ -97,6 +100,7 @@ const Companion = (() => {
     P.raf = 0; if (!TEACHER.isConnected) return;
     const dt = Math.min(.05, (now - (P.last || now)) / 1000) || .016; P.last = now;
     const [rx, ry] = target(now, now / 1000), s = size(), calm = still();
+    if (P.s !== s) { P.s = s; TEACHER.style.setProperty('--s', s + 'px'); }
     if (P.x < 0) { P.x = P.tx = rx; P.y = P.ty = ry; }
     /* ease the target itself, so switching what it attends to never jerks */
     const ke = 1 - Math.exp(-dt / (calm ? .05 : .16)); P.tx += (rx - P.tx) * ke; P.ty += (ry - P.ty) * ke;
