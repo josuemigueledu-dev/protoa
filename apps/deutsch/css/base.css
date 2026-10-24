@@ -211,6 +211,16 @@ textarea{min-height:88px;resize:vertical}
 .illus{width:96px;height:96px;flex:none;border-radius:var(--r);background:var(--bg-2);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .illus svg{width:80px;height:80px} .illus.sm{width:56px;height:56px;border-radius:var(--r-sm)} .illus.sm svg{width:44px;height:44px}
 .wcard{display:grid;gap:16px;justify-items:center;text-align:center}
+.wtile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:none;border-radius:var(--r);padding:8px;text-align:center;background:var(--chip);box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden}
+.wtile b{font-family:var(--display);font-weight:600;font-size:var(--t-de);line-height:1.1;letter-spacing:-.01em;overflow-wrap:anywhere}
+.wtile span{font:600 var(--t-cap) var(--text);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wcard .wtile{width:168px;height:168px} .wcard .wtile b{font-size:2.25rem}
+.learned{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 24px}
+.wchip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:3px 12px 3px 4px;border-radius:999px;background:var(--chip);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--display);font-weight:600;font-size:var(--t-body);color:var(--ink)}
+.wchip:not(:has(.il)){padding-left:12px}
+.wchip .il{width:28px;height:28px}
+.wchip .gl-t{display:inline-flex;width:16px;height:16px;color:var(--muted)}
+.wchip .gl-t svg{width:100%;height:100%}
 .wcard .illus{width:168px;height:168px;border-radius:var(--r);background:var(--yellow-soft)}
 .wcard .illus svg{width:136px;height:136px}
 .wcard .illus.m{background:var(--blue-soft)} .wcard .illus.f{background:var(--red-soft)} .wcard .illus.n{background:var(--green-soft)}
