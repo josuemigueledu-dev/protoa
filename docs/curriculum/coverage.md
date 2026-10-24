@@ -71,8 +71,8 @@ Review stops follow lessons 3, 6, … 30. The A1 exam follows the last review.
 
 Tick when the lesson is merged. One complete lesson per run.
 
-- [ ] 1 Greetings (correction pass + new format)
-- [ ] 2 People
+- [x] 1 Greetings (correction pass + new format)
+- [x] 2 People
 - [ ] 3 Everyday verbs
 - [ ] 4 Questions
 - [ ] 5 Numbers
