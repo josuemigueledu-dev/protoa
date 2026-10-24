@@ -79,6 +79,9 @@ test('bad requests are rejected before Claude is called', withKey(async () => {
   const app = createApp({ runJSON: async () => { throw new Error('must not be called'); } });
   assert.equal((await post(app, '/api/deutsch/ai/nope', {})).status, 404);
   assert.equal((await post(app, '/api/other/ai/correctSentence', SAMPLE.correctSentence)).status, 404);
+  // inherited Object properties are not tasks
+  assert.equal((await post(app, '/api/deutsch/ai/toString', {})).status, 404);
+  assert.equal((await post(app, '/api/constructor/ai/name', {})).status, 404);
   assert.equal((await post(app, '/api/deutsch/ai/correctSentence', 'not json')).status, 400);
   assert.equal((await post(app, '/api/deutsch/ai/correctSentence', { sentence: 'x'.repeat(501) })).status, 400);
   assert.equal((await post(app, '/api/deutsch/ai/gradeExam', { code: 'C2', items: [] })).status, 400);
