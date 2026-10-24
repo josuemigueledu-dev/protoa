@@ -94,7 +94,7 @@ function examPool() {
 function buildExam(code) {
   const plan = EXAM_PLAN[code], T = EXAM_TEXTS[code], pool = shuffle(examPool()), withEx = pool.filter(w => w.ex && w.exEn), items = [];
   const take = (arr, n, used) => { const out = []; for (const x of arr) { if (out.length >= n) break; if (!used.has(x.de)) { used.add(x.de); out.push(x); } } return out; };
-  const claude = !!S.sample;
+  const claude = !!S.ai;
   // Hören 1: dictation of sentences the learner knows (played at most twice)
   const usedS = new Set(); take(withEx, plan.listenDict, usedS).forEach(w => items.push({ sec: 'hoeren', type: 'dict', de: w.ex.replace(/[\[\]]/g, ''), en: w.exEn, plays: 0 }));
   // Hören 2: a short recording with questions
@@ -138,10 +138,10 @@ function openExamPreview(code) {
   const l = LEVELS.find(x => x.code === code), plan = EXAM_PLAN[code], cd = examCooldownLeft(code), saved = S.progress.exam && S.progress.exam.code === code ? S.progress.exam : null, hist = (S.progress.exams || []).filter(e => e.code === code);
   openSheet((inner, close) => {
     const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('exam')), h('div', { class: 'eyebrow' }, 'Level exam · ' + l.words.toLocaleString() + ' words reached'), h('h1', { lang: 'de' }, 'Prüfung ' + code),
-      h('p', { class: 'muted' }, 'Modelled on the Goethe-Zertifikat: listening, reading, vocabulary, grammar, gap-fill, word order, translation' + (S.sample ? ', writing and speaking.' : '.') + ' You need 90 % to pass and move on.'));
+      h('p', { class: 'muted' }, 'Modelled on the Goethe-Zertifikat: listening, reading, vocabulary, grammar, gap-fill, word order, translation' + (S.ai ? ', writing and speaking.' : '.') + ' You need 90 % to pass and move on.'));
     const facts = h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'The rules'), h('ul', { class: 'rules' }, h('li', {}, 'No hints, no word glosses, no second chances inside the exam.'), h('li', {}, 'Recordings play at most twice.'), h('li', {}, 'Everything is typed. Spelling and articles count; ae/oe/ue/ss are accepted for ä/ö/ü/ß.'), h('li', {}, 'You can pause and come back; your answers are saved.'), h('li', {}, `If you score under 90 %, you can retake it after ${EXAM_COOLDOWN_MIN} minutes with new questions.`)));
     p.append(facts, h('div', { class: 'facts' }, h('span', { class: 'chip' }, '≈ ' + (code === 'A1' ? 45 : code === 'A2' ? 60 : 80) + ' min'), h('span', { class: 'chip' }, 'pass mark 90 %'), hist.length ? h('span', { class: 'chip' }, 'best so far ' + Math.max(...hist.map(e => e.score)) + ' %') : ''));
-    if (!S.sample) p.append(h('p', { class: 'faint' }, 'Claude is not available in this view, so writing and speaking are replaced by extra translation tasks.'));
+    if (!S.ai) p.append(h('p', { class: 'faint' }, 'Claude is not available right now, so writing and speaking are replaced by extra translation tasks.'));
     if (saved) p.append(h('button', { class: 'btn', onclick: () => { close(); enterExam(); } }, `Continue the exam · ${saved.idx + 1} of ${saved.items.length}`));
     else if (cd) p.append(h('p', { class: 'fb note' }, `Next attempt in ${Math.ceil(cd / 60000)} min. Use the time on Practice: the words you missed are waiting there.`), h('button', { class: 'btn ghost', onclick: () => { close(); go('practice'); } }, 'Go to Practice'));
     else p.append(h('button', { class: 'btn', onclick: () => { close(); S.progress.exam = buildExam(code); save('progress'); enterExam(); } }, hist.length ? 'Retake the exam' : 'Start the exam'));
@@ -201,10 +201,10 @@ async function gradeExam(v) {
     else if (it.type === 'trans') { const r = diagnose(a, it.de, lex, it.g, []); it.ok = r.ok; it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; if (!it.ok && X.claude) pending.push(it); }
     else if (it.type === 'write' || it.type === 'speak') { it.max = it.type === 'write' ? it.pts : 1; it.pts = 0; it.expected = ''; pending.push(it); }
   }
-  if (pending.length && S.sample) {
-    const list = pending.map((it, i) => ({ i, kind: it.type, task: it.type === 'write' ? it.task : it.type === 'speak' ? it.q : it.en, model: it.de || '', answer: it.answer, max: it.max }));
+  if (pending.length && S.ai) {
+    const list = pending.map((it, i) => ({ i, kind: it.type, task: String((it.type === 'write' ? it.task : it.type === 'speak' ? it.q : it.en) || ''), model: it.de || '', answer: String(it.answer || ''), max: it.max }));
     try {
-      const r = await S.sample.json(`You are a strict, fair examiner for the Goethe-Zertifikat ${X.code}. Mark each answer. Kinds:\n- "trans": English → German translation; correct (1) only if it is grammatical German with the same meaning as the English (the model is one valid answer; other correct wordings count; spelling must be right except ae/oe/ue/ss for umlauts; wrong article, ending or word order = 0).\n- "order": the learner reordered given words; correct (1) only if the order is grammatical German with the meaning of the English.\n- "speak": an answer to the question at level ${X.code}; 1 point only if it answers the question in a complete, understandable, mostly correct German sentence; else 0.\n- "write": a short text for the task; give 0..max points: content points addressed (up to 3 for A1/A2), grammar and vocabulary appropriate to ${X.code}; be strict, typical learner text with several errors scores about half.\nItems: ${JSON.stringify(list)}\nReply with only JSON: {"marks": [{"i": 0, "points": 0, "note": "one short English sentence on the main problem or what was good"}]}`, { modelTier: 'default', cache: false });
+      const r = await AI.run('gradeExam', { code: X.code, items: list });
       (r.marks || []).forEach(m => { const it = pending[m.i]; if (!it) return; it.pts = Math.max(0, Math.min(it.max, Math.round(Number(m.points) || 0))); it.ok = it.pts === it.max; it.note = m.note || ''; });
     } catch (e) { pending.filter(it => it.type === 'write' || it.type === 'speak').forEach(it => { it.ungraded = true; }); }
   }

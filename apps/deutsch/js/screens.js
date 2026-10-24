@@ -233,11 +233,11 @@ function renderReviewSummary(v) {
 
 /* ---------- Explain my mistake (Claude) ---------- */
 function explainBtn(answer, target, en) {
-  if (!S.sample) return '';
+  if (!S.ai) return '';
   const out = h('div', {}); const b = h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: async () => {
     b.disabled = true; out.innerHTML = ''; out.append(fbEl('hint', '<span class="typing"><i></i><i></i><i></i></span>'));
-    try { const r = await S.sample.json(`A beginner learner of German (English speaker, fluent in Spanish) was asked to say: "${en}". The model answer is: "${target}". The learner wrote: "${answer}". Explain in at most two short plain-English sentences what the learner's version gets wrong and why German works that way. Mention a Spanish parallel only if it truly helps. Reply with only JSON: {"explanation": "..."}`, { modelTier: 'quick' }); out.innerHTML = ''; out.append(fbEl('hint', esc(r.explanation || ''))); }
-    catch (e) { out.innerHTML = ''; out.append(fbEl('bad', e.code === 'not_granted' ? 'Claude was not allowed for this page.' : 'Could not explain right now.')); b.disabled = false; }
+    try { const r = await AI.run('explainMistake', { en, target, answer }); out.innerHTML = ''; out.append(fbEl('hint', esc(r.explanation || ''))); }
+    catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, 'Could not explain right now.'))); b.disabled = false; }
   } }, 'Why? Explain it');
   return h('div', { class: 'stack', style: 'gap:8px' }, b, out);
 }
@@ -255,8 +255,8 @@ function renderTalk(v) {
   if (TALK && TALK.active) { renderTalkChat(v); return; }
   if (TALK && TALK.summary) { renderTalkSummary(v); return; }
   v.append(h('div', { class: 'talkhero' }, teacherSlot(72, 'pleased'), h('div', { class: 'grow' }, h('h1', { lang: 'de' }, 'Sprechen'), h('p', {}, 'A real conversation with Protoa at your level. Every line you write is corrected, and the replies keep to the words you know.'))));
-  if (!S.sample) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen needs Claude'), h('p', { class: 'faint' }, 'Protoa\'s replies and corrections are written by Claude. When the page asks, allow it to use Claude; in views where that is not possible this section stays closed.')));
-  v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen', disabled: !S.sample, onclick: () => startTalk(sc) }, sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
+  if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen needs Claude'), h('p', { class: 'faint' }, 'Protoa\'s replies and corrections are written by Claude, through the Protoa server. It is not reachable right now, so this section stays closed.')));
+  v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen', disabled: !S.ai, onclick: () => startTalk(sc) }, sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
   const hist = (S.progress.talks || []).slice(-5).reverse();
   if (hist.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Recent conversations'), ...hist.map(t => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { lang: 'de' }, t.title), h('span', { class: 'faint' }, `${t.date} · ${t.turns} lines · ${t.fixes} corrected`)))));
 }
@@ -284,19 +284,8 @@ function renderTalkChat(v) {
     const txt = inp.value.trim(); if (!txt || T.busy) return;
     T.log.push({ who: 'l', de: txt }); T.turns++; T.busy = true; Voice.busy(true); inp.value = '';
     const mine = bubble(T.log[T.log.length - 1]); log.insertBefore(mine, typing); typing.hidden = false; typing.scrollIntoView({ block: 'end', behavior: reduced() ? 'auto' : 'smooth' });
-    const hist = T.log.map(m => (m.who === 'w' ? 'Protoa: ' : 'Student: ') + m.de).join('\n');
-    const prompt = `You are Protoa, a warm, precise German conversation partner in Berlin with a dry sense of humour (you are a voice without a body; if asked your name, you are Protoa), in a spoken conversation with your student ${S.profile.name || ''} (lives in ${S.profile.city || 'the US'}, studies/works in ${S.profile.field || 'unknown'}, interests: ${S.profile.interests || 'unknown'}).
-Scenario: ${sc.brief}
-The student is a beginner (A1, aiming for spoken B1). Words the student knows: ${knownWordList()}.
-Rules for your line ("de"): German only, use Sie, 1–2 short sentences (each at most 12 words), mostly the student's known words, react to what the student said, and end with one simple question that keeps the scenario going.
-Judge the student's LAST message: "ok": true if it is understandable and acceptable for A1 (tiny slips are fine); otherwise "corrected" = the natural corrected German version of what they meant and "note" = one plain-English sentence naming the main error (mention a Spanish parallel only if it truly helps). If ok, "note" may be a 2–5 word compliment in German.
-"gloss": every German token of "de" with its meaning in context, format "word=meaning | word=meaning", fixed phrases as one span, punctuation attached to the German word.
-Set "done": true once the scenario has naturally concluded or after about 10 student lines; then "de" is a friendly goodbye.
-Reply with only JSON: {"de": "...", "en": "...", "gloss": "...", "correction": {"ok": true, "corrected": "", "note": ""}, "done": false}
-Conversation so far:
-${hist}`;
     try {
-      const r = await S.sample.json(prompt, { modelTier: 'default', cache: false });
+      const r = await AI.run('talkTurn', { profile: aiProfile(), brief: sc.brief, known: knownWordList(), history: T.log.map(m => ({ who: m.who === 'w' ? 'w' : 'l', de: m.de })) });
       const me = T.log[T.log.length - 1]; me.corr = r.correction && typeof r.correction.ok === 'boolean' ? r.correction : { ok: true };
       if (!me.corr.ok && me.corr.corrected) T.fixes.push({ de: me.corr.corrected, said: me.de, note: me.corr.note || '' });
       let g = r.gloss || null; try { if (g && deTokens(r.de).map(fold).join(' ') !== parseGloss(g).flatMap(([d]) => deTokens(d)).map(fold).join(' ')) g = null; } catch (e) { g = null; }
@@ -304,14 +293,14 @@ ${hist}`;
       T.busy = false; Voice.busy(false); T.done = !!r.done || T.turns >= 12; NAV = 'none'; render();
     } catch (e) {
       T.busy = false; Voice.busy(false); T.log.pop(); T.turns--; inp.value = txt; typing.hidden = true; mine.remove();
-      toast(e.code === 'not_granted' ? 'Claude was not allowed for this page.' : e.code === 'rate_limited' ? 'Too many requests. Try again in a moment.' : 'Protoa could not answer. Try again.');
+      toast(AI.message(e, 'Protoa could not answer. Try again.'));
     }
   };
   const help = async () => {
     const ask = h('input', { type: 'text', placeholder: 'What do you want to say? (English)', 'aria-label': 'What you want to say, in English', id: 'talk-help' });
     openSheet((inner, close) => {
       const out = h('div', {}); const go_ = async () => { const q = ask.value.trim(); if (!q) return; out.innerHTML = ''; out.append(fbEl('hint', '<span class="typing"><i></i><i></i><i></i></span>'));
-        try { const r = await S.sample.json(`A beginner learner of German (A1) wants to say this to their teacher (formal Sie), in this situation: ${sc.brief}\nWhat they want to say: "${q}"\nGive the simplest natural German sentence for it. Reply with only JSON: {"de": "...", "tip": "one short English tip about a word or structure in it"}`, { modelTier: 'quick' }); out.innerHTML = ''; out.append(h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'row' }, glossEl(r.de, null), playBtn(r.de)), r.tip ? fbEl('note', esc(r.tip)) : '', h('button', { class: 'btn', onclick: () => { inp.value = r.de; close(); inp.focus(); } }, 'Use this'))); }
+        try { const r = await AI.run('talkHelp', { brief: sc.brief, question: q }); out.innerHTML = ''; out.append(h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'row' }, glossEl(r.de, null), playBtn(r.de)), r.tip ? fbEl('note', esc(r.tip)) : '', h('button', { class: 'btn', onclick: () => { inp.value = r.de; close(); inp.focus(); } }, 'Use this'))); }
         catch (e) { out.innerHTML = ''; out.append(fbEl('bad', 'Could not get a suggestion right now.')); } };
       ask.addEventListener('keydown', e => { if (e.key === 'Enter') go_(); });
       inner.append(h('h2', {}, 'How do I say…?'), h('p', { class: 'faint' }, 'Type it in English. You get the German, and you still say it yourself.'), ask, h('button', { class: 'btn', onclick: go_ }, 'Show me'), out);

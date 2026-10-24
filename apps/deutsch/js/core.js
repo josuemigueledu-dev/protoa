@@ -111,14 +111,12 @@ function schedule(card, grade) { // grade 0 again, 1 hard, 2 good, 3 easy
 }
 const strengthOf = c => !c ? 0 : Math.min(1, c[1] / 45);
 
-/* ---------- Storage (db is truth, localStorage mirrors) ---------- */
-const S = { settings: null, profile: null, progress: null, cards: {}, lessonsGen: {}, uid: null, db: null, user: null, sample: null, ready: false };
+/* ---------- Storage (localStorage for now; server sync comes with accounts) ---------- */
+const S = { settings: null, profile: null, progress: null, cards: {}, lessonsGen: {}, ai: null, ready: false };
 const DEF_SETTINGS = () => ({ level: 'B1', target: 2400, fixed: 'perDay', perDay: 20, targetDate: '', minutes: 20, autoWord: true, uiSounds: true, hideGloss: false, theme: 'light', difficulty: 'auto', voiceName: '', voiceDepth: .5, voiceRate: .92, onboarded: false, updatedAt: 0 });
 const DEF_PROGRESS = () => ({ lessonsDone: [], lessonState: null, recent: [], days: {}, sounds: false, updatedAt: 0 });
 const DEF_PROFILE = () => ({ name: '', city: '', field: '', interests: '', why: '', updatedAt: 0 });
 const LS = (k, v) => { try { if (v === undefined) { const s = localStorage.getItem('weg:' + LANG + ':' + k); return s ? JSON.parse(s) : null; } localStorage.setItem('weg:' + LANG + ':' + k, JSON.stringify(v)); } catch (e) { return null; } };
-function docRef(key) { return S.db && S.uid ? S.db.doc(`data/users/${S.uid}/${LANG}_${key}`) : null; }
-function shardRef(shard) { return S.db && S.uid ? S.db.doc(`data/users/${S.uid}/${LANG}_cards`).collection('shards').doc(shard) : null; }
 const pending = {}; const timers = {}; const pendingSaves = new Set();
 function flushPendingSaves() { const list = [...pendingSaves]; pendingSaves.clear(); list.forEach(j => { const [k, sh] = JSON.parse(j); save(k, sh || undefined); }); }
 function save(key, shard) {
@@ -127,13 +125,7 @@ function save(key, shard) {
   if (!val) return;
   val.updatedAt = Date.now();
   LS(name, val);
-  if (!S.ready) { pendingSaves.add(JSON.stringify([key, shard || null])); return; } // flushed after the server copy is merged
-  clearTimeout(timers[name]);
-  timers[name] = setTimeout(async () => {
-    const ref = shard ? shardRef(shard) : docRef(key);
-    if (!ref) return;
-    try { await ref.set(JSON.parse(JSON.stringify(val))); } catch (e) { console.warn('db save failed', name, e); }
-  }, 400);
+  if (!S.ready) { pendingSaves.add(JSON.stringify([key, shard || null])); return; } // flushed once startup has finished
 }
 // every course goes to at least B1 (2,400 words); A1 and A2 are milestones, not goals
 function enforceLevelFloor() { const s = S.settings; if (!['B1', 'B2'].includes(s.level)) s.level = 'B1'; s.target = Math.max(s.level === 'B2' ? 4000 : 2400, +s.target || 0); }
@@ -165,22 +157,9 @@ function mergeShard(local, remote) {
   for (const [id, c] of Object.entries(local.w || {})) { const r = out.w[id]; if (!r || (c.r && r.r && (c.r[3] > r.r[3] || (c.r[3] === r.r[3] && c.r[0] > r.r[0])))) out.w[id] = c; else if (c.learned) r.learned = true; }
   return out;
 }
+// mergeProgress / mergeShard above are kept for server sync: when accounts exist, the server copy is merged here.
 async function loadRemote() {
-  if (!window.claude || !window.claude.use) return;
-  try {
-    const [db, user, sample] = await Promise.all([claude.use('db'), claude.use('user'), claude.use('sample')]);
-    S.db = db; S.user = user; S.sample = sample;
-    if (user) S.uid = await user.id();
-    if (!db || !S.uid) return;
-    const newer = (remote, local) => remote && (remote.updatedAt || 0) >= (local.updatedAt || 0);
-    const [st, pf, pg] = await Promise.all([docRef('settings').get(), docRef('profile').get(), docRef('progress').get()]);
-    if (st.exists && newer(st.data(), S.settings)) { S.settings = Object.assign(DEF_SETTINGS(), JSON.parse(JSON.stringify(st.data()))); if (!S.settings.themeChosen) S.settings.theme = 'light'; enforceLevelFloor(); LS('settings', S.settings); }
-    if (pf.exists && newer(pf.data(), S.profile)) { S.profile = Object.assign(DEF_PROFILE(), JSON.parse(JSON.stringify(pf.data()))); LS('profile', S.profile); }
-    if (pg.exists) { S.progress = mergeProgress(S.progress, Object.assign(DEF_PROGRESS(), JSON.parse(JSON.stringify(pg.data())))); LS('progress', S.progress); }
-    const shards = await S.db.doc(`data/users/${S.uid}/${LANG}_cards`).collection('shards').get();
-    shards.docs.forEach(d => { const v = JSON.parse(JSON.stringify(d.data())); S.cards[d.id] = mergeShard(S.cards[d.id], v); LS('cards:' + d.id, S.cards[d.id]); });
-    const lg = await docRef('lessonsGen').get(); if (lg.exists) { S.lessonsGen = Object.assign(JSON.parse(JSON.stringify(lg.data())), S.lessonsGen || {}); LS('lessonsGen', S.lessonsGen); }
-  } catch (e) { console.warn('remote load', e); }
+  S.ai = await AI.connect();
 }
 
 /* ---------- Word bank helpers ---------- */
@@ -442,9 +421,9 @@ function diagnose(answer, target, lex, glossStr, alts = []) {
 
 // Free answers: ask Claude (§8.3 last row). Returns {ok, understandable, issue, hint} or null if unavailable.
 async function checkFree(answer, question, lessonWords) {
-  if (!S.sample) return null;
+  if (!S.ai) return null;
   try {
-    const r = await S.sample.json(`You are checking a beginner German learner's reply in a conversation.\nQuestion asked (German): ${fill(question)}\nLearner's reply: ${answer}\nWords the learner has studied: ${lessonWords.join(', ')}\nJudge whether the reply is an understandable, grammatically acceptable German answer to the question (small errors are fine at A1). Reply with only JSON: {"ok": boolean, "understandable": boolean, "issue": "one short sentence naming the main problem, or empty", "hint": "one targeted hint in English that names the problem without giving the full corrected sentence"}`, { modelTier: 'quick' });
+    const r = await AI.run('checkFree', { question: fill(question), answer, words: lessonWords });
     return r && typeof r.ok === 'boolean' ? r : null;
   } catch (e) { return null; }
 }

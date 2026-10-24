@@ -1,33 +1,50 @@
 # Protoa
 
-A German course for an English speaker (fluent in Spanish) aiming for spoken B1. Lessons on a course map, spaced-repetition word review, grammar reference, a "Sprechen" conversation mode, profile/stats, levels and exams.
+Protoa is an umbrella for a family of learning apps, represented by the orb: a thin glass sphere with a small blue core of light. The German course is the first app; more will follow and share the orb, the visual language and the server. Build with a large user base in mind.
 
-## Current shape
+## The first app: German (`apps/deutsch`)
 
-- Everything is in one file, `index.html` (~4,000 lines: CSS, data, and app script together). No build step; open it in a browser.
-- It was built as a claude.ai artifact. Fonts load from Google Fonts; no other external dependencies.
-- Splitting it into separate CSS / JS / data files is a reasonable first refactor.
+A course for an English speaker (fluent in Spanish) aiming for spoken B1. Lessons on a course map, spaced-repetition word review, grammar reference, a "Sprechen" conversation mode, profile/stats, levels and exams. It started as a claude.ai artifact and was split into files without changing behaviour.
 
-## Things that only worked inside the claude.ai artifact
+## Layout
 
-The app checks for `window.claude` (see `loadRemote()`, near the "Storage" section). Outside claude.ai that object doesn't exist, so these fall back or turn off:
+```
+apps/deutsch/        German course (static: index.html, css/, js/)
+shared/orb/          the Protoa orb (WebGL), shared by every app
+server/              one Node server for all apps: static files + /api
+  src/app.js           routes; apps register their AI tasks in APPS
+  src/claude.js        the only place that calls the Claude API
+  src/apps/deutsch/    the German course's AI tasks (prompts + schemas)
+  test/                node:test; Claude is stubbed, tests are free and offline
+```
 
-- **Sync / storage**: `claude.use('db')` and `claude.use('user')` stored settings, profile, progress and card shards per user. Without them the app runs on `localStorage` only (one browser, no sync).
-- **AI features** via `claude.use('sample')` → `S.sample.json(...)`:
-  - answer checking in the lesson conversation
-  - sentence correction
-  - "Generate a lesson with Claude" (new lessons, stored in `S.lessonsGen`)
-  - "Explain my mistake"
-  - Sprechen free conversation
+## Running
 
-To bring these back outside claude.ai they need a replacement: e.g. a small backend that calls the Claude API (keep the API key server-side, never in the page) and a real database/auth for sync.
+- `npm run setup` once, then `npm run dev` → http://localhost:8787/deutsch/
+- `npm test` runs the server tests.
+- AI features need `ANTHROPIC_API_KEY` in `.env` (copy `.env.example`). Without it, or when `index.html` is opened directly as a file, the app runs with the AI features turned off.
 
-## Data
+## Front end (`apps/deutsch`)
 
-- Built-in lessons are in `LESSONS`; generated ones in `S.lessonsGen`.
-- SRS is SM-2 style with a 45-day cap.
-- There is JSON import/export (`exportJSON()`, "Import / export" section) for moving progress between copies.
+- Plain JS, no build step. Classic `<script>` files share one global scope and **load in order** (see the end of `index.html`): `content` → `core` → `ai` → `ui` → orb → `companion` → `map` → `screens` → `levels` → `tilt` → `boot`. Top-level code may only use things defined in earlier files; functions are called later, from `boot.js`.
+- `content.js` holds the lessons and their conventions (read its header before adding a lesson). Built-in lessons are in `LESSONS`; generated ones in `S.lessonsGen`.
+- State is in `S` (core.js). SRS is SM-2 style with a 45-day cap. JSON import/export (`exportJSON()`) moves progress between copies.
+- Design: frosted glass, one azure accent, light and dark themes via CSS variables on `:root` (`data-theme` override). Three layouts set on `<body>`: `lay-mobile`, `lay-tablet`, `lay-desktop`. CSS files load in order: `base` → `glass` → `depth`; later files override earlier ones on purpose.
 
-## Design notes
+## AI
 
-Frosted-glass look, one azure accent, light and dark themes via CSS variables on `:root` (`data-theme` override). Three layouts set on `<body>`: `lay-mobile`, `lay-tablet`, `lay-desktop`.
+- The browser calls `AI.run(task, vars)` (`js/ai.js`) → `POST /api/<app>/ai/<task>`. `S.ai` is set when the server reports AI is available; features check it and degrade when it is null.
+- The prompt text lives on the server, never in the page, so the endpoint is not a general Claude proxy and the key never reaches the browser. Each task in `server/src/apps/<app>/tasks.js` has a Zod `input` (with size caps), a `tier`, a `prompt(vars)` and either an `output` Zod schema (structured outputs) or `long: true` (free-form JSON, streamed; the app validates it, e.g. `validateLesson`).
+- Tiers: `quick` runs at low effort, `default` at medium, both on `claude-opus-5-5` unless `PROTOA_MODEL` / `PROTOA_MODEL_QUICK` say otherwise. Refusals fall back server-side (`fallbacks: "default"`).
+- Adding a task: add it to `tasks.js`, add a sample input to `SAMPLE` in `server/test/app.test.js` (the test checks every task has one), call it with `AI.run`.
+
+## Adding another Protoa app
+
+Put it in `apps/<name>/`, load the orb from `../../shared/orb/glorb.js`, register its tasks in `APPS` in `server/src/app.js`. It is served at `/<name>/`.
+
+## Not done yet (needed before a public launch)
+
+- **Accounts and sync.** Progress lives in `localStorage` only (one browser). The claude.ai version synced through `window.claude`; that code is gone. `mergeProgress` / `mergeShard` in core.js are kept for server sync. Needs auth plus a database, and per-user AI quotas.
+- **Abuse and cost limits.** AI calls are rate limited per IP in memory (`AI_RATE_LIMIT`, default 60 per 10 min). With several server instances or real users this needs a shared store keyed on the user.
+- **Hosting.** Nothing is deployed. The server is Hono, so it can run on Node hosts or be moved to edge runtimes (e.g. Cloudflare Workers).
+- Content still ships in `content.js`; with many apps and languages it should move server-side.

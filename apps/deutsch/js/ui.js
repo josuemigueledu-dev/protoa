@@ -157,10 +157,10 @@ function writeYourOwn() {
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Write your own'), h('p', { class: 'muted small' }, "One German sentence with words you know. You get it back corrected, with the main error named and one way to extend it."));
   const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input' }); const out = h('div', { class: 'stack' });
   const btn = h('button', { class: 'btn', onclick: async () => {
-    const s = inp.value.trim(); if (!s) return; if (!S.sample) { out.innerHTML = ''; out.append(fbEl('note', 'Claude is not available in this view, so I cannot check this here.')); return; }
+    const s = inp.value.trim(); if (!s) return; if (!S.ai) { out.innerHTML = ''; out.append(fbEl('note', 'Claude is not available right now, so I cannot check this.')); return; }
     btn.disabled = true; Voice.busy(true); out.innerHTML = ''; out.append(fbEl('hint', 'Protoa is reading your sentence…'));
-    try { const r = await S.sample.json(`A beginner learner of German wrote this sentence: "${s}"\nReply with only JSON: {"corrected": "the sentence corrected (unchanged if already correct)", "error": "the main error named in one plain English sentence, or 'No errors.'", "extend": "one short way to extend the sentence, in German, with an English gloss in parentheses"}`, { modelTier: 'quick' }); out.innerHTML = ''; out.append(h('div', { class: 'stack' }, h('div', { class: 'row' }, glossEl(r.corrected || s), playBtn(r.corrected || s)), fbEl(r.error && !/^no errors/i.test(r.error) ? 'hint' : 'ok', esc(r.error || '')), r.extend ? fbEl('note', 'Extend it: ' + esc(r.extend)) : '')); }
-    catch (e) { out.innerHTML = ''; out.append(fbEl('bad', e.code === 'not_granted' ? 'Claude was not allowed for this page.' : 'Could not check right now.')); }
+    try { const r = await AI.run('correctSentence', { sentence: s }); out.innerHTML = ''; out.append(h('div', { class: 'stack' }, h('div', { class: 'row' }, glossEl(r.corrected || s), playBtn(r.corrected || s)), fbEl(r.error && !/^no errors/i.test(r.error) ? 'hint' : 'ok', esc(r.error || '')), r.extend ? fbEl('note', 'Extend it: ' + esc(r.extend)) : '')); }
+    catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, 'Could not check right now.'))); }
     btn.disabled = false; Voice.busy(false); } }, 'Check with Protoa');
   c.append(inp, h('div', { class: 'row' }, umlautRow(inp), micBtn(inp)), btn, out); inp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
   return c;
@@ -587,17 +587,16 @@ function onboarding() {
 /* ---------- Generate a lesson with Claude (§12) ---------- */
 async function generateLesson() {
   const gateG = examGate(); if (gateG) { openExamPreview(gateG.code); return; }
-  if (!S.sample) { toast('Claude is not available in this view.'); return; }
+  if (!S.ai) { toast('Claude is not available right now.'); return; }
   const n = allLessons().length + 1; const known = Object.values(S.cards).flatMap(sh => Object.keys(sh.w || {})).filter(k => !k.startsWith('s:'));
   const plan = courseOf(n);
   toast('Protoa is writing lesson ' + n + '…');
-  const spec = JSON.stringify(LESSONS[0]);
   for (let tries = 0; tries < 2; tries++) {
     try {
-      const r = await S.sample.json(`Write lesson ${n} of a German course for an English speaker (fluent in Spanish) aiming for spoken B1, with ONE conversation partner, Herr Weber (teacher in Berlin, uses Sie). Theme: ${plan.topic}. The lesson is set at or near the Berlin U-Bahn station ${plan.station}.\nLearner profile: ${JSON.stringify(S.profile)}. Already-known words (do not teach again, may reuse): ${known.join(', ')}.\nReply with ONLY a JSON object with exactly the shape and conventions of this example lesson (same keys, same gloss format "de=en | de=en" where glosses are meaning in context and fixed phrases get one span, every German token glossed, conversation of 8–12 turns alternating Herr Weber {w,g,mood} and learner turns {l:true,de,en,g,type,gaps,extra,alts,react} with a mix of tiles/gap/translate and ONE free turn, lexicon with every verb's forms and every noun's gender, no "pic" field, 10–12 new words with ipa, resp (stressed syllable CAPS), syl with ·, example with the word in [brackets], exEn, exG). Scene id must be one of: classroom, cafe, ubahn, spaeti, stairwell. Example:\n${spec}`, { modelTier: 'default', cache: false });
+      const r = await AI.run('generateLesson', { n, topic: plan.topic, station: plan.station, profile: aiProfile(), known, example: LESSONS[0] });
       const bad = validateLesson(r, n, known); if (bad.length) { console.warn('lesson rejected', bad); if (tries === 1) { toast('The lesson came back malformed: ' + bad[0]); return; } continue; }
       r.n = n; S.lessonsGen[n] = r; save('lessonsGen'); toast('Lesson ' + n + ' ready'); render(); return;
-    } catch (e) { toast(e.code === 'not_granted' ? 'Claude was not allowed for this page.' : 'Could not write the lesson right now.'); return; }
+    } catch (e) { toast(AI.message(e, 'Could not write the lesson right now.')); return; }
   }
 }
 function validateLesson(L, n, known) {
