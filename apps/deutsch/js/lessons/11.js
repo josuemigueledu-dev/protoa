@@ -48,9 +48,11 @@ LESSONS.push({
     { who: 'cast.barista', w: 'Zwei Tee, ein Kaffee. Kaffee gleich, Kuchen später.', g: 'Zwei Tee,=two teas | ein Kaffee.=one coffee | Kaffee=coffee | gleich,=in a moment | Kuchen=cake | später.=later', mood: 'neutral' },
     { who: 'cast.ana', w: 'Moment. Woher wissen Sie das?', g: 'Moment.=wait | Woher wissen Sie das?=how do you know that', mood: 'surprised' },
     { who: 'cast.barista', w: 'Ich höre alles.', g: 'Ich=I | höre=hear | alles.=everything', mood: 'amused' },
-    { l: true, de: 'Gut, dann Kuchen später.', en: 'Good, then cake later.', g: 'Gut,=good | dann=then | Kuchen=cake | später.=later', type: 'gap', gaps: [3], extra: ['gleich', 'schon'], alts: ['Gut. Dann Kuchen später.', 'Dann Kuchen später.'], rwho: 'cast.barista', react: 'Einen Moment.=one moment' },
     { who: 'cast.lena', w: 'Alles? Wirklich?', g: 'Alles?=everything | Wirklich?=really', mood: 'surprised' },
-    { l: true, de: 'Noch Kaffee, Lena?', en: 'More coffee, Lena?', g: 'Noch=more | Kaffee,=coffee | Lena?=Lena', type: 'translate', gaps: [0, 1, 2], extra: ['schon', 'Tee'], alts: ['Noch Kaffee?'], optional: true, rwho: 'cast.lena', react: 'Nein. Tee.=no, tea' },
+    { who: 'cast.barista', w: 'Alles. Die Dame aus Mexiko: Tee. Die Dame aus Rom: Kaffee Nummer drei.', g: 'Alles.=everything | Die Dame=the lady | aus=from | Mexiko:=Mexico | Tee.=tea | Die Dame=the lady | aus=from | Rom:=Rome | Kaffee Nummer drei.=coffee number three', mood: 'amused' },
+    { l: true, de: 'Gut, dann Kuchen später.', en: 'Good, then cake later.', g: 'Gut,=good | dann=then | Kuchen=cake | später.=later', type: 'translate', gaps: [1, 3], extra: ['denn', 'gleich'], alts: ['Gut. Dann Kuchen später.', 'Dann Kuchen später.', 'Gut, dann den Kuchen später.', 'Gut, Kuchen später.'], rwho: 'cast.barista', react: 'Einen Moment.=one moment' },
+    { who: 'cast.lena', w: 'Kaffee Nummer drei. Hm.', g: 'Kaffee Nummer drei.=coffee number three | Hm.=hm', mood: 'thinking' },
+    { l: true, de: 'Noch Kaffee, Lena?', en: 'More coffee, Lena?', g: 'Noch=more | Kaffee,=coffee | Lena?=Lena', type: 'translate', gaps: [0, 1, 2], extra: ['schon', 'Tee'], alts: ['Noch Kaffee?', 'Noch einen Kaffee, Lena?'], rwho: 'cast.lena', react: 'Nein. Tee.=no, tea' },
   ],
   lex: {
     verbs: {},
