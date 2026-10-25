@@ -57,8 +57,8 @@ jobs:
         env:
           IOS_FRAMES: report
 
-  # Frame budget (npm run perf): tab changes at phone size with the CPU slowed 4×; a change may drop
-  # at most 2 frames over 33 ms. Only warns for now (PERF=report); drop that line once main is inside it.
+  # Frame budget (npm run perf): tab changes, the end of a lesson and a Practice session at phone size with
+  # the CPU slowed 4×; a change may drop at most 2 frames over 33 ms. Only warns for now (PERF=report); drop that line once main is inside it.
   perf:
     runs-on: ubuntu-latest
     timeout-minutes: 10

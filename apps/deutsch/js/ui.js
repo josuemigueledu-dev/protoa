@@ -693,7 +693,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return answerFirst(fb); fb.innerHTML = '';
       if (it.kind === 'r') { result = checkEnglish(a, def ? def.en : []); if (reveal) reveal(); if (result.ok) { uiSound('ok'); if (!reveal) fb.append(exRow()); showGrades(2, 'ok', '✓ ' + esc(def.en.join(', ')) + (result.note ? ' — ' + esc(result.note) : '')); } else { uiSound('bad'); if (!reveal) fb.append(exRow()); showGrades(0, 'bad', '<em lang="de">' + esc(it.id) + '</em> = ' + esc(def ? def.en.join(', ') : '?')); } }
-      else { const target = it.kind === 'ls' ? sentence : it.id; const r = diagnose(a, target, mergedLex({}), def ? def.exG : null, it.kind === 'ls' ? [] : [bare]); result = r; if (r.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ <em lang="de">' + esc(target) + '</em> — ' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + (r.note ? ' ' + r.note : '')); } else { uiSound('bad', r); fb.append(exRow()); showGrades(0, 'bad', 'It was <em lang="de">' + esc(target) + '</em> (' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + ').'); } }
+      else { const target = it.kind === 'ls' ? sentence : it.id; const r = diagnose(a, target, mergedLex({}), def ? def.exG : null, it.kind === 'ls' ? [] : [bare]); result = r; if (r.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ <em lang="de">' + esc(target) + '</em> — ' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + (r.note ? ' ' + r.note : '')); } else { uiSound('bad', r); fb.append(exRow()); const gl = def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : ''; showGrades(0, 'bad', 'It was <em lang="de">' + esc(target) + '</em> (' + esc(gl) + ')' + fullStop(gl)); } }
     };
     card.append(inp, it.kind === 'r' ? '' : h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, check)), fb); setTimeout(() => inp.focus(), 50);
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
@@ -705,7 +705,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return answerFirst(fb); const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
       if (r.ok) { uiSound('ok'); const noArt = def.type === 'n' && !/^(der|die|das)\b/i.test(a); showGrades(noArt ? 1 : 2, 'ok', '✓ <em lang="de">' + esc(it.id) + '</em>' + (noArt ? ' — say the article with it: ' + { m: 'der', f: 'die', n: 'das' }[def.g] : '') + (r.note ? ' ' + r.note : '')); }
-      else { uiSound('bad', r); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>' + (/[.!?]$/.test(it.id) ? '' : '.') + (MISS_TEACHES.includes(r.kind) ? ' ' + r.hint : '')); }
+      else { uiSound('bad', r); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>' + fullStop(it.id) + (MISS_TEACHES.includes(r.kind) ? ' ' + r.hint : '')); }
     };
     card.append(w.el, fb); setTimeout(() => inp.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   } else { // conversation line with the help ladder
