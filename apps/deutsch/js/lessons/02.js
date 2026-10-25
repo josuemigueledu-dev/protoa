@@ -80,8 +80,8 @@ GRAMMAR.push({ id: 'v2', title: 'The verb comes second', lesson: 2,
       { de: 'Sind Sie Student?', g: 'Sind=are | Sie=you (formal) | Student?=(a) student', en: 'Are you a student?' },
       { de: 'Woher kommen Sie?', g: 'Woher=where from | kommen=come | Sie?=you (formal)', en: 'Where do you come from?' } ],
     drills: [
-      { q: 'Put in order: aus / ich / Berlin / komme', a: ['ich komme aus berlin'], en: 'I come from Berlin.' },
-      { q: 'Put in order: Sie / Student / sind / ?', a: ['sind sie student'], en: 'Are you a student?' },
-      { q: 'Put in order: heute / ich / bin / in Berlin', a: ['heute bin ich in berlin', 'ich bin heute in berlin'], en: 'Today I am in Berlin.' },
-      { q: 'Put in order: heißen / wie / Sie / ?', a: ['wie heißen sie'], en: 'What is your name?' },
-      { q: 'Put in order: der / ist / Lehrer / Herr Weber', a: ['herr weber ist der lehrer'], en: 'Mr Weber is the teacher.' } ] });
+      { q: 'Put in order: aus / ich / Berlin / komme', a: ['Ich komme aus Berlin.'], en: 'I come from Berlin.' },
+      { q: 'Put in order: Sie / Student / sind / ?', a: ['Sind Sie Student?'], en: 'Are you a student?' },
+      { q: 'Put in order: heute / ich / bin / in Berlin', a: ['Heute bin ich in Berlin.', 'Ich bin heute in Berlin.'], en: 'Today I am in Berlin.' },
+      { q: 'Put in order: heißen / wie / Sie / ?', a: ['Wie heißen Sie?'], en: 'What is your name?' },
+      { q: 'Put in order: der / ist / Lehrer / Herr Weber', a: ['Herr Weber ist der Lehrer.'], en: 'Mr Weber is the teacher.' } ] });

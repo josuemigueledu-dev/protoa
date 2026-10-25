@@ -74,8 +74,8 @@ GRAMMAR.push({ id: 'wq', title: 'Question words (W-Fragen)', lesson: 7,
       { de: 'Wann kommt Lena?', g: 'Wann=when | kommt=is coming | Lena?=Lena', en: 'When is Lena coming?' },
       { de: 'Warum lernst du Deutsch?', g: 'Warum=why | lernst=are learning | du=you (informal) | Deutsch?=German', en: 'Why are you learning German?' } ],
     drills: [
-      { q: '___ wohnst du? (where)', a: ['wo'], en: 'Where do you live?' },
-      { q: '___ kommst du? (where from)', a: ['woher'], en: 'Where do you come from?' },
-      { q: '___ gehst du? (where to)', a: ['wohin'], en: 'Where are you going?' },
-      { q: '___ ist das? (who)', a: ['wer'], en: 'Who is that?' },
-      { q: 'Put in order: gehen / wann / wir / ?', a: ['wann gehen wir'], en: 'When are we going?' } ] });
+      { q: '___ wohnst du? (where)', a: ['Wo'], en: 'Where do you live?' },
+      { q: '___ kommst du? (where from)', a: ['Woher'], en: 'Where do you come from?' },
+      { q: '___ gehst du? (where to)', a: ['Wohin'], en: 'Where are you going?' },
+      { q: '___ ist das? (who)', a: ['Wer'], en: 'Who is that?' },
+      { q: 'Put in order: gehen / wann / wir / ?', a: ['Wann gehen wir?'], en: 'When are we going?' } ] });

@@ -71,8 +71,8 @@ GRAMMAR.push({ id: 'ein', title: 'der, die, das and ein, eine', lesson: 13,
       { de: 'Eine Cola und ein Wasser.', g: 'Eine=a | Cola=cola | und=and | ein=a | Wasser.=water', en: 'A cola and a water.' },
       { de: 'Die Tasse ist heiß.', g: 'Die Tasse=the cup | ist=is | heiß.=hot', en: 'The cup is hot.' } ],
     drills: [
-      { q: '___ Milch ist kalt. (the)', a: ['die'], en: 'The milk is cold.' },
-      { q: '___ Glas Wasser, bitte. (a)', a: ['ein'], en: 'A glass of water, please.' },
-      { q: '___ Cola, bitte. (a)', a: ['eine'], en: 'A cola, please.' },
+      { q: '___ Milch ist kalt. (the)', a: ['Die'], en: 'The milk is cold.' },
+      { q: '___ Glas Wasser, bitte. (a)', a: ['Ein'], en: 'A glass of water, please.' },
+      { q: '___ Cola, bitte. (a)', a: ['Eine'], en: 'A cola, please.' },
       { q: 'Kaffee ___ Zucker. (without)', a: ['ohne'], en: 'Coffee without sugar.' },
-      { q: '___ Tee ist heiß. (the)', a: ['der'], en: 'The tea is hot.' } ] });
+      { q: '___ Tee ist heiß. (the)', a: ['Der'], en: 'The tea is hot.' } ] });

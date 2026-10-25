@@ -3,6 +3,8 @@ let NAV = 'rise'; // direction of the next screen change: 'fwd' slides in from t
 let lastSegs = null; // progress bar state of the previous lesson screen, so the bar grows instead of jumping
 const SEG_NAMES = ['Scene', 'Words', 'Check', 'Build', 'Conversation'];
 const STEP_SEG = { scene: 0, notice: 0, words: 1, check: 2, build: 3, conv: 4, done: 5 };
+// the notice step shares the scene's segment but is named for itself
+const stepName = st => st === 'notice' ? 'Notice' : SEG_NAMES[STEP_SEG[st]];
 // Name of the lesson before n: its topic when it shares n's station (two lessons per station), else its station.
 function prevName(n, ref = n) { if (n <= 1) return 'the previous lesson'; const a = courseOf(n - 1), b = courseOf(ref); return a.station === b.station ? a.topic : a.station; }
 function sigEl(icon, cls = '') { const s = h('span', { class: 'sig ' + cls, 'aria-hidden': 'true' }); s.innerHTML = ICON[icon] || ICON.question; return s; }
@@ -209,7 +211,7 @@ function openLessonPreview(n) {
     const blk = lessonBlocked(n);
     if (blk) { p.append(h('div', { class: 'fb note' }, `You have reached ${blk.words.toLocaleString('en')} words: the ${blk.code} milestone. Pass the ${blk.code} exam with 90% to continue the line.`), h('button', { class: 'btn', onclick: () => { close(); openExamPreview(blk.code); } }, 'Go to the ' + blk.code + ' exam')); inner.append(p); return; }
     if (done) p.append(h('button', { class: 'btn', onclick: () => go_(true) }, 'Review again'));
-    else if (inProg) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Continue · ' + (SEG_NAMES[STEP_SEG[ls.step]] || 'where you left off')));
+    else if (inProg) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Continue · ' + (stepName(ls.step) || 'where you left off')));
     else if (n === cur) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Start'));
     else { p.append(h('p', { class: 'faint' }, 'Comes after ' + prevName((cur || n - 1) + 1, n) + '. You can still go ahead.')); p.append(h('button', { class: 'btn ghost', onclick: () => go_(false) }, 'Start anyway')); }
     inner.append(p);
@@ -240,7 +242,7 @@ function lessonTop(L, ls, within = 0) {
   return h('div', { class: 'lesson-top' },
     h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, c.station), h('span', {}, 'Lesson ' + L.n + ' · ' + L.title))),
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave lesson', html: ICONS.x, onclick: () => pauseLesson() }),
-    segs, h('div', { class: 'steplbl' }, idx >= 5 ? 'Angekommen · arrived' : SEG_NAMES[idx]));
+    segs, h('div', { class: 'steplbl' }, idx >= 5 ? 'Angekommen · arrived' : stepName(ls.step)));
 }
 function lessonScene(v, L, ls) {
   v.append(lessonTop(L, ls), sceneEl(L));
@@ -257,7 +259,7 @@ function lessonScene(v, L, ls) {
 function lessonNotice(v, L, ls) {
   v.append(lessonTop(L, ls));
   const ul = glossEl(L.notice.de, L.notice.g);
-  v.append(h('div', { class: 'eyebrow' }, 'Notice'), h('div', { class: 'notice-line stack' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play the line', html: ICONS.play, onclick: () => speak(L.notice.de, { el: ul }) })), h('p', {}, L.notice.q)));
+  v.append(h('div', { class: 'eyebrow' }, 'Spot the pattern'), h('div', { class: 'notice-line stack' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play the line', html: ICONS.play, onclick: () => speak(L.notice.de, { el: ul }) })), h('p', {}, L.notice.q)));
   const noteBox = h('div', { class: 'stack', hidden: true }); noteBox.append(fbEl('note', L.notice.note)); if (L.notice.grammar) noteBox.append(h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: () => { stopAudio(); renderGrammar(null, L.notice.grammar); } }, 'Open in Grammar'));
   v.append(h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: e => { noteBox.hidden = false; e.currentTarget.hidden = true; } }, 'Show how it works'), noteBox);
   const ids = ls.newWords || [];

@@ -71,8 +71,8 @@ GRAMMAR.push({ id: 'yn', title: 'Yes/no questions and short answers', lesson: 8,
       { de: 'Gehen wir Kaffee trinken? Klar.', g: 'Gehen=go | wir=we | Kaffee=coffee | trinken?=to drink | Klar.=sure', en: 'Shall we go for a coffee? Sure.' },
       { de: 'Kommt Ana? Vielleicht.', g: 'Kommt=is coming | Ana?=Ana | Vielleicht.=maybe', en: 'Is Ana coming? Maybe.' } ],
     drills: [
-      { q: 'Put in order: Lena / kommt / heute (make it a question)', a: ['kommt lena heute'], en: 'Is Lena coming today?' },
-      { q: '___ wir Kaffee trinken? (go)', a: ['gehen'], en: 'Shall we go for a coffee?' },
-      { q: 'Kommst du? ___. (of course)', a: ['natürlich'], en: 'Are you coming? Of course!' },
+      { q: 'Put in order: Lena / kommt / heute (make it a question)', a: ['Kommt Lena heute?'], en: 'Is Lena coming today?' },
+      { q: '___ wir Kaffee trinken? (go)', a: ['Gehen'], en: 'Shall we go for a coffee?' },
+      { q: 'Kommst du? ___. (of course)', a: ['Natürlich'], en: 'Are you coming? Of course!' },
       { q: 'Die Antwort ist nicht richtig, sie ist ___.', a: ['falsch'], en: 'The answer is not right, it is wrong.' },
       { q: 'Ich ___ die Antwort. (know)', a: ['weiß'], en: 'I know the answer.' } ] });
