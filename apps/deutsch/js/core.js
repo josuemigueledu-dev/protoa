@@ -101,6 +101,13 @@ function enStems(w) { const out = new Set([w.toLowerCase(), enStem(w)]); const l
 const stemEq = (a, b) => { const A = enStems(a); return enStems(b).some(x => A.includes(x)); };
 function enNorm(s) { return s.toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z' ]/g, ' ').replace(/\s+/g, ' ').trim(); }
 function enKey(s) { s = enNorm(s); let prev; while (prev !== s) { prev = s; s = s.replace(EN_LEAD, ''); } return s; }
+// the English meanings of every course word, as stems: one letter away from the answer is then another word, not a typo
+// ("there" for wo, "German" for Deutschland, "eight" for richtig)
+function courseEnglish() {
+  const out = new Set();
+  allLessons().flatMap(L => L.words || []).concat(V1_WORDS).forEach(w => (w.en || []).forEach(m => enKey(m).split(' ').forEach(t => { if (t) out.add(enStem(t)); })));
+  return out;
+}
 // returns {ok, exact, note}
 function checkEnglish(answer, meanings) {
   const a = enKey(answer); if (!a) return { ok: false };
@@ -108,11 +115,12 @@ function checkEnglish(answer, meanings) {
     const k = enKey(m);
     if (a === k || enNorm(answer) === enNorm(m)) return { ok: true, exact: true };
   }
+  let known = null; const otherWord = w => (known = known || courseEnglish(), enStems(w).some(s => known.has(s)));
   for (const m of meanings) {
     const k = enKey(m);
     const ka = a.split(' '), km = k.split(' ');
     if (ka.length === km.length && ka.every((w, i) => stemEq(w, km[i]))) return { ok: true, exact: false, note: `Right meaning, dictionary form is "${m}".` };
-    if (ka.length === km.length && ka.every((w, i) => stemEq(w, km[i]) || (w.length >= 5 && km[i].length >= 5 && editDist(w, km[i]) <= 1))) return { ok: true, exact: false, note: `Right (spelling: "${m}").` };
+    if (ka.length === km.length && ka.every((w, i) => stemEq(w, km[i]) || (w.length >= 5 && km[i].length >= 5 && editDist(w, km[i]) <= 1 && !otherWord(w)))) return { ok: true, exact: false, note: `Right (spelling: "${m}").` };
   }
   // single-word answer that is one of the words of a multi-word meaning? no — keep strict.
   return { ok: false };

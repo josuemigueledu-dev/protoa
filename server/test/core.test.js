@@ -107,6 +107,27 @@ test('checkEnglish accepts the meaning, forgives plurals, rejects other words', 
   assert.equal(call('checkEnglish', '', ['house']).ok, false);
 });
 
+test('checkEnglish forgives a one-letter typo, but not another course word one letter away', () => {
+  assert.equal(call('checkEnglish', 'teacer', ['teacher']).ok, true);
+  assert.equal(call('checkEnglish', 'coffe', ['coffee']).ok, true);
+  // wo/dort, Deutschland/Deutsch, richtig/acht, später/Wasser: the learner mixed up two words
+  assert.equal(call('checkEnglish', 'there', ['where']).ok, false);
+  assert.equal(call('checkEnglish', 'where', ['there']).ok, false);
+  assert.equal(call('checkEnglish', 'German', ['Germany']).ok, false);
+  assert.equal(call('checkEnglish', 'eight', ['right', 'correct']).ok, false);
+  assert.equal(call('checkEnglish', 'water', ['later']).ok, false);
+});
+
+test('checkEnglish: no meaning of one course word passes as a typo of another word\'s meaning', () => {
+  const clashes = run(`(() => { const out = [], words = allLessons().flatMap(L => L.words);
+    for (const d of words) for (const o of words.concat(V1_WORDS)) if (o.de !== d.de) for (const m of o.en) {
+      if (d.en.some(e => enKey(e) === enKey(m))) continue; // a shared meaning is right for both
+      if (checkEnglish(m, d.en).ok) out.push(m + ' passes for ' + d.de);
+    }
+    return [...new Set(out)]; })()`);
+  assert.deepEqual(clashes, []);
+});
+
 test('export then import moves learned words and progress to a fresh copy', () => {
   const word = run('LESSONS[0].words[0]');
   exec(`S.settings = DEF_SETTINGS(); S.profile = DEF_PROFILE(); S.progress = DEF_PROGRESS(); S.cards = {}; S.ready = true;
