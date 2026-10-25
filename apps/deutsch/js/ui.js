@@ -201,7 +201,11 @@ function wordCard(w, opts = {}) {
   else if (wordPic(w)) c.append(wordArt(w, 168)); // no picture: the word below is the headline, so no tile here
   c.append(h('div', { class: 'de' }, artEl(w.de)), h('div', { class: 'en' }, w.en.join(', ')));
   if (isLearned(w.de) && opts.showYours) c.append(h('span', { class: 'chip yours' }, 'already yours'));
-  const meta = h('div', { class: 'meta' }); if (w.ipa) meta.append(h('span', {}, '/' + w.ipa + '/')); if (w.resp) meta.append(h('span', {}, h('b', {}, w.resp))); if (w.syl && w.syl.includes('·')) meta.append(h('span', {}, w.syl)); if (w.pl) meta.append(h('span', {}, 'pl. ', artEl(w.pl))); meta.append(h('span', {}, TYPE_LABEL[w.type] || w.type)); c.append(meta);
+  if (!w.parts || w.pl) { const kind = h('div', { class: 'kind' }, TYPE_LABEL[w.type] || w.type); if (w.pl) kind.append(' · pl. ', artEl(w.pl)); c.append(kind); }
+  if (w.parts) c.append(h('div', { class: 'parts' }, h('span', { class: 'eyebrow' }, 'Built from'), w.parts));
+  const more = [w.ipa && '/' + w.ipa + '/', w.syl && w.syl.includes('·') && w.syl].filter(Boolean);
+  if (w.resp) c.append(h('div', { class: 'resp' }, h('b', {}, w.resp)));
+  if (more.length) c.append(h('details', { class: 'more' }, h('summary', {}, 'More sound detail'), h('div', {}, more.join('  ·  '))));
   const bare = w.de.replace(/^(der|die|das) /, '');
   c.append(h('div', { class: 'row', style: 'justify-content:center' }, h('button', { class: 'btn quiet sm', html: ICONS.play + ' Play', onclick: () => speak(bare) }), h('button', { class: 'btn quiet sm', html: ICONS.slow + ' Slow', onclick: () => speak(bare, { rate: .66 }) }), w.syl && w.syl.includes('·') ? h('button', { class: 'btn quiet sm', html: ICONS.syl + ' Syllables', onclick: () => speakSyllables(w.syl, bare) }) : ''));
   if (w.forms) { const g = h('div', { class: 'conj' }); Object.entries(w.forms).forEach(([p, f]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, f)))); c.append(g); }
