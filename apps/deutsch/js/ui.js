@@ -74,18 +74,18 @@ function renderCrash(v, err) {
 /* ---------- shared pieces ---------- */
 /* the Protoa mark at badge size (shared/brand/protoa-mark-small.svg); its colours come from depth.css so it follows the theme */
 const BRAND_MARK = '<svg viewBox="0 0 120 120"><circle class="mk-shell" cx="60" cy="60" r="46"/><circle class="mk-mid" cx="60" cy="60" r="18"/><circle class="mk-nuc" cx="60" cy="60" r="9"/><g transform="rotate(-18 60 60)"><path class="mk-gap" d="M26 60 A34 10 0 0 0 94 60"/><path class="mk-ring" d="M26 60 A34 10 0 0 0 94 60"/></g></svg>';
-/* ---------- the teacher: ONE glossy orb that lives in the first slot of each learning screen ---------- */
+/* ---------- the teacher: ONE glossy orb that lives in Protoa's tab (companion.js) on every screen ---------- */
 /* Night Glass: a photographed clear glass sphere (art/night/orb.png, real alpha), a small mood core of light and
-   the white orbiter on a tilted ellipse; all drawn and moved in CSS (night-glass.css), so it costs no script per frame */
+   the white orbiter on a tilted ellipse; all drawn and moved in CSS (night-glass.css), so it costs no script per frame.
+   A screen's first .tslot no longer places the orb; it only says which mood the screen opens in. */
 const TEACHER = h('div', { class: 'orb companion neutral', 'aria-hidden': 'true' }, h('i', { class: 'shadow' }), h('div', { class: 'float' }, h('i', { class: 'aura' }), h('i', { class: 'sphere' }, h('i', { class: 'glass' }), h('i', { class: 'core' }), h('i', { class: 'orbit' }, h('i', { class: 'ox' }, h('i', { class: 'oy' }, h('i', { class: 'moon' })))))));
 function teacherSlot(size = 56, mood = 'neutral') { return h('div', { class: 'tslot', 'data-size': size, 'data-mood': mood, style: `width:${size}px;height:${size}px` }); }
 function mountTeacher() {
   const slots = [...document.querySelectorAll('#view .tslot')];
   slots.forEach((s, i) => s.classList.toggle('spare', i > 0));
-  const t = slots[0]; if (!t) { TEACHER.remove(); return; }
-  if (!TEACHER.isConnected) document.body.append(TEACHER);
   if (typeof Companion !== 'undefined') Companion.arrive();
-  if (!TEACHER.classList.contains('talking') && !TEACHER.classList.contains('busy')) Voice.mood(t.dataset.mood);
+  const t = slots[0];
+  if (!TEACHER.classList.contains('talking') && !TEACHER.classList.contains('busy')) Voice.mood(t ? t.dataset.mood : 'neutral');
 }
 let teacherQueued = false;
 new MutationObserver(() => { if (teacherQueued) return; teacherQueued = true; queueMicrotask(() => { teacherQueued = false; mountTeacher(); }); }).observe(document.getElementById('view'), { childList: true, subtree: true });
@@ -246,7 +246,7 @@ function todayLine(due) {
     trk.append(st);
   });
   if (ci >= 0) {
-    // the companion orb rides here (companion.js docks on .seat); the rider spans the track so its ride is a translate in % of the line
+    // the rider marks your stop and spans the track, so its ride is a translate in % of the line (the orb itself stays in Protoa's tab)
     const rider = h('div', { class: 'rider', 'aria-hidden': 'true' }, h('i', { class: 'seat', style: `left:${X(ci)}%` }));
     trk.append(rider);
     // after a lesson: if Today last showed an earlier stop still in the window, Protoa rides from there once the line is in view
