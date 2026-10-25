@@ -37,7 +37,7 @@ LESSONS.push({
   conv: [
     { who: 'cast.lena', w: 'Hallo, {name}! Kommt Ana heute auch ins Café?', g: 'Hallo,=hi | {name}!={name} | Kommt=is coming | Ana=Ana | heute=today | auch=too | ins=to the | Café?=café', mood: 'thinking' },
     { l: true, de: 'Vielleicht.', en: 'Maybe.', g: 'Vielleicht.=maybe', type: 'translate', gaps: [0], extra: ['Leider'], alts: ['Vielleicht!', 'Ja, vielleicht.'], rwho: 'cast.lena', react: 'Dann fragen wir Ana.=then we ask Ana' },
-    { who: 'cast.ana', w: 'Hallo! Ja, ich komme. Gehen wir ins Café?', g: 'Hallo!=hi | Ja,=yes | ich=I | komme=come | Gehen=go | wir=we | ins=to the | Café?=café', mood: 'pleased' },
+    { who: 'cast.ana', w: 'Hallo! Ja, ich komme. Gehen wir ins Café?', g: 'Hallo!=hi | Ja,=yes | ich=I | komme.=am coming | Gehen=go | wir=we | ins=to the | Café?=café', mood: 'pleased' },
     { l: true, de: 'Klar!', en: 'Sure!', g: 'Klar!=sure', type: 'translate', gaps: [0], extra: ['Leider'], alts: ['Klar.', 'Natürlich!', 'Ja, klar!', 'Ja, natürlich!'], rwho: 'cast.ana', react: 'Gut.=good' },
     { who: 'cast.barista', w: 'Guten Morgen! Einen Moment, bitte.', g: 'Guten Morgen!=good morning | Einen Moment,=one moment | bitte.=please', mood: 'neutral' },
     { l: true, de: 'Kein Problem, danke.', en: 'No problem, thanks.', g: 'Kein Problem,=no problem | danke.=thanks', type: 'tiles', gaps: [0, 1], extra: ['Bitte'], alts: ['Kein Problem.', 'Danke.', 'Kein Problem, danke!'], optional: true, rwho: 'cast.barista', react: 'Bitte.=you are welcome' },

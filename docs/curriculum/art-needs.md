@@ -3,6 +3,20 @@
 Content lists the plates, cast and stickers its lessons need. ux draws them; until a file is in
 `apps/deutsch/art/manifest.json`, the id renders empty and the lesson still works.
 
+## Word pictures
+
+Concrete nouns in lessons 1–11 that have no picture yet (the word card shows a text tile until one exists).
+Abstract words (*Sprache, Frage, Idee, Zahl* …) stay without one. Night Glass style; natural low-chroma colour for food and drink.
+
+| id | word | lesson | notes |
+|---|---|---|---|
+| `word.gitarre` | die Gitarre | 6 | Lena's guitar (lesson 10: fifteen years old, so a little worn) |
+| `word.fussball` | der Fußball | 6 | a plain black-and-white ball |
+| `word.cafe` | das Café | 5 | the café next to the school, front with a cup sign (no name on the sign, story.md names it later) |
+| `word.handy` | das Handy | 10 | a phone, screen lit |
+| `word.tee` | der Tee | 11 | a glass of tea with the bag's tag over the rim |
+| `word.kuchen` | der Kuchen | 11 | one slice of a plain cake (Rührkuchen or Apfelkuchen) |
+
 ## Cast
 
 | id | who | first used | notes |
