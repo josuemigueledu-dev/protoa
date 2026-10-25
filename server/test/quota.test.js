@@ -60,18 +60,18 @@ test('quota blocks past the limit, counts users apart, refills next period, and 
 
 test('with monetization off nothing is counted or blocked', withKey(async () => {
   const app = createApp({ runJSON: okJSON, monetization: false, userOf });
-  for (let i = 0; i < PLANS.free.quick.limit + 5; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
+  for (let i = 0; i < PLANS.free.tools.limit + 5; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
 }));
 
 test('with monetization on, the free limit answers 429 quota_exceeded and plus lifts it', withKey(async () => {
   const payments = fakePayments({ pro: 'plus' });
   const app = createApp({ runJSON: okJSON, monetization: true, payments, userOf });
-  for (let i = 0; i < PLANS.free.quick.limit; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
+  for (let i = 0; i < PLANS.free.tools.limit; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
   const r = await post(app, 'correctSentence', CORRECT);
   assert.equal(r.status, 429);
   const { error } = await r.json();
   assert.equal(error.code, 'quota_exceeded');
-  assert.equal(error.limit, PLANS.free.quick.limit);
+  assert.equal(error.limit, PLANS.free.tools.limit);
   assert.ok(Date.parse(error.resetsAt) > Date.now());
   assert.equal((await post(app, 'correctSentence', CORRECT, 'pro')).status, 200);
   assert.equal((await post(app, 'correctSentence', CORRECT, 'other')).status, 200);
@@ -82,11 +82,11 @@ test('a call that fails on the server or is rejected as bad input does not use u
   const app = createApp({ runJSON: async () => { if (fail) throw new Error('boom'); return okJSON(); }, monetization: true, userOf });
   const log = console.error; console.error = () => {};
   try {
-    for (let i = 0; i < PLANS.free.exam.limit + 2; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 502);
+    for (let i = 0; i < PLANS.free.tools.limit + 2; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 502);
   } finally { console.error = log; }
   assert.equal((await post(app, 'correctSentence', { nope: 1 })).status, 400);
   fail = false;
-  for (let i = 0; i < PLANS.free.quick.limit; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
+  for (let i = 0; i < PLANS.free.tools.limit; i++) assert.equal((await post(app, 'correctSentence', CORRECT)).status, 200);
   assert.equal((await post(app, 'correctSentence', CORRECT)).status, 429);
 }));
 
