@@ -37,6 +37,8 @@ function fill(s) {
 /* ---------- German text normalisation ---------- */
 const UML = { ae: 'ä', oe: 'ö', ue: 'ü' };
 function stripPunct(s) { return s.replace(/[.,!?;:"'„“”‚‘’()]/g, ''); }
+// the full stop a message adds after a quoted line, unless the line already ends a sentence ("…Leider nein." not "nein..")
+function fullStop(s) { return /[.!?…]$/.test(String(s || '').trim()) ? '' : '.'; }
 function deTokens(s) { return stripPunct(fill(s)).trim().split(/\s+/).filter(Boolean); }
 // loose form: lowercase, umlauts folded (ä→ae, ß→ss) so ae/oe/ue/ss answers match
 function fold(w) { return w.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
