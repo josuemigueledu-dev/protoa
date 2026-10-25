@@ -21,7 +21,7 @@ const Companion = (() => {
   const gutterless = () => { const top = document.querySelector('#view .lesson-top'); if (!top) return false; const b = top.getBoundingClientRect(), [L, R] = limits(); return Math.max(R - b.right, b.left - L) < 72 * .95; };
   const dockable = () => document.body.classList.contains('in-lesson') && !!document.querySelector('#view .lesson-top .tslot') && (phone() || gutterless());   /* a lesson with no free margin (phones, narrow tablets): the orb lives in the header slot and never covers a task */
   const docked = () => !!P.dock;   /* measured with each re-evaluation in target(), not every frame */
-  const size = () => docked() ? 44 : P.a && P.a.kind === 'ride' ? 52 : document.body.classList.contains('lay-mobile') ? 58 : 72;
+  const size = () => docked() ? 44 : P.a && P.a.kind === 'ride' ? 52 : P.a && P.a.kind === 'perch' ? 64 : document.body.classList.contains('lay-mobile') ? 58 : 72;
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
   function anchor() {
     const view = document.getElementById('view'); let b, el;
@@ -35,10 +35,11 @@ const Companion = (() => {
       const chat = view.querySelectorAll('.chatlog .bub:not([hidden])'); if (chat.length && (b = vis(chat[chat.length - 1]))) return { b, kind: 'task', el: chat[chat.length - 1] };
       el = view.querySelector('.lesson-top ~ .card,.lesson-top ~ .conv,.lesson-top ~ .scene'); if (el && (b = vis(el))) return { b, kind: 'task', el };
     }
-    el = view.querySelector('.st.now .mk'); if (el && (b = vis(el))) return { b, kind: 'station', el, left: el.closest('.st').classList.contains('lab-r') };
+    el = view.querySelector('.khead .seat'); if (el && (b = el.getBoundingClientRect()).width && b.top > 64 && b.bottom < floor() - 8) return { b, kind: 'perch', el };   /* the course map: Protoa sits beside the chapter title on the stage */
+    el = view.querySelector('.kst.now .kmk'); if (el && (b = el.getBoundingClientRect()).width && b.top > 64 && b.bottom < floor() - 8) return { b, kind: 'ride', el };   /* scrolled past the head: Protoa waits at your stop */
     const line = innerHeight * .36; let best = null, bd = 1e9, bel = null;
     const host = view.querySelector(':scope > .view') || view;
-    for (const c of host.children) { if (c.matches('.lesson-top,.map,.tslot')) continue; const r = c.getBoundingClientRect(); if (!r.height || r.bottom < 60 || r.top > innerHeight - 60) continue; const dd = r.top <= line && r.bottom >= line ? 0 : Math.min(Math.abs(r.top - line), Math.abs(r.bottom - line)); if (dd < bd) { bd = dd; best = r; bel = c; } }
+    for (const c of host.children) { if (c.matches('.lesson-top,.map,.kline,.khead,.tslot')) continue; const r = c.getBoundingClientRect(); if (!r.height || r.bottom < 60 || r.top > innerHeight - 60) continue; const dd = r.top <= line && r.bottom >= line ? 0 : Math.min(Math.abs(r.top - line), Math.abs(r.bottom - line)); if (dd < bd) { bd = dd; best = r; bel = c; } }
     return best ? { b: best, kind: 'read', el: bel } : null;
   }
   function floor() { const tabs = phone() && document.getElementById('tabs'); return tabs && tabs.offsetHeight ? Math.min(innerHeight, tabs.getBoundingClientRect().top) : innerHeight; }   /* phones: the tab bar is at the bottom */
@@ -74,9 +75,8 @@ const Companion = (() => {
   }
   function place(a) {
     const s = size(), gap = 22, b = a.b, [L, R] = limits();
-    if (a.kind === 'dock' || a.kind === 'ride') return [b.left + b.width / 2, b.top + b.height / 2];
+    if (a.kind === 'dock' || a.kind === 'ride' || a.kind === 'perch') return [b.left + b.width / 2, b.top + b.height / 2];
     if (a.kind === 'feedback') return [Math.min(innerWidth - s * .7, b.right - s * .2), b.top - s * .8];
-    if (a.kind === 'station') return [a.left ? b.left - gap - s / 2 : b.right + gap + s / 2, b.top + b.height / 2];
     if (a.kind === 'sheet') { if (b.right + gap + s <= innerWidth - 8) return [b.right + gap + s / 2, b.top + s * .8]; return [b.right - s * .55, b.top - s * .5]; }
     const g = a.box ? a.box.getBoundingClientRect() : b, gl = a.box ? 8 : L, gr = a.box ? innerWidth - 8 : R;   /* a field in a sheet: the gutter is beside the sheet, not inside it */
     const rg = gr - g.right, lg = g.left - gl, spots = [];
@@ -113,7 +113,7 @@ const Companion = (() => {
     }
     a = P.a; let x, y;
     if (a && a.el && a.el.isConnected) a.b = a.el.getBoundingClientRect();
-    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'dock' || a.kind === 'ride' ? null : a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
+    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'dock' || a.kind === 'ride' ? null : a.kind === 'read' || a.kind === 'perch' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
     else { [x, y] = rest(); P.lookAt = null; }
     if (!still() && !(a && (a.kind === 'dock' || a.kind === 'ride'))) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
     const m = s * .62; return [Math.min(innerWidth - m, Math.max(m, x)), Math.min(innerHeight - m, Math.max(m + 4, y))];

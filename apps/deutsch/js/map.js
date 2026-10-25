@@ -55,98 +55,115 @@ function mapModel() {
   return { items, cur };
 }
 
-/* ---------- the map ---------- */
+/* ---------- the map (Night Glass: docs/designs/night-glass/screens/2-course-map.jpg) ----------
+   The chapter you are in heads the screen on the navy stage, with your place in A1, the level bar and Protoa (companion.js
+   perches on .khead .seat). Below it the line runs down the left: done stops are steel with a tick, yours is a magenta ring
+   beside a card with its scene and a start button, the ones ahead are rings with a lock. The person you meet sits on the
+   right of each lesson. A chapter with nothing written yet folds into one row. After a lesson the line fills down to your
+   new stop. Only transform and opacity animate. */
+const MAP_LEVELS = [{ code: 'A1.1', from: 1, to: 30 }, { code: 'A1.2', from: 31, to: 60 }, { code: 'A2', words: [600, 1200] }, { code: 'B1', words: [1200, 2400] }];   // A1 is lessons 1–60 (docs/curriculum/coverage.md); past it the bar follows learned words
+function mapHead(ch, chN) {
+  const done = S.progress.lessonsDone, w = learnedCount();
+  const fill = l => l.words ? Math.max(0, Math.min(1, (w - l.words[0]) / (l.words[1] - l.words[0]))) : done.filter(n => n >= l.from && n <= l.to).length / (l.to - l.from + 1);
+  const a1 = done.filter(n => n <= 60).length, at = MAP_LEVELS.findIndex(l => fill(l) < 1), [kap, name] = ch.de.split(' · ');
+  return h('header', { class: 'khead slab-dark' },
+    h('div', { class: 'kt' }, h('h1', { lang: 'de' }, 'Kurs'), h('span', { class: 'kc', 'aria-label': a1 < 60 ? `A1: ${a1} of 60 lessons done` : w + ' words learned' }, a1 < 60 ? `A1 · ${a1} von 60` : `${w.toLocaleString()} Wörter`)),
+    h('div', { class: 'kch' }, h('div', { class: 'grow' }, h('span', { class: 'kk', lang: 'de' }, kap || 'Kapitel ' + chN), h('h2', { lang: 'de' }, name || ch.de), h('small', {}, ch.en)), h('i', { class: 'seat', 'aria-hidden': 'true' }), teacherSlot(72, 'neutral')),
+    h('div', { class: 'klv', role: 'list', 'aria-label': 'Levels' }, ...MAP_LEVELS.map((l, i) => h('div', { class: 'lvl' + (i === at ? ' at' : ''), role: 'listitem', 'aria-label': l.code + ': ' + Math.round(fill(l) * 100) + ' %' },
+      h('i', { 'aria-hidden': 'true' }, h('b', { style: `transform:scaleX(${fill(l)})` })), h('span', { 'aria-hidden': 'true' }, l.code)))));
+}
 function renderMap(v) {
-  const { items, cur } = mapModel();
-  const wordsYours = learnedCount();
-  v.append(h('div', { class: 'map-head' }, teacherSlot(52, 'neutral'), h('div', { class: 'grow' }, h('h1', {}, 'Deine Linie'), h('div', { class: 'faint' }, `U-Bahn to spoken B1 · ${S.progress.lessonsDone.length} of ${COURSE.length} stations · ${wordsYours} words yours`))));
-  v.append(levelTrack());
-  const map = h('div', { class: 'map', role: 'list', 'aria-label': 'Course map' }); v.append(map);
-  const W = map.clientWidth || 360; const cx = W / 2, amp = Math.min(W * .22, 120);
-  // vertical rhythm on the 8px grid
-  const GAP = { start: 112, chapter: 168, lesson: 152, review: 112, term: 136, exam: 168 };
-  let y = 72, k = 0; const pts = [];
+  const { items, cur } = mapModel(), done = S.progress.lessonsDone;
+  const refN = cur || (done.length ? Math.max(...done) : 1), chI = Math.max(0, CHAPTERS.findLastIndex(c => c.from <= refN));
+  v.append(mapHead(CHAPTERS[chI], chI + 1));
+  // a chapter whose lessons are all unwritten folds into one row
+  const chapterOf = n => CHAPTERS.findLastIndex(c => c.from <= n), folded = new Set();
+  CHAPTERS.forEach((c, i) => { const ls = items.filter(it => it.kind === 'lesson' && chapterOf(it.n) === i); if (ls.length && ls.every(it => it.state === 'soon')) folded.add(i); });
+  const ends = new Set(CHAPTERS.map((c, i) => CHAPTERS[i + 1] ? CHAPTERS[i + 1].from - 1 : null));   // the review stop that closes a chapter is its chapter test
+  const rows = []; let firstSoon = true;
   items.forEach(it => {
-    if (it.kind === 'chapter') { it.y = y + 16; y += GAP.chapter; return; }
-    it.x = cx + amp * Math.sin((k + .5) * Math.PI / 3); it.y = y; pts.push(it); k++; y += GAP[it.kind];
+    if (it.kind === 'chapter') { const i = CHAPTERS.indexOf(it.ch); if (folded.has(i)) { const to = CHAPTERS[i + 1] ? CHAPTERS[i + 1].from - 1 : COURSE.length; rows.push({ kind: 'fold', ch: it.ch, num: it.num, from: it.ch.from, to }); } else rows.push(it); return; }
+    if ((it.kind === 'lesson' || it.kind === 'review') && folded.has(chapterOf(it.kind === 'lesson' ? it.n : it.to))) return;
+    if (it.kind === 'lesson' && it.state === 'soon') { it.firstSoon = firstSoon; firstSoon = false; }
+    if (it.kind === 'review' && ends.has(it.to)) it.test = chapterOf(it.to) + 1;
+    rows.push(it);
   });
-  const H = y + 24; map.style.height = H + 'px';
-  // background: street grid, the Spree, parks, landmark silhouettes at chapter breaks
-  const chs = items.filter(i => i.kind === 'chapter');
-  let bg = `<svg class="bg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs><pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse" patternTransform="rotate(14)"><path d="M56 0H0V56" fill="none" style="stroke:var(--map-ink)" stroke-width="2"/></pattern></defs><rect width="${W}" height="${H}" fill="url(#grid)"/>`;
-  for (let i = 0; i < Math.ceil(H / 520); i++) { const py = 260 + i * 520, px = (i % 2 ? W * .82 : W * .14); bg += `<ellipse cx="${px}" cy="${py}" rx="${W * .16}" ry="70" style="fill:var(--map-park)"/>`; }
-  chs.forEach((c, i) => {
-    if (i === 0) { const sy = c.y + 92; bg += `<path d="M-20 ${sy} C ${W * .25} ${sy - 40}, ${W * .55} ${sy + 50}, ${W + 20} ${sy - 10}" fill="none" style="stroke:var(--map-water)" stroke-width="56" stroke-linecap="round"/>`; }
-    const left = i % 2 === 0, s = Math.min(1.2, W / 420), lx = left ? 8 : W - 8 - 120 * s, ly = c.y - 40 - 120 * s;
-    bg += `<g transform="translate(${lx} ${ly}) scale(${s})" style="fill:var(--line)">${LANDMARK[c.ch.mark]}</g>`;
+  // the line is steel down to your stop (the current one, else the first not done) and grey after it
+  let nowI = rows.findIndex(r => r.state === 'now'); if (nowI < 0) nowI = rows.findIndex(r => r.kind !== 'chapter' && r.kind !== 'fold' && r.state !== 'done'); if (nowI < 0) nowI = rows.length - 1;
+  // after a lesson: the line fills from the stop the map showed last time down to the new one
+  const fromN = S.progress.trainAt, fromI = fromN && cur && fromN < cur && !reduced() ? rows.findIndex(r => r.kind === 'lesson' && r.n === fromN) : -1;
+  const list = h('ol', { class: 'kline', 'aria-label': 'Course map' }); v.append(list);
+  let nowEl = null;
+  rows.forEach((r, i) => {
+    const el = mapRow(r); el.classList.add(i < nowI ? 'past' : i === nowI ? 'here' : 'ahead');
+    if (i === 0) el.classList.add('first'); if (i === rows.length - 1) el.classList.add('last');
+    if (fromI >= 0 && i >= fromI && i <= nowI) { el.classList.add('fresh'); el.style.setProperty('--d', (.45 + (i - fromI) * .32) + 's'); if (i === fromI) el.classList.add('just-done'); }
+    if (i === nowI) nowEl = el;
+    list.append(el);
   });
-  bg += '</svg>';
-  map.insertAdjacentHTML('beforeend', bg);
-  // the line
-  let d = `M ${pts[0].x} ${pts[0].y}`; const segs = [d];
-  for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i], dy = b.y - a.y; const s = ` C ${a.x} ${a.y + dy * .5} ${b.x} ${b.y - dy * .5} ${b.x} ${b.y}`; d += s; segs.push(d); }
-  map.insertAdjacentHTML('beforeend', `<svg class="line" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path class="line-ahead" d="${d}" fill="none" stroke-width="12" stroke-linecap="round"/><path class="line-done" d="${d}" fill="none" stroke-width="12" stroke-linecap="round"/><path class="measure" d="" fill="none" stroke="none"/></svg>`);
-  const lineSvg = map.querySelector('svg.line'), donePath = lineSvg.querySelector('.line-done'), meas = lineSvg.querySelector('.measure');
-  const total = donePath.getTotalLength();
-  pts.forEach((p, i) => { meas.setAttribute('d', segs[i]); p.len = i ? meas.getTotalLength() : 0; });
-  // stations
-  let nowEl = null, firstSoonDone = false;
-  items.forEach(it => {
-    if (it.kind === 'chapter') { map.append(h('div', { class: 'chapter', style: `top:${it.y}px` }, h('div', { class: 'num' }, it.num), h('div', {}, h('b', { lang: 'de' }, it.ch.de), h('span', {}, it.ch.en)))); return; }
-    const el = stationEl(it, W, cx, !firstSoonDone && it.kind === 'lesson' && it.state === 'soon');
-    if (it.kind === 'lesson' && it.state === 'soon') firstSoonDone = true;
-    el.style.left = it.x + 'px'; el.style.top = it.y + 'px'; map.append(el); it.el = el;
-    if (it.state === 'now') nowEl = el;
-  });
-  // where the train stands
-  const lessonPt = n => pts.find(p => p.kind === 'lesson' && p.n === n);
-  const lastDone = [...pts].reverse().find(p => p.kind === 'lesson' && p.state === 'done');
-  const target = pts.find(p => p.state === 'now') || (cur ? lessonPt(cur) : null) || lastDone || pts[0];
-  const parkLen = p => Math.max(0, p.len - 62);
-  const train = h('div', { class: 'train', 'aria-hidden': 'true' }); train.innerHTML = `<svg viewBox="-36 -36 72 72">${TRAIN_SVG}</svg>`; map.append(train);
-  const place = L => { const a = donePath.getPointAtLength(Math.max(0, L)), b = donePath.getPointAtLength(Math.min(total, L + 1)); const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; train.style.transform = `translate(${a.x}px,${a.y}px) rotate(${ang}deg)`; };
-  const setDone = L => { donePath.setAttribute('stroke-dasharray', `${Math.max(0.01, L)} ${total + 20}`); };
-  const fromN = S.progress.trainAt, from = fromN ? lessonPt(fromN) : null;
-  const animate = cur && from && fromN < cur && target.kind === 'lesson' && !reduced();
-  if (animate) {
-    from.el?.classList.add('just-done');
-    const L0 = parkLen(from), L1 = parkLen(target), D0 = from.len, D1 = target.len, t0 = performance.now(), dur = 1200;
-    place(L0); setDone(D0);
-    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const step = t => { const p = Math.min(1, (t - t0) / dur), e = ease(p); place(L0 + (L1 - L0) * e); setDone(D0 + (D1 - D0) * e); if (p < 1) requestAnimationFrame(step); else { target.el?.classList.add('arrive'); } };
-    setTimeout(() => requestAnimationFrame(t => { requestAnimationFrame(step); }), 350);
-  } else { place(parkLen(target)); setDone(target.len); }
-  if (S.progress.trainAt !== (cur || (lastDone && lastDone.n) || 0)) { S.progress.trainAt = cur || (lastDone && lastDone.n) || 0; save('progress'); }
-  // scroll the current station to a third from the top; a pill brings it back when it scrolls away
-  const focusY = () => map.getBoundingClientRect().top + window.scrollY + target.y - window.innerHeight / 3;
-  requestAnimationFrame(() => window.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }));
+  const lastDone = Math.max(0, ...done.filter(n => lessonById(n)));
+  if (S.progress.trainAt !== (cur || lastDone)) { S.progress.trainAt = cur || lastDone; save('progress'); }
+  // scroll just far enough that your stop clears the tab bar (the head stays in view when it can); a pill brings it back
+  const floor = () => window.innerHeight - (document.body.classList.contains('lay-mobile') ? 128 : 40);   // phones: clear the tab bar
+  const focusY = () => { const b = nowEl.getBoundingClientRect(); return Math.min(b.top + window.scrollY - 96, b.bottom + window.scrollY - floor()); };
+  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) window.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); });
   if (nowEl && 'IntersectionObserver' in window) {
-    const pill = h('button', { class: 'weiter', hidden: true, onclick: () => window.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow' }, '↓'), 'Weiter');
+    const pill = h('button', { class: 'weiter', hidden: true, onclick: () => window.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
     document.body.append(pill);
     const io = new IntersectionObserver(([e]) => { pill.hidden = e.isIntersecting; pill.firstChild.textContent = e.boundingClientRect.top < 0 ? '↑' : '↓'; }, { threshold: .1 });
-    io.observe(nowEl.querySelector('.mk')); pill._io = io;
+    io.observe(nowEl.querySelector('.kmk') || nowEl); pill._io = io;
   }
 }
-function stationEl(it, W, cx, firstSoon) {
-  const right = it.x <= cx; const st = h('div', { class: `st ${it.kind === 'review' ? 'rv' : it.kind} ${it.state} ${right ? 'lab-r' : 'lab-l'}`, role: 'listitem' });
-  const r = it.kind === 'exam' ? 44 : it.state === 'now' ? 48 : it.kind === 'review' ? 26 : it.kind === 'start' ? 28 : 36;
-  const room = Math.max(96, right ? W - (it.x + r + 16) - 16 : it.x - r - 16 - 16);
-  const tappable = it.state !== 'soon';
-  let label, icon, aria;
-  if (it.kind === 'lesson') { label = [h('b', { lang: 'de' }, it.c.station), h('span', {}, it.c.topic)]; icon = sigEl(it.c.icon); aria = `${it.c.station}, lesson ${it.n}: ${it.c.topic}, ${({ done: 'done', now: 'current station', locked: 'locked, opens after ' + prevName(it.n), soon: 'coming soon' })[it.state]}`; }
-  else if (it.kind === 'review') { label = [h('b', { lang: 'de' }, 'Wiederholung'), h('span', {}, 'Review of ' + courseOf(it.from).station + ' – ' + courseOf(it.to).station)]; icon = sigEl('review'); aria = 'Review stop, ' + it.state; }
-  else if (it.kind === 'exam') { label = [h('b', { lang: 'de' }, 'Prüfung ' + it.code), h('span', {}, it.state === 'done' ? 'bestanden' : it.state === 'now' ? 'Exam ready · pass at 90 %' : 'after this lesson')]; icon = sigEl('exam'); aria = 'Level exam ' + it.code + ', ' + it.state; }
-  else if (it.kind === 'start') { label = [h('b', { lang: 'de' }, 'Laute'), h('span', {}, 'Lesson 0 · Sounds')]; icon = sigEl('sound'); aria = 'Lesson 0, Sounds'; }
-  else { label = [h('b', { lang: 'de' }, 'Endstation B1'), h('span', {}, 'Spoken B1')]; icon = sigEl('terminus'); aria = 'Terminus: spoken B1'; }
-  const mk = tappable ? h('button', { class: 'mk', 'aria-label': aria, onclick: () => openStation(it) }) : h('div', { class: 'mk', 'aria-label': aria, role: 'img' });
-  mk.append(icon);
-  if (it.state === 'done' && it.kind === 'lesson') { const t = h('span', { class: 'tick', 'aria-hidden': 'true' }); t.innerHTML = CHECK_SVG; mk.append(t); }
-  if (it.state === 'locked' && it.kind === 'lesson') { const l = h('span', { class: 'lock', 'aria-hidden': 'true' }); l.innerHTML = LOCK_SVG; mk.append(l); }
-  const lab = h('div', { class: 'lab', style: `max-width:${room}px` }, ...label);
-  if (it.state === 'soon' && it.kind !== 'term') lab.append(h('span', { class: 'soon' }, 'Bald'));
-  if (it.state === 'locked' && it.kind === 'lesson' && it.n > 1) lab.append(h('span', { class: 'why' }, 'Opens after ' + prevName(it.n)));
-  if (firstSoon) lab.append(h('button', { class: 'btn ghost sm write', onclick: generateLesson }, 'Write it with Claude'));
-  st.append(mk, lab); return st;
+function mapRow(it) {
+  const st = it.state, L = it.kind === 'lesson' && it.L, c = it.kind === 'lesson' && it.c;
+  const li = h('li', { class: `kst ${it.kind === 'review' ? (it.test ? 'rv test' : 'rv') : it.kind === 'chapter' ? '' : it.kind} ${st || ''}` });   // not .chapter: that is the old map's floating label
+  const mk = h('span', { class: 'kmk', 'aria-hidden': 'true' });
+  let title, sub, aria, face = null;
+  if (it.kind === 'chapter' || it.kind === 'fold') {
+    const [kap, name] = it.ch.de.split(' · ');
+    mk.textContent = it.num; li.classList.add('kchap');
+    li.append(mk, h('div', { class: 'ktx' }, h('b', { lang: 'de' }, name || it.ch.de), h('span', {}, (kap || '') + ' · ' + it.ch.en + (it.kind === 'fold' ? ` · lessons ${it.from}–${it.to}, coming soon` : ''))));
+    return li;
+  }
+  if (it.kind === 'lesson') {
+    title = L ? L.theme || L.title : c.station; sub = 'Lektion ' + it.n + ' · ' + (L ? L.title : c.topic);
+    aria = `Lesson ${it.n}: ${L ? L.title : c.topic}, ${({ done: 'done', now: 'your stop', locked: 'not yet, opens after ' + prevName(it.n), soon: 'coming soon' })[st]}`;
+    face = L && typeof bustEl === 'function' ? newcomer(L) || leadOf(L) : null;
+    if (st === 'done') mk.innerHTML = CHECK_SVG; else if (st === 'locked') mk.innerHTML = LOCK_SVG;
+  } else if (it.kind === 'review') {
+    title = it.test ? 'Kapiteltest' : 'Wiederholung'; sub = (it.test ? 'nach Lektion ' + it.to + ' · ' : '') + 'review of lessons ' + it.from + '–' + it.to;
+    aria = (it.test ? `Chapter ${it.test} test, ` : 'Review stop, ') + `lessons ${it.from} to ${it.to}, ` + ({ done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon' })[st];
+    if (it.test) mk.textContent = 'K' + it.test; else if (st === 'done') mk.innerHTML = CHECK_SVG; else mk.innerHTML = ICONS.practice || '';
+  } else if (it.kind === 'exam') {
+    title = 'Prüfung ' + it.code; sub = st === 'done' ? 'bestanden · passed' : st === 'now' ? 'Pass with 90 % to open the next lessons' : 'after this lesson';
+    aria = 'Level exam ' + it.code + ', ' + ({ done: 'passed', now: 'ready', open: 'after this lesson' })[st]; mk.textContent = it.code;
+  } else if (it.kind === 'start') {
+    title = 'Laute'; sub = 'Lektion 0 · Sounds'; aria = 'Lesson 0, Sounds' + (st === 'done' ? ', done' : '');
+    mk.innerHTML = st === 'done' ? CHECK_SVG : ICONS.play || '';
+  } else { title = 'Endstation B1'; sub = 'Spoken B1'; aria = 'Terminus: spoken B1'; }
+  // your stop: a magenta ring beside a card with the scene, the place and the start button
+  if (st === 'now' && (L || it.kind === 'exam')) {
+    li.append(mk);
+    if (it.kind === 'exam') {
+      li.append(h('div', { class: 'card primary kcard' }, h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, sub)), h('button', { class: 'btn go', onclick: () => openExamPreview(it.code) }, S.progress.exam ? 'Continue' : 'Open the exam')));
+      return li;
+    }
+    const ls = S.progress.lessonState, resume = !!(ls && ls.n === it.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id];
+    const fresh = L.words.filter(w => !isLearned(w.de)).length;
+    const ph = h('button', { class: 'kpic' + (pic ? '' : ' none'), 'aria-label': `About lesson ${it.n}`, onclick: () => openLessonPreview(it.n) }); if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
+    li.append(h('div', { class: 'card primary kcard', 'aria-label': aria }, ph,
+      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lektion ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)} min`),
+        h('button', { class: 'btn go', onclick: () => startLesson(it.n) }, resume ? 'Continue' : 'Start'))));
+    return li;
+  }
+  const tx = h('div', { class: 'ktx' }, h('b', { lang: 'de' }, title), h('span', {}, sub));
+  if (st === 'soon' && it.kind !== 'term') tx.append(h('em', { class: 'soon' }, 'Bald'));
+  const body = st !== 'soon' && it.kind !== 'term' ? h('button', { class: 'kbody', 'aria-label': aria, onclick: () => openStation(it) }) : h('div', { class: 'kbody', 'aria-label': aria, role: 'group' });
+  body.append(mk, tx);
+  if (face) { const b = bustEl(face, 'neutral', 40); b.removeAttribute('role'); b.removeAttribute('aria-label'); b.setAttribute('aria-hidden', 'true'); body.append(b); }
+  li.append(body);
+  if (it.firstSoon) li.append(h('button', { class: 'btn ghost sm write', onclick: generateLesson }, 'Write it with Claude'));
+  return li;
 }
 
 /* ---------- bottom sheet ---------- */
@@ -286,4 +303,4 @@ function lessonDone(v, L, ls) {
 
 /* ---------- re-layout the map on resize ---------- */
 let mapResizeT = null;
-window.addEventListener('resize', () => { clearTimeout(mapResizeT); mapResizeT = setTimeout(() => { if (route === 'learn' && document.querySelector('.map')) render(); }, 200); });
+window.addEventListener('resize', () => { clearTimeout(mapResizeT); mapResizeT = setTimeout(() => { if (route === 'learn' && document.querySelector('.kline')) render(); }, 200); });
