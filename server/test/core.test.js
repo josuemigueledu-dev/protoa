@@ -186,6 +186,15 @@ test('addSentenceCard stores a sentence card, and a repeat only pulls its due da
   assert.equal(run('Object.keys(S.cards.sent.w).length'), 1);
 });
 
+test('conversation lines are not counted as words by learnedCount or the goal', () => {
+  reset();
+  exec(`markLearned({ de: 'Tisch' }, 1); markLearned({ de: 'Stuhl' }, 1);
+        addSentenceCard({ de: 'Das ist ein Tisch.', en: 'That is a table.' }, 1);
+        addSentenceCard({ de: 'Guten Tag.', en: 'Good day.' }, 1)`);
+  assert.equal(run('learnedCount()'), 2);
+  assert.equal(run('goalInfo().learned'), 2);
+});
+
 test('goalInfo projects the finish date from words per day, or words per day from a fixed date', () => {
   reset();
   exec(`S.settings.target = 100; S.settings.perDay = 10;

@@ -196,7 +196,8 @@ function cardOf(id) { for (const sh of Object.values(S.cards)) if (sh.w && sh.w[
 function cardShard(id) { for (const [k, sh] of Object.entries(S.cards)) if (sh.w && sh.w[id]) return k; return null; }
 function ensureShard(k) { if (!S.cards[k]) S.cards[k] = { w: {}, updatedAt: 0 }; return S.cards[k]; }
 function wordDef(id) { for (const L of allLessons()) for (const w of L.words) if (w.de === id) return Object.assign({ lesson: L.n }, w); const v = (typeof V1_WORDS !== 'undefined') && V1_WORDS.find(w => w.de === id); if (v) return Object.assign({ lesson: 0 }, v); const c = cardOf(id); if (c && c.def) return Object.assign({ lesson: c.def.lesson || 0 }, c.def, { de: id }); return null; }
-function learnedCount() { let n = 0; for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) if (c.learned) n++; return n; }
+// words the learner owns; conversation-line cards (c.sent) are reviewed too but are not words
+function learnedCount() { let n = 0; for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) if (c.learned && !c.sent) n++; return n; }
 function isLearned(id) { const c = cardOf(id); return !!(c && c.learned); }
 function markLearned(w, lessonN) {
   const id = wordId(w); let sh = cardShard(id);
