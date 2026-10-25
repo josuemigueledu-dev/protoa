@@ -106,4 +106,10 @@
 .ticket .stat:nth-child(1) .n{color:var(--magenta)}
 .ticket .stamp{filter:none}
 
+/* the ticket's stamp is the place itself, in a round frame */
+.ticket .stamp.pic{border:0;background-size:cover;background-position:center;box-shadow:0 0 0 4px var(--card-solid),0 0 0 6px var(--magenta),0 14px 30px -14px rgba(0,0,0,.6)}
+.ticket .stamp.pic .sig{display:none}
+.coach{align-items:flex-end}
+.coach .say .row{gap:8px;align-items:center}
+
 @media (prefers-reduced-motion:reduce){ .scene .spic{animation:none} }
