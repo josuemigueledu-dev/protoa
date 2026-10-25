@@ -46,6 +46,8 @@
   :root:not([data-theme="dark"]) .actionbar.ok .in .btn:not(.ghost),:root:not([data-theme="dark"]) .actionbar.bad .in .btn:not(.ghost){background:var(--steel);color:#eef1f4}
   :root:not([data-theme="dark"]) .actionbar .btn.ghost{background:rgba(17,21,27,.05);color:#11151b;box-shadow:inset 0 0 0 1px rgba(17,21,27,.15)}
   :root:not([data-theme="dark"]) .aurora i:nth-child(1){opacity:.32}
+  :root:not([data-theme="dark"]) .btn:not(.ghost):not(.quiet),:root:not([data-theme="dark"]) .seg button[aria-pressed="true"],:root:not([data-theme="dark"]) .nav[aria-current="page"]{color:#eef1f4}
+  :root:not([data-theme="dark"]) .btn.go::after{background:#eef1f4}
   :root:not([data-theme="dark"]) .brand{color:#11151b}
 }
 :root[data-theme="light"] :is(.today-hero,.talkhero,.chapter,.lesson-top,.actionbar,body.lay-desktop .sidebar,.topbar,.pagehead,.prof,.slab-dark){
@@ -61,6 +63,8 @@
 :root[data-theme="light"] .actionbar .btn.ghost{background:rgba(17,21,27,.05);color:#11151b;box-shadow:inset 0 0 0 1px rgba(17,21,27,.15)}
 :root[data-theme="light"] .aurora i:nth-child(1){opacity:.32}
 :root[data-theme="light"] .brand{color:#11151b}
+:root[data-theme="light"] .btn:not(.ghost):not(.quiet),:root[data-theme="light"] .seg button[aria-pressed="true"],:root[data-theme="light"] .nav[aria-current="page"]{color:#eef1f4}
+:root[data-theme="light"] .btn.go::after{background:#eef1f4}
 
 /* ---------- lesson scenes: painted pictures of the place ---------- */
 .scene.art{background:var(--night2);aspect-ratio:16/10;border-radius:var(--r);
@@ -105,6 +109,12 @@
 .ticket .stat .n{color:var(--ink)}
 .ticket .stat:nth-child(1) .n{color:var(--magenta)}
 .ticket .stamp{filter:none}
+
+/* painted word pictures fill their plate; the article colour runs along the bottom edge */
+.illus.photo{overflow:hidden;padding:0;background:var(--night2)}
+.illus.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.wcard .illus.photo{width:180px;height:180px}
+.wchip .il img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 
 /* the ticket's stamp is the place itself, in a round frame */
 .ticket .stamp.pic{border:0;background-size:cover;background-position:center;box-shadow:0 0 0 4px var(--card-solid),0 0 0 6px var(--magenta),0 14px 30px -14px rgba(0,0,0,.6)}
