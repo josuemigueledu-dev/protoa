@@ -1,0 +1,115 @@
+/* =====================================================================
+   NIGHT GLASS, part 2 (headmaster): Day Glass, the light theme, and the lesson steps.
+   Loaded after night-glass.css. Day Glass is the same world in daylight: a pale steel stage,
+   light glass, dark text, the same steel, magenta and article colours. It applies when the
+   phone is in light mode (theme "system") or the learner picks Light in Settings.
+   ===================================================================== */
+
+/* ---------- Day Glass tokens ---------- */
+@media (prefers-color-scheme: light){
+  :root:root:root:not([data-theme="dark"]){
+    --night:#dfe6ee; --night2:#cdd6e1; --nink:#11151b; --ngrey:#4d5867;
+    --ground:#c4cdd8; --ground2:#aeb9c6;
+    --glass:rgba(252,251,248,.66); --glass-dark:rgba(240,244,248,.78);
+    --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
+    --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
+    --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
+    --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
+    --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
+    --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
+    --day:1;
+  }
+}
+:root:root:root[data-theme="light"]{
+  --night:#dfe6ee; --night2:#cdd6e1; --nink:#11151b; --ngrey:#4d5867;
+  --ground:#c4cdd8; --ground2:#aeb9c6;
+  --glass:rgba(252,251,248,.66); --glass-dark:rgba(240,244,248,.78);
+  --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
+  --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
+  --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
+  --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
+  --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
+  --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
+  --day:1;
+}
+/* surfaces that are dark at night become pale steel by day: dark text, dark hairlines */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) :is(.today-hero,.talkhero,.chapter,.lesson-top,.actionbar,body.lay-desktop .sidebar,.topbar,.pagehead,.prof,.slab-dark){
+    --line:rgba(17,21,27,.1); --line-2:rgba(17,21,27,.2); --bg-2:rgba(17,21,27,.06); --chip:rgba(255,255,255,.6); --card:rgba(255,255,255,.5);
+    --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08); --rim:rgba(255,255,255,.7);
+    --yellow-soft:rgba(44,74,116,.12); --blue:#2c5aa8; --green:#23804f; --red:#d81e6c;
+  }
+  :root:not([data-theme="dark"]) #app::before{background:linear-gradient(180deg,var(--night) 0,var(--night) 210px,rgba(223,230,238,.6) 330px,rgba(223,230,238,0) 440px)}
+  :root:not([data-theme="dark"]) .actionbar,:root:not([data-theme="dark"]) .actionbar.ok,:root:not([data-theme="dark"]) .actionbar.bad{background:rgba(244,246,249,.92);box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
+  :root:not([data-theme="dark"]) .actionbar.ok .msg .ttl,:root:not([data-theme="dark"]) .actionbar.ok .ico{color:var(--green)}
+  :root:not([data-theme="dark"]) .actionbar.bad .msg .ttl,:root:not([data-theme="dark"]) .actionbar.bad .ico{color:var(--red)}
+  :root:not([data-theme="dark"]) .actionbar.ok .in .btn:not(.ghost),:root:not([data-theme="dark"]) .actionbar.bad .in .btn:not(.ghost){background:var(--steel);color:#eef1f4}
+  :root:not([data-theme="dark"]) .actionbar .btn.ghost{background:rgba(17,21,27,.05);color:#11151b;box-shadow:inset 0 0 0 1px rgba(17,21,27,.15)}
+  :root:not([data-theme="dark"]) .aurora i:nth-child(1){opacity:.32}
+  :root:not([data-theme="dark"]) .brand{color:#11151b}
+}
+:root[data-theme="light"] :is(.today-hero,.talkhero,.chapter,.lesson-top,.actionbar,body.lay-desktop .sidebar,.topbar,.pagehead,.prof,.slab-dark){
+  --line:rgba(17,21,27,.1); --line-2:rgba(17,21,27,.2); --bg-2:rgba(17,21,27,.06); --chip:rgba(255,255,255,.6); --card:rgba(255,255,255,.5);
+  --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08); --rim:rgba(255,255,255,.7);
+  --yellow-soft:rgba(44,74,116,.12); --blue:#2c5aa8; --green:#23804f; --red:#d81e6c;
+}
+:root[data-theme="light"] #app::before{background:linear-gradient(180deg,var(--night) 0,var(--night) 210px,rgba(223,230,238,.6) 330px,rgba(223,230,238,0) 440px)}
+:root[data-theme="light"] .actionbar,:root[data-theme="light"] .actionbar.ok,:root[data-theme="light"] .actionbar.bad{background:rgba(244,246,249,.92);box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
+:root[data-theme="light"] .actionbar.ok .msg .ttl,:root[data-theme="light"] .actionbar.ok .ico{color:var(--green)}
+:root[data-theme="light"] .actionbar.bad .msg .ttl,:root[data-theme="light"] .actionbar.bad .ico{color:var(--red)}
+:root[data-theme="light"] .actionbar.ok .in .btn:not(.ghost),:root[data-theme="light"] .actionbar.bad .in .btn:not(.ghost){background:var(--steel);color:#eef1f4}
+:root[data-theme="light"] .actionbar .btn.ghost{background:rgba(17,21,27,.05);color:#11151b;box-shadow:inset 0 0 0 1px rgba(17,21,27,.15)}
+:root[data-theme="light"] .aurora i:nth-child(1){opacity:.32}
+:root[data-theme="light"] .brand{color:#11151b}
+
+/* ---------- lesson scenes: painted pictures of the place ---------- */
+.scene.art{background:var(--night2);aspect-ratio:16/10;border-radius:var(--r);
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));
+  border-bottom:6px solid transparent;border-image:repeating-linear-gradient(-45deg,var(--magenta) 0 8px,#11151b 8px 16px) 6}
+.scene .spic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;animation:ng-kb 24s ease-in-out infinite alternate;will-change:transform}
+@keyframes ng-kb{from{transform:scale(1.02)}to{transform:scale(1.09) translate(-1.5%,-1%)}}
+.scene .cap{z-index:2;left:12px;top:12px;bottom:auto;background:var(--magenta);color:#fff;border-radius:var(--r-xs);font-family:var(--text);font-weight:700;padding:3px 9px}
+.sfaces{position:absolute;right:12px;bottom:12px;z-index:2;display:flex}
+.sface{width:44px;height:44px;border-radius:50%;background-size:cover;background-position:center 30%;margin-left:-10px;box-shadow:0 0 0 2.5px var(--card-solid),0 6px 14px -6px rgba(0,0,0,.5)}
+.sface:first-child{margin-left:0}
+/* the conversation band is the same painting, cropped to a strip */
+.conv-band .spic{width:100%;height:100%;object-fit:cover;object-position:center 45%;display:block}
+.conv-band{background:var(--night2)}
+/* portraits beside the partner's lines */
+.bust.photo{border-radius:50%;background-size:cover;background-position:center 30%;flex:none;box-shadow:0 0 0 2px var(--card-solid)}
+
+/* ---------- lesson steps ---------- */
+.lesson-top .segs i b{background:var(--pale)}
+.lesson-top .steplbl{color:var(--magenta)}
+.notice-line{border-left:0;box-shadow:inset 3px 0 0 var(--magenta),inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
+.coach .say{border-radius:var(--r) var(--r) var(--r) 2px}
+.wcard .de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
+.wcard .kind{letter-spacing:.04em}
+.wcard .illus,.wcard .wtile{border-radius:var(--r)}
+/* article colours wherever a gendered word is shown */
+.wcard .illus.m{box-shadow:inset 0 -4px 0 var(--der),inset 0 0 0 1px var(--line)}
+.wcard .illus.f{box-shadow:inset 0 -4px 0 var(--die),inset 0 0 0 1px var(--line)}
+.wcard .illus.n{box-shadow:inset 0 -4px 0 var(--das),inset 0 0 0 1px var(--line)}
+.choices{gap:10px}
+.choice{min-height:58px;font-weight:700}
+.tiles.answer{border-bottom:2px solid var(--line-2)}
+.tile{font-family:var(--text);font-weight:700}
+.reaction{color:var(--muted);font-style:normal}
+.bub.l .box{background:var(--steel);color:#eef1f4;box-shadow:none}
+.bub.l .box .en-after,.bub.l .box .faint{color:rgba(238,241,244,.8)}
+.bub.l .check{color:#7ee2a8}
+/* the completion ticket: a dark glass slab with the station as the hero */
+.ticket .top{background:var(--night);color:var(--nink);font-family:var(--text)}
+.ticket .top b{font-family:var(--hero);font-weight:400;letter-spacing:-.03em}
+.ticket h1{font-size:2rem}
+.ticket .stat .n{color:var(--ink)}
+.ticket .stat:nth-child(1) .n{color:var(--magenta)}
+.ticket .stamp{filter:none}
+
+/* the ticket's stamp is the place itself, in a round frame */
+.ticket .stamp.pic{border:0;background-size:cover;background-position:center;box-shadow:0 0 0 4px var(--card-solid),0 0 0 6px var(--magenta),0 14px 30px -14px rgba(0,0,0,.6)}
+.ticket .stamp.pic .sig{display:none}
+.coach{align-items:flex-end}
+.coach .say .row{gap:8px;align-items:center}
+
+@media (prefers-reduced-motion:reduce){ .scene .spic{animation:none} }

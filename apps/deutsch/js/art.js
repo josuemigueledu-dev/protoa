@@ -7,12 +7,23 @@ function illusEl(id, size) {
   s.innerHTML = ART[id] || ''; return s;
 }
 function castSvg(id, mood) { return keepMood(ART[id] || '', mood || 'neutral'); }
+/* Night Glass: the cast are painted portraits (art/night/ava-*.jpg); the SVG cast stays as the fallback for ids without one */
+const NIGHT_CAST = { 'cast.weber': 'weber', 'cast.ana': 'ana', 'cast.lena': 'lena', 'cast.barista': 'murat', 'cast.murat': 'murat' };
+const NIGHT_SCENE = { 'plate.classroom': 'classroom', 'plate.cafe': 'cafe', 'plate.ubahn': 'ubahn', 'plate.street': 'neukoelln', 'plate.flat': 'flat', 'plate.market': 'market', 'plate.park': 'feld', 'plate.bar': 'bar', 'plate.hermannplatz': 'hermannplatz' };
+const nightCastName = id => ({ 'cast.weber': 'Herr Weber', 'cast.ana': 'Ana', 'cast.lena': 'Lena', 'cast.barista': 'the barista', 'cast.murat': 'Murat' })[id] || '';
 function bustEl(id, mood, size) {
   const s = document.createElement('span'); s.className = 'bust'; s.style.width = s.style.height = size + 'px';
+  if (NIGHT_CAST[id]) { s.classList.add('photo'); s.style.backgroundImage = `url(art/night/ava-${NIGHT_CAST[id]}.jpg)`; s.setAttribute('aria-label', nightCastName(id)); s.setAttribute('role', 'img'); return s; }
   s.innerHTML = castSvg(id, mood).replace(/viewBox="[^"]+"/, 'viewBox="54 24 132 132"'); return s;
 }
-/* plate first, then each character standing on the floor line (y 700) in the cast zone, then the event sticker */
+/* Night Glass: a lesson scene is a painted picture of the place, with the people in it as portraits along the bottom.
+   Plates without a painting yet keep the SVG plate, its characters and the event sticker. */
 function sceneArt({ plate, cast = [], event, band }) {
+  const pic = NIGHT_SCENE[plate];
+  if (pic) {
+    const faces = cast.filter(c => NIGHT_CAST[c.id]).map(c => `<span class="sface" role="img" aria-label="${nightCastName(c.id)}" style="background-image:url(art/night/ava-${NIGHT_CAST[c.id]}.jpg)"></span>`).join('');
+    return `<img class="spic${band ? ' band' : ''}" src="art/night/scenes/${pic}.jpg" alt="" decoding="async">` + (faces && !band ? `<span class="sfaces">${faces}</span>` : '');
+  }
   const H = 540, W = 360, foot = 344 / 360 * H; // the main character stands at 60% of the plate height
   let out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${band ? '528 40 1072 550' : '0 0 1600 900'}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">` + inner(ART[plate] || ART['plate.classroom']);
   cast.forEach(c => { out += `<svg x="${c.x - W / 2}" y="${700 - foot}" width="${W}" height="${H}" viewBox="0 0 240 360">${inner(castSvg(c.id, c.mood))}</svg>`; });

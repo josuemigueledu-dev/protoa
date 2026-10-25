@@ -219,7 +219,12 @@ function lessonTop(L, ls, within = 0) {
 function lessonScene(v, L, ls) {
   v.append(lessonTop(L, ls), sceneEl(L));
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, L.scene.place + ' · ' + L.scene.time), ...L.scene.intro.slice(0, 2).map(p => h('p', {}, fill(p)))));
-  v.append(h('div', { class: 'coach' }, h('div', { class: 'say' }, h('span', { lang: 'de' }, 'Guten Tag! Kommen Sie herein.'), h('div', { class: 'faint' }, 'Hello! Come in.'))));
+  // the scene's first spoken line, from the person who says it (not a fixed greeting: lessons happen in different places)
+  const first = (L.conv || []).find(t => !t.l && t.w);
+  if (first) {
+    const who = first.who || 'cast.weber', line = glossEl(fill(first.w), first.g);
+    v.append(h('div', { class: 'coach' }, typeof bustEl === 'function' ? bustEl(who, first.mood, 44) : '', h('div', { class: 'say' }, h('div', { class: 'row' }, line, h('button', { class: 'icon-btn sm', 'aria-label': 'Play the line', html: ICONS.play, onclick: () => speak(fill(first.w), { el: line }) })))));
+  }
   const next = () => setStep('notice', {}, 'fwd');
   actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') next(); };
 }
@@ -264,7 +269,7 @@ function lessonDone(v, L, ls) {
   const n1 = h('div', { class: 'n' }, '0'), n2 = h('div', { class: 'n' }, '0'), n3 = h('div', { class: 'n' }, '0');
   v.append(h('div', { class: 'ticket' },
     h('div', { class: 'top' }, h('b', {}, 'Protoa · Fahrschein'), h('span', {}, 'Lesson ' + L.n)),
-    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, c.station), h('div', { class: 'stamp' }, sigEl(c.icon)), h('p', { class: 'muted' }, 'You can now ' + L.can)),
+    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, c.station), (() => { const st = h('div', { class: 'stamp' }, sigEl(c.icon)); const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id]; if (pic) { st.classList.add('pic'); st.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`; } return st; })(), h('p', { class: 'muted' }, 'You can now ' + L.can)),
     h('div', { class: 'perf', 'aria-hidden': 'true' }),
     learnedWords.length ? h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; })) : '',
     h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, 'words added')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'first try')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, 'lines to review')))));
