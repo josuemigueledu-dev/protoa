@@ -43,6 +43,17 @@ async function noSidewaysScroll(page, label) {
   if (scrollWidth > innerWidth) fail(`${label}: page scrolls sideways (${scrollWidth}px in a ${innerWidth}px window)`);
 }
 
+// The notice's "Show how it works" note sits in a flex box (.fb): its text and
+// <b>/<em> must stay one block, not one narrow column each.
+async function notesReadAsText(page, label) {
+  const show = page.locator('button', { hasText: 'Show how it works' });
+  if (!await show.count()) return fail(`${label}: lesson 1 notice has no "Show how it works" button`);
+  await show.click();
+  const columns = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.fb')].map(f => [...f.childNodes].filter(c => c.nodeType === 1 || c.textContent.trim()).length)));
+  if (columns > 1) fail(`${label}: the notice note is split into ${columns} columns`);
+  await noSidewaysScroll(page, label + ' notice');
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -56,6 +67,7 @@ try {
         await page.evaluate(() => startLesson(1, true));
         const step = () => page.evaluate(() => S.progress.lessonState.step);
         for (let i = 0; i < 20 && await step() !== 'check'; i++) {
+          if (await step() === 'notice') await notesReadAsText(page, label);
           await page.locator('.actionbar .btn').last().click();
           await page.waitForTimeout(150);
         }
