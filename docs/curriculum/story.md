@@ -96,6 +96,29 @@ Established facts, by lesson. Add a line per merged lesson.
 - **11** Thursday 10:30, the café. Lena is on coffee number three; Ana pushes tea (*Tee ist nur Wasser*, says Lena). The learner orders tea, *aber nur heute*. One cake for the table: *zusammen, denn wir sind Freunde*. The barista has heard everything (*Ich höre alles*) and has the order ready: *Kaffee gleich, Kuchen später.* Lena: *Alles? Wirklich?* (thread 2). He proves it with lesson 8's mistake put right: *Die Dame aus Mexiko: Tee. Die Dame aus Rom: Kaffee Nummer drei.* Lena looks at her cup. The learner's first two typed sentences: *Gut, dann Kuchen später.* and *Noch Kaffee, Lena?* — *Nein. Tee.* (so Lena has tea on the next Tuesday, lesson 12) (refined by story).
 - **12** Tuesday 9:00. All seven chairs full on time, Tomasz included (*Tomasz ist schon hier. Interessant.*). Lena has tea. Weber's first test: he reads ten sentences, the class says *richtig* or *falsch*: Lena drinks three coffees a day (*Richtig. Aber heute trinkt sie Tee.*), Lena's guitar is twenty (*falsch*, fifteen), Ana comes from Spain (Ana: *Nicht schon wieder Spanien!*, lesson 8), the course is easy (*Das stimmt nicht. Aber ich lerne gern.*). Ana: *Herr Weber, Sie lesen zu schnell*; he reads very slowly. Weber's verdict on the learner: *Das war nicht schlecht* (his highest praise); asked if *nicht schlecht* is *sehr gut*, Ana: *Bei Herrn Weber schon.* Ends *Bis Donnerstag. Und Tomasz, am Donnerstag auch pünktlich, bitte.*
 
+## Protoa's voice
+
+Protoa is the orb that goes with the learner through this Berlin. It is not a teacher (that is Herr Weber) and not a cheerleader. It notices things: who is late, what is on the table, whose chair is empty, a phone face down. That is how it talks.
+
+- **Short.** One or two sentences. Simple German the learner can almost read, the English under it.
+- **Specific.** It names a person, a place or a thing from the story or from the learner's own numbers. Never "Great job", "Keep it up", "You're doing amazing".
+- **Honest.** A hard round is *Heute war es schwer.*, not *Weiter so!* What it says about the learner's work is a fact (how much stuck, what comes back), not a mood.
+- **Never the twist.** Before a lesson it shows a detail from the intro that makes you want to go in. The surprise stays in the lesson.
+- *du* with the learner. No exclamation marks, no emoji, nothing religious or political.
+
+Where it speaks now:
+
+- **Today, before a lesson:** `PROTOA_TODAY` in `content.js`, one line per built-in lesson (*Sieben Stühle. Einer ist leer.*). A new lesson adds its line in the same PR; without one, Protoa falls back to who you meet or where you go.
+- **Today, mid-lesson:** the lead person waits (*Lena wartet noch.*).
+- **Today, no lesson left:** the words due, counted (*12 Wörter warten auf dich.*).
+- **Review summary:** what stuck, by score: *Alles sitzt.* (100 %), *Fast alles sitzt.* (90 %+), *Das meiste sitzt.* (70 %+), *Heute war es schwer.*
+
+Lines proposed for screens other agents own (not built yet):
+
+- Lesson feedback title: *Richtig.* instead of *Richtig!* (the reason line under it already says what was right).
+- Sprechen summary: *Danke für das Gespräch.* without the exclamation mark.
+- Done screen: the next lesson's `PROTOA_TODAY` line under the ticket as *Nächstes Mal:* (engagement idea 1 without a new lesson field).
+
 ## Engagement ideas (for the owner)
 
 1. **A last line that pulls you forward.** The Done screen ends with one short German line from the last scene that points to the next one (*Bis Donnerstag. Lena hat eine Überraschung.*). Needs a `next` field in the lesson and a line on the Done screen (ux).

@@ -416,6 +416,26 @@ const CHAPTERS = [
   { from: 49, de: 'Kapitel 5 · Selbstständig', en: 'On your own', mark: 'oberbaum' },
 ];
 const REVIEW_EVERY = 4;
+/* ---------- Protoa's line on Today, one per built-in lesson ----------
+   What Protoa has noticed about the next scene, before you start it: a detail from the intro that makes
+   you want to go in, never the twist. Simple German, the English under it. Story keeps these
+   (docs/curriculum/story.md, "Protoa's voice"); a lesson without a line falls back to who or where. */
+const PROTOA_TODAY = {
+  1: ['Dein erster Tag im Kurs. Sag einfach: Guten Tag.', 'Your first day in class. Just say: Guten Tag.'],
+  2: ['Herr Weber hat eine Liste. Dein Name ist auch da.', 'Herr Weber has a list. Your name is on it too.'],
+  3: ['Neun Uhr sieben. Jemand kommt zu spät, mit Mehl am Ärmel.', 'Seven past nine. Someone is late, with flour on her sleeve.'],
+  4: ['Neben der Tafel hängt etwas Neues.', 'Something new is hanging beside the board.'],
+  5: ['Pause. Ana will Kaffee, aber die Schlange ist lang.', 'Break. Ana wants coffee, but the queue is long.'],
+  6: ['Am Dienstag gab es keinen Kaffee. Heute vielleicht.', 'On Tuesday there was no coffee. Today, maybe.'],
+  7: ['Heute fragst du. Und Herr Webers Telefon liegt neben der Kreide.', 'Today you ask the questions. And Herr Weber’s phone is lying next to the chalk.'],
+  8: ['Anas Stuhl ist leer. Lena will wissen, warum.', 'Ana’s chair is empty. Lena wants to know why.'],
+  9: ['Sieben Stühle. Einer ist leer.', 'Seven chairs. One is empty.'],
+  10: ['Alle schreiben ihre Nummer auf. Fast alle.', 'Everyone writes down their number. Almost everyone.'],
+  11: ['Lena will Kaffee Nummer drei. Ana hat eine andere Idee.', 'Lena wants coffee number three. Ana has another idea.'],
+  12: ['Herr Weber hat ein Blatt Papier. Und kein Lächeln.', 'Herr Weber has a sheet of paper. And no smile.'],
+  13: ['Lena hat zehn Minuten. Sie bestellt für alle.', 'Lena has ten minutes. She orders for everyone.'],
+  14: ['Markt am Maybachufer. Anas Liste ist auf Spanisch.', 'The market at Maybachufer. Ana’s list is in Spanish.']
+};
 const courseOf = n => COURSE.find(c => c.n === n) || { n, station: 'Station ' + n, topic: 'Lesson ' + n, icon: 'question' };
 
 const SH = '<ellipse cx="32" cy="57" rx="17" ry="3.2" fill="#07101f" opacity=".13"/>';
