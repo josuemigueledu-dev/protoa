@@ -226,7 +226,7 @@ body:not(.lay-mobile) .sheet{align-items:center} body:not(.lay-mobile) .sheet .i
 /* ---------- the teacher: a thin clear glass orb with a small blue core of light.
    --lvl (0..1) is driven by VoiceLight in time with the voice; at rest the core glows dimly. ---------- */
 .tslot{display:none!important}
-.lesson-top .tslot{display:block!important;visibility:hidden;flex:none} body:not(.lay-mobile) .lesson-top .tslot{display:none!important}   /* phones: the orb docks here; wider layouts keep the gutter */
+.lesson-top .tslot{display:block!important;visibility:hidden;flex:none} body:not(.lay-mobile):not(.orb-dock) .lesson-top .tslot{display:none!important}   /* phones and narrow tablets (.orb-dock, set by the companion): the orb docks here; wider layouts keep the gutter */
 .orb{--s:56px;--lvl:0;position:absolute;inset:0;display:block;pointer-events:none}
 .orb.companion{position:fixed;inset:auto;left:0;top:0;width:var(--s);height:var(--s);z-index:22;will-change:transform;animation:orbin .6s var(--ease)}
 @keyframes orbin{from{opacity:.25}to{opacity:1}}
