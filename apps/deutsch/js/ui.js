@@ -136,23 +136,116 @@ function actionBar(opts) {
 /* ---------- TODAY ---------- */
 function renderToday(v) {
   const name = S.profile.name; const hour = new Date().getHours(); const greet = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
-  const g0 = goalInfo();
-  v.append(h('div', { class: 'today-hero' }, teacherSlot(64, 'pleased'), h('div', {}, h('h1', {}, greet + (name ? ', ' + name : '') + '!'), h('p', {}, g0.today >= g0.perDay ? 'Today\'s words are done. Reviews keep them.' : `${g0.perDay - g0.today} new words to go today.`)), h('div', { class: 'goal' }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner' }, h('span', {}, g0.today), h('small', {}, 'of ' + g0.perDay)))));
-  v.append(progressHeader());
-  const due = dueCards().length, ls = S.progress.lessonState, nextN = nextLessonN();
+  const g0 = goalInfo(), due = dueCards(), ls = S.progress.lessonState;
   const gateT = examGate();
-  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, 'Prüfung ' + gateT.code), h('div', { class: 'faint' }, 'Pass with 90 % to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
   const curN = gateT ? (ls && ls.n != null && !lessonBlocked(ls.n) ? ls.n : null) : currentLessonN(); const L = lessonById(curN);
-  const next = h('div', { class: 'card stack' + (gateT ? '' : ' primary') }, h('div', { class: 'eyebrow' }, ls && ls.n === curN ? 'Continue your line' : 'Next station'));
-  if (L) { const c = courseOf(L.n); next.append(h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + L.n + ' · ' + L.title + ' · ' + L.words.length + ' words'))), h('button', { class: 'btn wide', onclick: () => openOnMap(L.n) }, ls && ls.n === curN ? 'Continue' : 'Go to station')); }
-  else next.append(h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map'));
-  if (L || !gateT) v.append(next);
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', {}, h('div', { class: 'eyebrow' }, 'Reviews'), h('div', {}, h('span', { class: 'big' }, due), h('span', { class: 'muted' }, due === 1 ? ' card due' : ' cards due'))), h('button', { class: 'btn ' + (due ? '' : 'ghost'), onclick: () => { if (due) startReview(dueCards()); else go('practice'); } }, due ? 'Review now' : 'Open Practice'))));
+  const resume = !!(L && ls && ls.n === L.n);
+  v.append(h('div', { class: 'today-hero' }, teacherSlot(64, 'pleased'), h('div', { class: 'grow' }, h('h1', {}, greet + (name ? ', ' + name : '') + '.'), protoaLine(L, resume, due.length)),
+    h('div', { class: 'goal', role: 'img', 'aria-label': `${g0.today} of ${g0.perDay} new words today` }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner', 'aria-hidden': 'true' }, h('span', {}, g0.today), h('small', {}, 'of ' + g0.perDay)))));
+  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, 'Prüfung ' + gateT.code), h('div', { class: 'faint' }, 'Pass with 90 % to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
+  if (L) v.append(todayLessonCard(L, resume));
+  else if (!gateT) v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map')));
+  v.append(todayLine(due.length));
+  v.append(todayDuo(due, L));
   if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0: Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
   v.append(h('button', { class: 'card listrow', onclick: () => go('talk') }, h('span', { class: 'sig talkico', html: ICONS.talk }), h('div', { class: 'grow' }, h('b', { lang: 'de' }, 'Sprechen'), h('div', { class: 'faint' }, 'Talk with Protoa at your level. Every line you write is corrected.')), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›')));
+  v.append(progressHeader());
   if (!document.body.classList.contains('lay-desktop')) { v.append(paceWidget()); v.append(weekWidget()); const sz = satzDesTages(); if (sz) v.append(sz); }
   v.append(writeYourOwn());
   setTimeout(checkStamps, 600);
+}
+/* ---------- Today, Night Glass: Protoa's line, the lesson card, the stop line, words due ---------- */
+const CAST_DE = { 'cast.weber': ['Herrn Weber', 'Herr Weber'], 'cast.ana': ['Ana', 'Ana'], 'cast.lena': ['Lena', 'Lena'], 'cast.barista': ['den Barista', 'the barista'], 'cast.murat': ['Murat', 'Murat'] };
+/* the person a lesson introduces (first in its cast who is in no earlier lesson), else null */
+function newcomer(L) {
+  if (!L || !L.scene) return null; const seen = new Set();
+  allLessons().forEach(o => { if (o.n < L.n) (o.scene && o.scene.cast || []).forEach(c => seen.add(c.id)); });
+  const c = (L.scene.cast || []).find(c => !seen.has(c.id) && CAST_DE[c.id]); return c ? c.id : null;
+}
+const leadOf = L => { const c = (L && L.scene && L.scene.cast || []).find(c => CAST_DE[c.id]); return c ? c.id : null; };
+function protoaLine(L, resume, due) {
+  const who = !resume && newcomer(L), plate = L && L.scene && L.scene.plate;
+  const [de, deHtml, en] = !L ? (due ? ['Heute wiederholst du deine Wörter.', '', 'Today you review your words.'] : ['Bald geht es weiter.', '', 'More stops are coming soon.'])
+    : resume ? ['Weiter geht es.', '', 'Let’s carry on where you stopped.']
+    : who ? [`Heute triffst du ${CAST_DE[who][0]}.`, `Heute triffst du <b>${CAST_DE[who][0]}</b>.`, `Today you meet ${CAST_DE[who][1]}.`]
+    : plate === 'plate.cafe' ? ['Heute geht es ins Café.', 'Heute geht es ins <b>Café</b>.', 'Today we go to the café.']
+    : plate === 'plate.classroom' ? ['Heute geht es in den Kurs.', 'Heute geht es in den <b>Kurs</b>.', 'Today it’s back to class.']
+    : ['Heute geht es weiter.', '', 'Today the story goes on.'];
+  const p = h('p', { lang: 'de', html: deHtml || esc(de) });
+  return h('div', { class: 'say' }, h('button', { class: 'snd', 'aria-label': 'Listen: ' + de, html: ICONS.play, onclick: () => speak(de, { el: p }) }), h('div', {}, p, h('small', {}, en)));
+}
+function todayLessonCard(L, resume) {
+  const c = courseOf(L.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id], who = newcomer(L) || leadOf(L);
+  const ph = h('div', { class: 'pic' + (pic ? '' : ' none') }, h('span', { class: 'tag', lang: 'de' }, 'Lektion ' + L.n), who && typeof bustEl === 'function' ? bustEl(who, 'neutral', 52) : '');
+  if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
+  return h('article', { class: 'card primary tlesson', 'aria-label': 'Lesson ' + L.n + ': ' + L.title }, ph,
+    h('div', { class: 'in' }, h('div', { class: 'k' }, c.station + ' · ' + L.words.length + ' words'), h('h2', {}, L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
+      h('button', { class: 'btn wide go', onclick: () => startLesson(L.n) }, resume ? 'Continue lesson' : 'Start lesson')));
+}
+/* The stop line: the current chapter as a U-Bahn line, a window of stops around yours and the chapter's end.
+   Protoa rides on the line at your stop; after a lesson it rides from the last stop it showed to the new one. */
+function todayLine(due) {
+  const { items } = mapModel(), stopKey = it => it.kind === 'lesson' ? 'L' + it.n : it.kind === 'review' ? it.id : 'X' + it.code;
+  let nowI = items.findIndex(it => it.state === 'now' && (it.kind === 'lesson' || it.kind === 'exam'));
+  const lessonNear = i => { for (let j = i; j < items.length; j++) if (items[j].kind === 'lesson') return items[j].n; return 1; };
+  const done = S.progress.lessonsDone, refN = nowI >= 0 ? lessonNear(nowI) : (done.length ? Math.max(...done) : 1);
+  const chI = Math.max(0, CHAPTERS.findLastIndex(c => c.from <= refN)), ch = CHAPTERS[chI];
+  const to = CHAPTERS[chI + 1] ? CHAPTERS[chI + 1].from - 1 : Math.max(...items.filter(i => i.kind === 'lesson').map(i => i.n));
+  let s = items.findIndex(it => it.kind === 'lesson' && it.n === ch.from); if (s > 0 && items[s - 1].kind === 'exam' && items[s - 1].state !== 'done') s--;
+  let e = items.findIndex(it => it.kind === 'review' && it.to === to); if (e < 0) e = items.findIndex(it => it.kind === 'lesson' && it.n === to);
+  const stops = items.slice(s, e + 1), lessonsIn = stops.filter(i => i.kind === 'lesson');
+  let cur = stops.findIndex(it => it.state === 'now');
+  if (cur < 0) { let last = -1; stops.forEach((it, i) => { if (it.kind === 'lesson' && it.state === 'done') last = i; }); cur = Math.min(stops.length - 1, last + 1); }   // no lesson to take: the stop after your last lesson
+  const SHOW = 5, start = stops.length <= SHOW + 1 ? 0 : Math.max(0, Math.min(cur - 2, stops.length - SHOW - 1));
+  const win = stops.slice(start, start + SHOW + 1 > stops.length ? stops.length : start + SHOW); if (win[win.length - 1] !== stops[stops.length - 1]) win.push(stops[stops.length - 1]);
+  const ci = win.indexOf(stops[cur]), X = i => 6 + i * 88 / Math.max(1, win.length - 1);
+  const trk = h('div', { class: 'trk', role: 'list' }, h('div', { class: 'rl' + (start > 0 ? ' cut' : ''), style: `left:${start > 0 ? 0 : X(0)}%;right:${100 - X(win.length - 1)}%` }));
+  const fill = ci > 0 ? h('div', { class: 'fill' + (start > 0 ? ' cut' : ''), style: `left:${start > 0 ? 0 : X(0)}%;width:${X(ci) - (start > 0 ? 0 : X(0))}%` }) : null; if (fill) trk.append(fill);
+  if (ci >= 0 && ci < win.length - 1) trk.append(h('div', { class: 'spark', 'aria-hidden': 'true', style: `left:${X(ci)}%;width:${X(ci + 1) - X(ci)}%` }, h('i')));
+  win.forEach((it, i) => {
+    const end = i === win.length - 1 && it === stops[stops.length - 1], L = it.kind === 'lesson' && it.L;
+    const face = L && (newcomer(L) || (i === ci ? leadOf(L) : null));
+    let num = '', lab = '', box = '', aria = '';
+    if (it.kind === 'lesson') { num = it.n; lab = L ? L.title : courseOf(it.n).topic; aria = `Lesson ${it.n}, ${lab}`; }
+    else if (it.kind === 'review') { num = 'R'; lab = 'Wdh.'; aria = `Review of lessons ${it.from} to ${it.to}`; }
+    else { box = it.code; lab = 'Prüfung'; aria = 'Exam ' + it.code; }
+    if (end && it.kind === 'review') { box = 'K' + (chI + 1); num = it.to; lab = 'Ziel'; aria = `End of chapter ${chI + 1}: review of lessons ${it.from} to ${it.to}`; }
+    const st = h('div', { class: `lstop ${it.kind === 'review' ? 'rv' : it.kind} ${it.state}${box ? ' box' : ''}${i === ci ? ' now' : ''}`, style: `left:${X(i)}%`, role: 'listitem',
+      'aria-label': aria + ', ' + (i === ci ? 'your stop' : { done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon', now: 'your stop' }[it.state] || it.state) },
+      h('i', { 'aria-hidden': 'true' }, box), num !== '' ? h('em', { 'aria-hidden': 'true' }, String(num)) : '', h('span', { 'aria-hidden': 'true', lang: it.kind === 'lesson' ? 'en' : 'de' }, i === ci ? h('b', {}, lab) : lab));
+    if (face && typeof bustEl === 'function') { const b = bustEl(face, 'neutral', 30); b.removeAttribute('role'); b.setAttribute('aria-hidden', 'true'); st.append(b); }
+    trk.append(st);
+  });
+  if (ci >= 0) {
+    // the companion orb rides here (companion.js docks on .seat); the rider spans the track so its ride is a translate in % of the line
+    const rider = h('div', { class: 'rider', 'aria-hidden': 'true' }, h('i', { class: 'seat', style: `left:${X(ci)}%` }));
+    trk.append(rider);
+    // after a lesson: if Today last showed an earlier stop still in the window, Protoa rides from there once the line is in view
+    const key = stopKey(stops[cur]), seen = LS('lineSeen'), from = seen && seen !== key ? win.findIndex(it => stopKey(it) === seen) : -1;
+    const ride = from >= 0 && from < ci && !reduced(), base = start > 0 ? 0 : X(0);
+    if (ride) { rider.style.transform = `translateX(${X(from) - X(ci)}%)`; if (fill) fill.style.transform = `scaleX(${(X(from) - base) / (X(ci) - base)})`; }
+    const rideNow = () => { LS('lineSeen', key); if (!ride) return; trk.classList.add('riding'); trk.offsetWidth; rider.style.transform = ''; if (fill) fill.style.transform = ''; setTimeout(() => trk.classList.remove('riding'), 1500); };
+    if (typeof IntersectionObserver === 'undefined') rideNow();
+    else { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(rideNow, 1100); } }, { threshold: .9 }); io.observe(trk); }
+  }
+  const nextRv = stops.slice(cur).find(it => it.kind === 'review' && it.state !== 'done');
+  return h('section', { class: 'card slab-dark stopline', 'aria-label': 'Your line: ' + ch.de },
+    h('div', { class: 'lh' }, h('div', {}, h('b', { lang: 'de' }, ch.de), h('span', {}, 'Your line to the end of the chapter')), h('span', { class: 'cnt', 'aria-label': `${lessonsIn.filter(i => i.state === 'done').length} of ${lessonsIn.length} lessons done` }, String(lessonsIn.filter(i => i.state === 'done').length), h('small', {}, '/' + lessonsIn.length))),
+    trk,
+    h('div', { class: 'ttags' }, due ? h('button', { class: 't1', onclick: () => startReview(dueCards()) }, h('b', {}, String(due)), due === 1 ? ' card due' : ' cards due') : '',
+      nextRv ? h('span', {}, 'Review after lesson ' + nextRv.to) : '', h('button', { onclick: () => go('learn') }, 'Course map ›')));
+}
+/* words due, with their genders, and the scene after this lesson */
+function todayDuo(due, L) {
+  const g = { m: 0, f: 0, n: 0 }; new Set(due.map(d => d.id)).forEach(id => { const w = wordDef(id); if (w && g[w.g] != null) g[w.g]++; });
+  const left = h('button', { class: 'card tdue', onclick: () => { if (due.length) startReview(dueCards()); else go('practice'); } },
+    h('span', { class: 'n' }, String(due.length)), h('span', { class: 'k' }, due.length ? (due.length === 1 ? 'card to review' : 'cards to review') : 'Nothing due · open Practice'),
+    g.m + g.f + g.n ? h('span', { class: 'gchips', lang: 'de' }, ...[['m', 'der'], ['f', 'die'], ['n', 'das']].filter(([k]) => g[k]).map(([k, a]) => h('span', { class: 'g-' + k }, g[k] + ' ' + a))) : '');
+  const N = L && lessonById(L.n + 1), pic = N && typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[N.scene.plate || 'plate.' + N.scene.id];
+  if (!pic) return h('div', { class: 'tduo one' }, left);
+  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lektion ' + N.n, h('b', { lang: 'de' }, N.scene.cap || courseOf(N.n).station)));
+  right.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
+  return h('div', { class: 'tduo' }, left, right);
 }
 function openOnMap(n) { NAV = 'fade'; route = 'learn'; const ls = S.progress.lessonState; if (ls && !ls.paused && ls.n !== n) ls.paused = true; if (ls && ls.n === n) ls.paused = true; render(); setTimeout(() => openLessonPreview(n), 80); }
 function nextLessonN() { const all = allLessons().map(l => l.n); return all.find(n => !S.progress.lessonsDone.includes(n)) || null; }

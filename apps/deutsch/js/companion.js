@@ -21,7 +21,7 @@ const Companion = (() => {
   const gutterless = () => { const top = document.querySelector('#view .lesson-top'); if (!top) return false; const b = top.getBoundingClientRect(), [L, R] = limits(); return Math.max(R - b.right, b.left - L) < 72 * .95; };
   const dockable = () => document.body.classList.contains('in-lesson') && !!document.querySelector('#view .lesson-top .tslot') && (phone() || gutterless());   /* a lesson with no free margin (phones, narrow tablets): the orb lives in the header slot and never covers a task */
   const docked = () => !!P.dock;   /* measured with each re-evaluation in target(), not every frame */
-  const size = () => docked() ? 44 : document.body.classList.contains('lay-mobile') ? 58 : 72;
+  const size = () => docked() ? 44 : P.a && P.a.kind === 'ride' ? 52 : document.body.classList.contains('lay-mobile') ? 58 : 72;
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
   function anchor() {
     const view = document.getElementById('view'); let b, el;
@@ -30,6 +30,7 @@ const Companion = (() => {
     el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && !(phone() && el.closest('.sheet .in')) && (b = vis(el))) return { b, kind: 'input', el, box: el.closest('.sheet .in') };
     el = document.querySelector('.sheet:not(.closing) .in'); if (el && (b = vis(el))) return { b, kind: 'sheet', el };
     el = document.querySelector('.actionbar.ok .msg,.actionbar.bad .msg'); if (el && (b = vis(el))) return { b, kind: 'feedback', el };
+    el = view.querySelector('.stopline .seat'); if (el && (b = el.getBoundingClientRect()).width && b.top > 64 && b.bottom < floor() - 8) return { b, kind: 'ride', el };   /* Today: while the stop line is in view, Protoa rides it at your stop */
     if (document.body.classList.contains('in-lesson')) {
       const chat = view.querySelectorAll('.chatlog .bub:not([hidden])'); if (chat.length && (b = vis(chat[chat.length - 1]))) return { b, kind: 'task', el: chat[chat.length - 1] };
       el = view.querySelector('.lesson-top ~ .card,.lesson-top ~ .conv,.lesson-top ~ .scene'); if (el && (b = vis(el))) return { b, kind: 'task', el };
@@ -40,6 +41,7 @@ const Companion = (() => {
     for (const c of host.children) { if (c.matches('.lesson-top,.map,.tslot')) continue; const r = c.getBoundingClientRect(); if (!r.height || r.bottom < 60 || r.top > innerHeight - 60) continue; const dd = r.top <= line && r.bottom >= line ? 0 : Math.min(Math.abs(r.top - line), Math.abs(r.bottom - line)); if (dd < bd) { bd = dd; best = r; bel = c; } }
     return best ? { b: best, kind: 'read', el: bel } : null;
   }
+  function floor() { const tabs = phone() && document.getElementById('tabs'); return tabs && tabs.offsetHeight ? Math.min(innerHeight, tabs.getBoundingClientRect().top) : innerHeight; }   /* phones: the tab bar is at the bottom */
   function limits() {
     const W = innerWidth; let L = 8, R = W - 8;
     const sb = document.querySelector('#sidebar'); if (sb && getComputedStyle(sb).display !== 'none') L = sb.getBoundingClientRect().right + 8;
@@ -72,7 +74,7 @@ const Companion = (() => {
   }
   function place(a) {
     const s = size(), gap = 22, b = a.b, [L, R] = limits();
-    if (a.kind === 'dock') return [b.left + b.width / 2, b.top + b.height / 2];
+    if (a.kind === 'dock' || a.kind === 'ride') return [b.left + b.width / 2, b.top + b.height / 2];
     if (a.kind === 'feedback') return [Math.min(innerWidth - s * .7, b.right - s * .2), b.top - s * .8];
     if (a.kind === 'station') return [a.left ? b.left - gap - s / 2 : b.right + gap + s / 2, b.top + b.height / 2];
     if (a.kind === 'sheet') { if (b.right + gap + s <= innerWidth - 8) return [b.right + gap + s / 2, b.top + s * .8]; return [b.right - s * .55, b.top - s * .5]; }
@@ -82,8 +84,8 @@ const Companion = (() => {
     if (rg >= s + gap * 2) spots.push([g.right + gap + s / 2, y]);      /* a roomy gutter: sit a little off the block */
     else if (rg >= s * .95) spots.push([g.right + rg / 2, y]);         /* a tight gutter: centre in it */
     if (lg >= s * .95) spots.push([g.left - Math.min(lg / 2, gap + s / 2), y]);
-    const tabs = phone() && document.getElementById('tabs'), floor = tabs && tabs.offsetHeight ? Math.min(innerHeight, tabs.getBoundingClientRect().top) : innerHeight;   /* phones: the tab bar is at the bottom */
-    const rx = b.right - s * .3, lx = b.left + s * .3, top = b.top - s * .38, under = Math.min(b.bottom + s * .38, floor - s * .62), low = Math.min(b.bottom - s * .1, floor - s * .62);   /* top and under: mostly outside the block, in the gap; low: its lower corner, which is usually empty */
+    const fl = floor();
+    const rx = b.right - s * .3, lx = b.left + s * .3, top = b.top - s * .38, under = Math.min(b.bottom + s * .38, fl - s * .62), low = Math.min(b.bottom - s * .1, fl - s * .62);   /* top and under: mostly outside the block, in the gap; low: its lower corner, which is usually empty */
     if (a.kind === 'read') spots.push([rx, low], [rx, top], [rx, under], [lx, low], [lx, top], [lx, under]);
     else spots.push([rx, top], [rx, low], [rx, under], [lx, top], [lx, low], [lx, under]);
     const key = [b.left, b.top, b.width, b.height, innerWidth, innerHeight, s].map(Math.round).join();
@@ -111,9 +113,9 @@ const Companion = (() => {
     }
     a = P.a; let x, y;
     if (a && a.el && a.el.isConnected) a.b = a.el.getBoundingClientRect();
-    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'dock' ? null : a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
+    if (a) { [x, y] = place(a); P.lookAt = a.kind === 'dock' || a.kind === 'ride' ? null : a.kind === 'read' || a.kind === 'station' ? null : [a.b.left + Math.min(a.b.width, 320) / 2, a.b.top + Math.min(a.b.height, 120) / 2]; }
     else { [x, y] = rest(); P.lookAt = null; }
-    if (!still() && !(a && a.kind === 'dock')) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
+    if (!still() && !(a && (a.kind === 'dock' || a.kind === 'ride'))) { x += Math.sin(t * .53 + P.seed) * 6 + Math.sin(t * 1.31 + P.seed * 2) * 2; y += Math.sin(t * 1.06 + P.seed * .7) * 4; }
     const m = s * .62; return [Math.min(innerWidth - m, Math.max(m, x)), Math.min(innerHeight - m, Math.max(m + 4, y))];
   }
   /* SmoothDamp (critically damped): eases in and out, never overshoots or bounces */
