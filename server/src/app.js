@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Hono } from 'hono';
@@ -56,6 +57,8 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON } = {}) {
   app.use('/shared/*', serveStatic({ root: rel('.') }));
   for (const name of Object.keys(APPS)) {
     app.get(`/${name}`, c => c.redirect(`/${name}/`));
+    // Pre-rendered voices (scripts/voices.mjs) are optional: without them the manifest is empty, not a 404.
+    app.get(`/${name}/audio/manifest.json`, (c, next) => existsSync(path.join(ROOT, 'apps', name, 'audio/manifest.json')) ? next() : c.json({}));
     app.use(`/${name}/*`, serveStatic({ root: rel('apps') }));
   }
   // Until there is a Protoa home page, the German course is the front door.

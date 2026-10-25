@@ -7,6 +7,7 @@ document.addEventListener('keydown', e => { if (e.target.matches('textarea')) re
   V1_WORDS.forEach(w => { const a = deTokens(w.ex.replace(/[\[\]]/g, '')).map(fold).join(' '), b = parseGloss(w.exG).flatMap(([d]) => deTokens(d)).map(fold).join(' '); if (a !== b) console.warn('Gloss coverage, v1 word ' + w.de, a, '|', b); });
   render();
   if (!S.settings.onboarded) onboarding();
+  loadVoxManifest();
   await loadRemote(); S.ready = true; flushPendingSaves(); applyTheme();
   if (!S.settings.onboarded && !document.querySelector('.sheet')) onboarding(); else if (S.settings.onboarded) { document.querySelector('.sheet:not(.word)')?.remove(); render(); }
 })();
