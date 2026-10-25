@@ -18,10 +18,35 @@ const TYPE_LABEL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', prep
 const TABS = [['today', 'Today'], ['learn', 'Lessons'], ['practice', 'Practice'], ['talk', 'Sprechen'], ['profile', 'Profile']];
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { const b = h('button', { class: 'tab', 'aria-current': (route === id || (id === 'profile' && (route === 'more' || route === 'grammar'))) ? 'page' : null, onclick: () => go(id), html: ICONS[id] + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); }); renderSidebar(); }
-function go(r) { if (r !== route) { NAV = 'rise'; if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
+function go(r) { if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
-function newView() { view.innerHTML = ''; const v = h('div', { class: 'view stack ' + NAV }); view.append(v); return v; }
+function newView() { const dir = DIRS[NAV]; if (dir) leave(view.querySelector(':scope > .view'), dir); view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); return v; }
+/* ---------- screens travel (owner, Oct 25): the old screen's slabs leave one by one in the direction of travel while
+   the new screen's slabs come in from the other side. Tabs to the right push the screen left (and back), opening a
+   lesson, review or talk goes left too, a tab opened from nowhere rises up, leaving a lesson sinks down. ---------- */
+const DIRS = { fwd: 'left', back: 'right', rise: 'up', left: 'left', right: 'right', up: 'up', down: 'down' };
+const tabIndex = r => TABS.findIndex(([id]) => id === (r === 'more' || r === 'grammar' ? 'profile' : r));
+function tabDir(from, to) { const i = tabIndex(from), j = tabIndex(to); return i < 0 || j < 0 || i === j ? 'up' : j > i ? 'left' : 'right'; }
+function leave(old, dir) {
+  view.querySelectorAll(':scope > .leaving').forEach(e => e.remove());
+  if (!old || reduced() || !old.animate) return;
+  // the old screen stays where it was on screen (the pane scrolls back to the top for the new one), out of the flow
+  const top = old.offsetTop - PANE.scrollTop, inLesson = document.body.classList.contains('in-lesson');
+  old.className = 'view stack leaving'; old.setAttribute('aria-hidden', 'true'); old.inert = true;
+  Object.assign(old.style, { position: 'absolute', top: top + 'px', left: 0, right: 0, pointerEvents: 'none' });
+  const far = { left: ['-70vw', '0'], right: ['70vw', '0'], up: ['0', '-40vh'], down: ['0', '40vh'] }[dir];
+  const vh = innerHeight; let i = 0, last = 0;
+  for (const el of old.children) {
+    const r = el.getBoundingClientRect();
+    // in a lesson the header stays put: the new one is drawn on the same spot
+    if (r.bottom < 0 || r.top > vh || (inLesson && el.classList.contains('lesson-top'))) { el.style.visibility = 'hidden'; continue; }
+    const delay = Math.min(i++, 6) * 40; last = Math.max(last, delay);
+    // translate, not transform: the slabs' transform is pinned (night-glass.css, "no 3D tilt on glass")
+    el.animate([{ translate: '0 0', opacity: 1 }, { translate: far[0] + ' ' + far[1], opacity: 0 }], { duration: 340, delay, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' });
+  }
+  setTimeout(() => old.remove(), last + 380);
+}
 let renderedDay = null; // the day the screen on show was drawn for (screens.js redraws it when a new day starts)
 function render() {
   renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
@@ -33,7 +58,7 @@ function render() {
   try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
-  Still.hold(NAV === 'rise' ? 1100 : NAV === 'fade' ? 250 : 600, true);   // until the new screen has slid or risen in
+  Still.hold(DIRS[NAV] ? 1000 : NAV === 'fade' ? 250 : 600, true);   // until the new screen has slid or risen in
   NAV = 'fade';
 }
 /* ---------- the endless decor holds still while nobody can enjoy it ----------
@@ -63,6 +88,24 @@ const Still = (() => {
   return { hold };
 })();
 PANE.addEventListener('scroll', () => Still.hold(200), { passive: true });
+// a sideways swipe moves to the tab beside this one (not inside a lesson, review or talk, where swipes are for the exercise)
+(() => {
+  let x0 = 0, y0 = 0, t0 = 0, on = false;
+  PANE.addEventListener('touchstart', e => {
+    const t = e.touches[0]; on = e.touches.length === 1 && !document.body.classList.contains('in-lesson') && !document.querySelector('.sheet') && !e.target.closest('input,textarea,select,[contenteditable],.hscroll,.noswipe');
+    // a horizontal scroller under the finger keeps its own swipes
+    for (let el = e.target; on && el && el !== PANE; el = el.parentElement) if (el.scrollWidth > el.clientWidth + 2 && /(auto|scroll)/.test(getComputedStyle(el).overflowX)) on = false;
+    x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+  }, { passive: true });
+  PANE.addEventListener('touchend', e => {
+    if (!on) return; on = false;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8 || Date.now() - t0 > 700) return;
+    const i = tabIndex(route), j = i + (dx < 0 ? 1 : -1);
+    if (i < 0 || j < 0 || j >= TABS.length) return;
+    go(TABS[j][0]);
+  }, { passive: true });
+})();
 // never leave a blank screen: show what broke and a way back
 function renderCrash(v, err) {
   console.error('Protoa render error', err);
@@ -312,7 +355,7 @@ function startLesson(n, fresh) {
   if (fresh || !ls || ls.n !== n || ls.step === 'done') S.progress.lessonState = { n, step: 'scene', wi: 0, checkQ: null, bi: 0, battempts: 0, conv: null, newWords: L.words.filter(w => !isLearned(w.de)).map(w => w.de) };
   S.progress.lessonState.paused = false; save('progress'); lastSegs = null; NAV = 'fwd'; route = 'learn'; render();
 }
-function pauseLesson() { stopAudio(); const ls = S.progress.lessonState; if (ls) { ls.paused = true; save('progress'); } go('learn'); toast('Saved. Pick it up again from the map.'); }
+function pauseLesson() { stopAudio(); const ls = S.progress.lessonState; if (ls) { ls.paused = true; save('progress'); } NAV = 'down'; go('learn'); toast('Saved. Pick it up again from the map.'); }
 function setStep(step, extra = {}, dir = 'fwd') { Object.assign(S.progress.lessonState, { step }, extra); save('progress'); NAV = dir; render(); }
 function sceneEl(L) {
   const plate = L.scene.plate || 'plate.' + L.scene.id, art = typeof ART !== 'undefined' && (ART[plate] || NIGHT_SCENE[plate]);
@@ -566,7 +609,7 @@ function renderReview(v) {
   const progress = PR.total <= 24 ? h('div', { class: 'rv-segs', 'aria-hidden': 'true', style: `grid-template-columns:repeat(${PR.total},1fr)` }, ...Array.from({ length: PR.total }, (_, i) => h('i', { class: i < PR.done ? 'done' : i === PR.done ? 'now' : '' })))
     : h('div', { class: 'bar' }, h('i', { style: `width:${Math.round(100 * PR.done / Math.max(1, PR.total))}%` }));
   v.append(h('div', { class: 'lesson-top rv-top' },
-    h('button', { class: 'icon-btn sm close', 'aria-label': 'Stop reviewing', html: ICONS.x, onclick: () => { const back = PR && PR.stop; PR = null; if (back) route = 'learn'; NAV = 'fade'; render(); } }),
+    h('button', { class: 'icon-btn sm close', 'aria-label': 'Stop reviewing', html: ICONS.x, onclick: () => { const back = PR && PR.stop; PR = null; if (back) route = 'learn'; NAV = 'down'; render(); } }),
     h('b', { class: 'rv-title', lang: 'de' }, reviewTitle()), h('span', { class: 'rv-count', 'aria-label': `Card ${n} of ${PR.total}` }, `${n} / ${PR.total}`), progress,
     h('div', { class: 'rv-say' }, teacherSlot(44, 'neutral'), h('div', {}, h('b', { lang: 'de' }, say[0]), h('span', {}, say[1])))));
   card.classList.add('rv-card'); v.append(card);
