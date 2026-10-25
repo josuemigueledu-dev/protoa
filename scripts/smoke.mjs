@@ -2,7 +2,7 @@
 // dark, with no console errors and no sideways scrolling, and lesson 1 can be
 // clicked from its scene to its first word check. Left open overnight, it shows
 // the new day without disturbing a lesson in progress. Every built-in lesson can be
-// played to its end with its own model answers.
+// played to its end with its own model answers, and lesson 1 with misses and a reload.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -87,6 +87,42 @@ async function overnight(browser) {
   await ctx.close();
 }
 
+// Driving a lesson as a learner: what the current step asks for and its model answer,
+// a right answer the way the learner sees it, and a wrong one.
+const btn = (page, name) => page.locator('.actionbar .btn', { hasText: name });
+const reEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const lessonStep = page => page.evaluate(() => {
+  const ls = S.progress.lessonState, L = lessonById(ls.n), out = { step: ls.step, crash: !!document.querySelector('.crash') };
+  if (ls.step === 'check' && ls.checkQ?.length) Object.assign(out, { word: ls.checkQ[0], answer: L.words.find(w => w.de === ls.checkQ[0]).en[0] });
+  const t = ls.step === 'build' ? L.build[ls.bi] : ls.step === 'conv' && ls.conv && ls.conv.pos < ls.conv.queue.length ? L.conv[ls.conv.queue[ls.conv.pos].i] : null;
+  if (t) Object.assign(out, { type: ls.step === 'build' ? t.type : ls.conv.queue[ls.conv.pos].type, de: fill(t.de), gaps: t.gaps, at: ls.step === 'build' ? ls.bi : ls.conv.pos });
+  return out;
+});
+// tiles in order, each gap with the word in its place, or the whole line typed
+async function answerRight(page, s) {
+  const toks = s.de.split(/\s+/);
+  if (s.type === 'tiles') {
+    for (const t of toks) {
+      const tile = page.locator('.tiles:not(.answer) > .tile').filter({ hasText: new RegExp(`^${reEsc(t)}$`) }).first();
+      if (!await tile.count()) return `no tile "${t}"`;
+      await tile.click();
+    }
+  } else if (s.type === 'gap') {
+    const inputs = page.locator('.gapline input'), at = [...s.gaps].sort((a, b) => a - b);
+    for (let k = 0; k < at.length; k++) await inputs.nth(k).fill(toks[at[k]].replace(/[.,!?;:"'„“”‚‘’()]/g, ''));
+  } else await page.locator('.turnbox input, .turnbox textarea').first().fill(s.de);
+  return '';
+}
+// one tile only (the line is incomplete), or a word that is in no lesson
+async function answerWrong(page, s) {
+  if (s.type === 'tiles') { if (!await page.locator('.tiles.answer > .tile').count()) await page.locator('.tiles:not(.answer) > .tile').first().click(); }
+  else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill('Quatsch'); }
+  else await page.locator('.turnbox input, .turnbox textarea').first().fill('Quatsch Quatsch');
+}
+const hintText = page => page.evaluate(() => [...document.querySelectorAll('.actionbar .msg, .ladder')].map(e => e.textContent.trim()).filter(Boolean).join(' / '));
+// a conversation turn is accepted when the next one comes up; a missed one stays put
+const convMoved = (page, at) => page.waitForFunction(at => S.progress.lessonState.conv.pos > at && document.querySelector('.actionbar .btn'), at, { timeout: 3000 }).then(() => true, () => false);
+
 // Every built-in lesson, in course order, played to its Done screen by a learner who
 // answers right the first time: the lesson's own lines must be accepted at every check,
 // build and conversation turn. Catches a lesson that cannot be finished (a tile missing,
@@ -101,56 +137,25 @@ async function playEveryLesson(browser) {
   await page.waitForSelector('#view > *');
   // the default mix, as each lesson is written (all right answers would turn on "harder")
   const ns = await page.evaluate(() => { S.settings.onboarded = true; S.settings.difficulty = 'default'; document.querySelector('.sheet')?.remove(); return allLessons().map(l => l.n); });
-  const btn = name => page.locator('.actionbar .btn', { hasText: name });
-  const reEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  // what the current step asks for, and its model answer
-  const state = () => page.evaluate(() => {
-    const ls = S.progress.lessonState, L = lessonById(ls.n), out = { step: ls.step, crash: !!document.querySelector('.crash') };
-    if (ls.step === 'check' && ls.checkQ?.length) out.answer = L.words.find(w => w.de === ls.checkQ[0]).en[0];
-    const t = ls.step === 'build' ? L.build[ls.bi] : ls.step === 'conv' && ls.conv && ls.conv.pos < ls.conv.queue.length ? L.conv[ls.conv.queue[ls.conv.pos].i] : null;
-    if (t) Object.assign(out, { type: ls.step === 'build' ? t.type : ls.conv.queue[ls.conv.pos].type, de: fill(t.de), gaps: t.gaps, at: ls.step === 'build' ? ls.bi : ls.conv.pos });
-    return out;
-  });
-  // answer the way a learner sees it: tiles in order, each gap with the word in its place, or the whole line typed
-  async function answer(s) {
-    const toks = s.de.split(/\s+/);
-    if (s.type === 'tiles') {
-      for (const t of toks) {
-        const tile = page.locator('.tiles:not(.answer) > .tile').filter({ hasText: new RegExp(`^${reEsc(t)}$`) }).first();
-        if (!await tile.count()) return `no tile "${t}"`;
-        await tile.click();
-      }
-    } else if (s.type === 'gap') {
-      const inputs = page.locator('.gapline input'), at = [...s.gaps].sort((a, b) => a - b);
-      for (let k = 0; k < at.length; k++) await inputs.nth(k).fill(toks[at[k]].replace(/[.,!?;:"'„“”‚‘’()]/g, ''));
-    } else await page.locator('.turnbox input, .turnbox textarea').first().fill(s.de);
-    return '';
-  }
-  const hint = () => page.evaluate(() => [...document.querySelectorAll('.actionbar .msg, .ladder')].map(e => e.textContent.trim()).filter(Boolean).join(' / '));
-
   for (const n of ns) {
     label = `lesson ${n}`;
     await page.evaluate(n => startLesson(n, true), n);
     const learned = await page.evaluate(() => learnedCount());
     let s, guard = 0, stuck = '';
-    while ((s = await state()).step !== 'done' && !s.crash && guard++ < 300) {
+    while ((s = await lessonStep(page)).step !== 'done' && !s.crash && guard++ < 300) {
       if (s.step === 'check' && s.answer) {
         const choice = page.locator('.choices .choice').filter({ hasText: new RegExp(`\\d${reEsc(s.answer)}$`) });
         if (await choice.count() !== 1) { stuck = `check: "${s.answer}" is not one of the choices`; break; }
         await choice.click();
         if (!await page.locator('.actionbar.ok').count()) { stuck = `check: "${s.answer}" was marked wrong`; break; }
-        await btn('Continue').click();
+        await btn(page, 'Continue').click();
       } else if ((s.step === 'build' || s.step === 'conv') && s.type) {
-        if ((stuck = await answer(s))) { stuck = `${s.step} ${s.at}: ${stuck}`; break; }
-        await btn('Check').click();
+        if ((stuck = await answerRight(page, s))) { stuck = `${s.step} ${s.at}: ${stuck}`; break; }
+        await btn(page, 'Check').click();
         if (s.step === 'build') {
-          if (!await page.locator('.actionbar.ok').count()) { stuck = `build ${s.at}: "${s.de}" was not accepted (${await hint()})`; break; }
-          await btn('Next').click();
-        } else {
-          // a right line is logged and the next turn comes up; a missed one stays on this turn
-          const ok = await page.waitForFunction(at => S.progress.lessonState.conv.pos > at && document.querySelector('.actionbar .btn'), s.at, { timeout: 3000 }).then(() => true, () => false);
-          if (!ok) { stuck = `conversation turn ${s.at}: "${s.de}" was not accepted (${await hint()})`; break; }
-        }
+          if (!await page.locator('.actionbar.ok').count()) { stuck = `build ${s.at}: "${s.de}" was not accepted (${await hintText(page)})`; break; }
+          await btn(page, 'Next').click();
+        } else if (!await convMoved(page, s.at)) { stuck = `conversation turn ${s.at}: "${s.de}" was not accepted (${await hintText(page)})`; break; }
       } else await page.locator('.actionbar .btn').last().click(); // scene, notice, words, "Build it", "Finish the lesson"
       await noSidewaysScroll(page, `${label} ${s.step}`);
     }
@@ -159,9 +164,113 @@ async function playEveryLesson(browser) {
     const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount() }), n);
     if (!after.done) fail(`${label}: finished but not counted as done`);
     if (after.learned <= learned) fail(`${label}: finished with no new words in the word bank`);
-    await btn('Weiter').click();
+    await btn(page, 'Weiter').click();
   }
   console.log(`played lessons ${ns.join(', ')}`);
+  await ctx.close();
+}
+
+// Lesson 1 played by a learner who gets things wrong and reloads the page halfway:
+// a missed word comes back later in the check, a build line missed twice is shown and
+// moves on, a conversation turn climbs the help ladder (meaning, hint, the line), comes
+// back "once more" a few turns later, and counts as missed on the Done screen and in
+// review. The reload lands on the same turn, with the help already earned still shown.
+async function missAndRetry(browser) {
+  let label = 'misses';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, colorScheme: 'dark', reducedMotion: 'reduce', serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.setDefaultTimeout(5000); // a button that never appears fails fast, after the message saying why
+  page.on('console', m => { if (m.type() === 'error') fail(`${label}: console error: ${m.text()}`); });
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { S.settings.onboarded = true; S.settings.difficulty = 'default'; save('settings'); document.querySelector('.sheet')?.remove(); startLesson(1, true); });
+  const ls = () => page.evaluate(() => S.progress.lessonState);
+  const bad = async (what, msg) => { if (!await page.locator('.actionbar.bad').count()) fail(`${label}: ${what} was not marked wrong`); else if (msg && !(await hintText(page)).includes(msg)) fail(`${label}: ${what}: expected "${msg}", got "${await hintText(page)}"`); };
+  let s, guard = 0;
+  while ((s = await lessonStep(page)).step !== 'check' && guard++ < 20) await page.locator('.actionbar .btn').last().click();
+
+  // the word check: miss the first word, it goes to the back of the queue and comes back
+  label = 'misses: word check';
+  const missedWord = s.word, left = (await ls()).checkQ.length;
+  await page.locator('.choices .choice').filter({ hasNotText: new RegExp(`\\d${reEsc(s.answer)}$`) }).first().click();
+  await bad(`choosing a wrong meaning for "${missedWord}"`, 'comes back in a moment');
+  const q = (await ls()).checkQ;
+  if (q.length !== left || (left > 1 && q[q.length - 1] !== missedWord)) fail(`${label}: "${missedWord}" did not go to the back of the queue (${q.join(', ')})`);
+  if (await page.evaluate(w => isLearned(w), missedWord)) fail(`${label}: "${missedWord}" went into the word bank although it was missed`);
+  await btn(page, 'Continue').click();
+  let askedAgain = false;
+  while ((s = await lessonStep(page)).step === 'check' && s.answer && guard++ < 60) {
+    if (s.word === missedWord) askedAgain = true;
+    await page.locator('.choices .choice').filter({ hasText: new RegExp(`\\d${reEsc(s.answer)}$`) }).click();
+    await btn(page, 'Continue').click();
+  }
+  if (!askedAgain) fail(`${label}: the missed word "${missedWord}" never came back`);
+  await btn(page, 'Build it').click();
+
+  // build: wrong twice, then the line is shown and Next moves on
+  label = 'misses: build';
+  s = await lessonStep(page);
+  await answerWrong(page, s); await btn(page, 'Check').click();
+  await bad('a wrong first try');
+  if (!await btn(page, 'Check again').count()) fail(`${label}: no "Check again" after the first miss`);
+  else await btn(page, 'Check again').click();
+  await bad('a wrong second try', 'The line is');
+  await btn(page, 'Next').click();
+  if ((await ls()).bi !== s.at + 1) fail(`${label}: Next after two misses did not move to the next line`);
+  while ((s = await lessonStep(page)).step === 'build' && s.type && guard++ < 100) { await answerRight(page, s); await btn(page, 'Check').click(); await btn(page, 'Next').click(); }
+
+  // the conversation: the first learner turn is missed twice, the page reloads, then the third miss
+  label = 'misses: conversation';
+  while ((s = await lessonStep(page)).step === 'conv' && !s.type && guard++ < 120) await page.waitForTimeout(100);
+  const turn = s, len = (await ls()).conv.queue.length;
+  await answerWrong(page, turn); await btn(page, 'Check').click();
+  if (!(await hintText(page)).includes('Meaning')) fail(`${label}: the first miss does not show the meaning (${await hintText(page)})`);
+  await answerWrong(page, turn); await btn(page, 'Check').click();
+  const hint2 = await page.locator('.ladder .fb').count();
+  if (hint2 < 2) fail(`${label}: the second miss adds no hint (${await hintText(page)})`);
+  if ((await ls()).conv.pos !== turn.at) fail(`${label}: a missed turn moved on`);
+
+  label = 'misses: reload';
+  await page.reload();
+  await page.waitForSelector('#view > *');
+  const go = page.locator('button', { hasText: 'Continue lesson' });
+  if (!await go.count()) { fail(`${label}: Today has no "Continue lesson" after a reload`); await ctx.close(); return; }
+  await go.click();
+  s = await lessonStep(page);
+  if (s.step !== 'conv' || s.at !== turn.at) fail(`${label}: came back on ${s.step} ${s.at}, not conversation turn ${turn.at}`);
+  if (!(await hintText(page)).includes('Meaning')) fail(`${label}: the meaning the learner already earned is gone after the reload`);
+  if (await page.locator('.log .bub').count() < turn.at) fail(`${label}: the conversation so far is not shown after the reload`);
+
+  label = 'misses: conversation';
+  await answerWrong(page, turn); await btn(page, 'Check').click();
+  await bad('a third miss', 'comes back in a few turns');
+  if (!(await hintText(page)).includes('The line is')) fail(`${label}: the third miss does not show the line`);
+  const C = (await ls()).conv;
+  if (C.queue.length !== len + 1 || !C.queue.some((x, k) => k > turn.at && x.again && x.i === C.queue[turn.at].i)) fail(`${label}: the missed turn was not queued again`);
+  await btn(page, 'Continue').click();
+  let onceMore = false;
+  while ((s = await lessonStep(page)).step === 'conv' && guard++ < 250) {
+    if (!s.type) { if (await btn(page, 'Finish the lesson').count()) await btn(page, 'Finish the lesson').click(); else await page.waitForTimeout(100); continue; }
+    if (s.at > turn.at && (await page.locator('.turnbox .prompt').textContent()).startsWith('Once more')) onceMore = true;
+    await answerRight(page, s); await btn(page, 'Check').click();
+    if (!await convMoved(page, s.at)) { fail(`${label}: turn ${s.at} "${s.de}" was not accepted (${await hintText(page)})`); break; }
+  }
+  if (!onceMore) fail(`${label}: the missed turn never came back "once more"`);
+
+  label = 'misses: done';
+  if (s.step !== 'done') fail(`${label}: lesson 1 did not finish (stuck on "${s.step}")`);
+  else {
+    const R = await page.evaluate(t => { const L = lessonById(1), ls = S.progress.lessonState, sent = S.cards.sent.w;
+      const due = L.conv.map((c, i) => c.l && sent['s:' + fill(c.de)].r[0]).filter(Boolean);
+      return { done: S.progress.lessonsDone.includes(1), missed: ls.summary.missed, first: ls.summary.first, total: ls.summary.total, dueToday: due.filter(d => d === todayStr()).length, missedDue: sent['s:' + fill(L.conv[ls.conv.queue[t].i].de)].r[0] === todayStr() };
+    }, turn.at);
+    if (!R.done) fail(`${label}: lesson 1 not counted as done`);
+    if (R.missed !== 1) fail(`${label}: the Done screen counts ${R.missed} missed lines, expected 1`);
+    if (R.first !== R.total - 1) fail(`${label}: ${R.first} of ${R.total} turns right first time, expected all but one`);
+    if (!R.missedDue || R.dueToday !== 1) fail(`${label}: the missed line should be due for review today, and only it (${R.dueToday} due today)`);
+  }
+  await noSidewaysScroll(page, label);
   await ctx.close();
 }
 
@@ -194,6 +303,7 @@ try {
   }
   await overnight(browser);
   await playEveryLesson(browser);
+  await missAndRetry(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
