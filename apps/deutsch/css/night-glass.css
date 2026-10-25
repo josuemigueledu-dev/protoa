@@ -247,17 +247,25 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
 .toast{background:var(--night);color:var(--nink);border-radius:var(--r-xs);box-shadow:inset 0 2px 0 var(--magenta),var(--shadow)}
 .confetti i{box-shadow:none}
 
-/* ---------- motion: one spring; screens slide, slabs rise when a tab opens ---------- */
-.view.fwd{animation:ng-fwd .55s var(--ease)} .view.back{animation:ng-back .55s var(--ease)}
-@keyframes ng-fwd{from{transform:translateX(64px);opacity:.3}to{transform:none;opacity:1}}
-@keyframes ng-back{from{transform:translateX(-64px);opacity:.3}to{transform:none;opacity:1}}
-/* inside a lesson, review or exam the header (title, progress) is chrome that stays put between steps;
-   only the step under it slides */
-body.in-lesson .view.fwd,body.in-lesson .view.back{animation:none}
-body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} body.in-lesson .view.back>:not(.lesson-top){animation:ng-back .55s var(--ease)}
-.view.rise>*{animation:ng-rise .7s var(--ease) both}
-.view.rise>:nth-child(2){animation-delay:.1s} .view.rise>:nth-child(3){animation-delay:.2s} .view.rise>:nth-child(4){animation-delay:.3s} .view.rise>:nth-child(n+5){animation-delay:.38s}
+/* ---------- motion: one spring; screens travel slab by slab ----------
+   ui.js (leave) sends the old screen's slabs off one after another in the direction of travel; the new screen's slabs
+   follow in from the other side, each a beat after the one above it, starting while the old ones are still leaving */
+#view{position:relative} .view.fwd,.view.back{animation:none}
+.view.leaving{z-index:0}
+.view[class*=" in-"]>*{animation:.6s var(--ease) backwards}
+.view.in-left>*{animation-name:ng-in-left} .view.in-right>*{animation-name:ng-in-right}
+.view.in-up>*{animation-name:ng-in-up} .view.in-down>*{animation-name:ng-in-down}
+.view[class*=" in-"]>:nth-child(1){animation-delay:.2s} .view[class*=" in-"]>:nth-child(2){animation-delay:.26s}
+.view[class*=" in-"]>:nth-child(3){animation-delay:.32s} .view[class*=" in-"]>:nth-child(4){animation-delay:.38s}
+.view[class*=" in-"]>:nth-child(5){animation-delay:.44s} .view[class*=" in-"]>:nth-child(n+6){animation-delay:.5s}
+/* translate, not transform: the slabs' transform is pinned (above); backwards, so a press can still move them after */
+@keyframes ng-in-left{from{translate:min(34vw,240px) 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes ng-in-right{from{translate:max(-34vw,-240px) 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes ng-in-up{from{translate:0 min(18vh,140px);opacity:0}to{translate:0 0;opacity:1}}
+@keyframes ng-in-down{from{translate:0 max(-18vh,-140px);opacity:0}to{translate:0 0;opacity:1}}
 @keyframes ng-rise{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
+/* inside a lesson, review or exam the header (title, progress) is chrome that stays put between steps */
+body.in-lesson .view[class*=" in-"]>.lesson-top{animation:none}
 
 /* ---------- the orb (spec: "The orb") ----------
    A photographed clear glass sphere with real alpha (art/night/orb.png): no blend modes, so no dark disc or
@@ -595,7 +603,7 @@ body.lay-tablet .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 24px)}
 @media (prefers-reduced-motion:reduce){
   .aurora i,.aurora::after,.card.primary::after,.today-hero::before,.ticket::after{animation:none!important}
   .card.primary::after,.today-hero::before,.ticket::after{display:none}
-  .view.fwd,.view.back,.view.rise>*,.view.fwd>*,.view.back>*{animation:none!important}
+  .view[class*=" in-"]>*{animation:none!important} .view.leaving{display:none}
   .choice.bad{animation:none}
   /* the orbiter rests in front of the core, the core stays still */
   .orb .ox,.orb .oy,.orb .moon,.orb .core,.orb .glass,.orb.shake .sphere,.ptab .orb .float{animation:none!important}
