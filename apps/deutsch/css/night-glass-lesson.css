@@ -17,6 +17,7 @@
     --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
     --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
     --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
+    --slab-edge:#c3c9d1; --slab-edge-dark:#b7c2cf; --slab-lit:#ffffff; --slab-lit-2:rgba(255,255,255,.6); --slab-sh-1:rgba(44,74,116,.16); --slab-sh-2:rgba(44,74,116,.22);
     --day:1;
   }
 }
@@ -30,6 +31,7 @@
   --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
   --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
   --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
+  --slab-edge:#c3c9d1; --slab-edge-dark:#b7c2cf; --slab-lit:#ffffff; --slab-lit-2:rgba(255,255,255,.6); --slab-sh-1:rgba(44,74,116,.16); --slab-sh-2:rgba(44,74,116,.22);
   --day:1;
 }
 /* surfaces that are dark at night become pale steel by day: dark text, dark hairlines */
@@ -171,3 +173,47 @@
 .pface{width:34px;height:34px;flex:none;border-radius:50%;background:#121a27;padding:3px;margin-top:2px}
 .pface img{width:100%;height:100%;display:block}
 .chatlog .bub.l .box{background:var(--steel);color:#eef1f4}
+
+/* ---------- 3D slabs (owner, Oct 25: "the slabs aren't 2D but 3D with depth") ----------
+   Each slab is a block of glass floating over the ground, lit from the top left: a lit top and left edge, a
+   thickness band on the right and bottom (--dz deep) whose ends follow the chamfer, a tight contact shadow and a
+   wide soft one. Bigger slabs float higher than small ones and buttons. All static box-shadows: nothing is blurred
+   live and nothing animates except a press, which pushes the block down into its thickness (150 ms).
+   The chamfer clip reaches past the box so the band and the shadows show. Its cut edges run on at 45°, the angle the
+   block is pushed out, just far enough that the band's two ends stay chamfered; below the band the shadow is free.
+   Variants (a ring, a dark face, a hover) set --face, never box-shadow. The :not(#_) lifts these rules over the
+   per-screen box-shadows above, so every slab gets the same depth; the base rule is a :where() so each variant,
+   one class more, outranks it. */
+@property --dz{syntax:"<length>";inherits:false;initial-value:0px}
+:where(.card:not(.soft):not(.flat),.widget,.kpi,.goalmini,.lv,.ticket,.examcard,.conv,.today-hero,.talkhero,.chapter,.mode,.scen,.btile,.gfeat,body:not(.lay-mobile) .khead,.btn):not(#_){
+  --c:var(--cut); --dz0:6px; --dz:var(--dz0); --edge:var(--slab-edge);
+  --face:inset 0 1px 0 var(--slab-lit),inset 1px 0 0 var(--slab-lit-2),inset 0 0 0 1px var(--glass-edge);
+  clip-path:polygon(0 0,calc(100% - var(--c)) 0,calc(100% + 64px) calc(var(--c) + 64px),calc(100% + 64px) calc(100% + 64px),-64px calc(100% + 64px),
+    -64px calc(100% + var(--dz0)),calc(var(--c) + var(--dz0)) calc(100% + var(--dz0)),0 calc(100% - var(--c)));
+  box-shadow:var(--face),var(--dz) var(--dz) 0 var(--edge),calc(var(--dz) + 1px) calc(var(--dz) + 2px) 3px var(--slab-sh-1),
+    calc(var(--dz) * 2) calc(var(--dz) * 3) calc(var(--dz) * 5) calc(var(--dz) * -1) var(--slab-sh-2)}
+/* small slabs and buttons float lower */
+:is(.kpi,.goalmini,.lv,.chapter,.mode,.scen,.btile):not(#_){--dz0:4px}
+.btn:not(#_){--c:var(--cut-btn); --dz0:3px; --edge:#16263f; --face:inset 0 1px 0 rgba(255,255,255,.22)}
+.btn:is(.ghost,.quiet):not(#_){--dz0:2px; --edge:var(--line-2); --face:inset 0 0 0 1px var(--line-2),inset 0 1px 0 var(--glass-hi)}
+:is(.btn.ok,.actionbar.ok .in .btn:not(.ghost)):not(#_){--edge:var(--green-deep)}
+:is(.btn.bad,.actionbar.bad .in .btn:not(.ghost)):not(#_){--edge:var(--red-deep)}
+.btn:is([disabled],:disabled):not(#_){--dz0:0px}
+/* dark slabs: a darker band; by day they are pale steel and so is their band */
+:is(.today-hero,.talkhero,.chapter,.card.stopline,.card.tnext,.gfeat,.khead):not(#_){--edge:var(--slab-edge-dark);--face:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
+.gfeat:not(#_){--face:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}
+.card.tnext:not(#_){--face:inset 0 1px 0 rgba(255,255,255,.2)}
+/* rings and states */
+:is(.lv.ready,.examcard):not(#_){--face:inset 0 1px 0 var(--slab-lit),inset 0 0 0 2px var(--magenta)}
+.lv.passed:not(#_){--face:inset 0 1px 0 var(--slab-lit),inset 0 0 0 2px var(--green)}
+.card.ok-edge:not(#_){--face:inset 0 0 0 2px var(--green)} .card.bad-edge:not(#_){--face:inset 0 0 0 2px var(--red)}
+:is(.mode,.scen,.btile):hover:not(#_){--face:inset 0 0 0 1.5px var(--steel),inset 0 1px 0 var(--slab-lit)}
+.btn:is(.ghost,.quiet):hover:not(#_){--face:inset 0 0 0 1.5px var(--steel),inset 0 1px 0 var(--glass-hi)}
+/* the press: the block sinks into its thickness, so its far edge and the ground stay put. translate, not transform,
+   so it also works on the screen's slabs while their rise animation holds transform */
+:is(button:is(.card,.mode,.scen,.btile,.lv,.gfeat),.btn){transition:--dz .15s var(--ease),translate .15s var(--ease),filter .2s,background .25s,color .25s}
+:is(button:is(.card,.mode,.scen,.btile,.lv,.gfeat),.btn):not(:disabled):active:not(#_){--dz:1px;translate:calc(var(--dz0) - 1px) calc(var(--dz0) - 1px)}
+.btn:is(.ghost,.quiet):not(:disabled):active:not(#_){--dz:0px;translate:var(--dz0) var(--dz0)}
+@media (prefers-reduced-motion:reduce){
+  :is(button:is(.card,.mode,.scen,.btile,.lv,.gfeat),.btn){transition:filter .2s,background .25s,color .25s}
+}
