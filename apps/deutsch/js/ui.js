@@ -516,28 +516,49 @@ function startReview(items) { // every 3rd recognition card with interval ≥7 b
     return kind === 'r' ? it : Object.assign({}, it, { kind }); });
   PR = { queue: q, done: 0, total: q.length, stats: { n: 0, good: 0, missed: [], t0: Date.now() } }; REVIEW_SUMMARY = null; route = 'practice'; NAV = 'fwd'; render();
 }
+/* what Protoa says above each kind of card, German first */
+const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?'], li: ['Hör mal. Welches Wort ist das?', 'Listen. Type the word you hear.'], ls: ['Hör gut zu. Schreib den Satz.', 'Listen. Type the sentence you hear.'],
+  p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'Pick the meaning.'],
+  gap: ['Welches Wort fehlt?', 'Which word is missing?'], order: ['Bau den Satz.', 'Put the words in German order.'], trans: ['Sag es auf Deutsch.', 'Say it in German.'] };
+/* the Leitner box a card sits in, from its interval in days: 1 new or missed, 5 a month or more */
+const rvBox = r => { const iv = r ? r[1] : 0; return iv < 2 ? 1 : iv < 7 ? 2 : iv < 14 ? 3 : iv < 30 ? 4 : 5; };
 function renderReview(v) {
   const it = PR.queue[0]; if (!it) { const stop = PR.stop; PR = null; if (stop) { S.progress.reviewStops = [...new Set([...(S.progress.reviewStops || []), stop])]; save('progress'); route = 'learn'; toast('Wiederholung done'); } NAV = 'fade'; render(); return; }
   const def = it.c.sent ? null : wordDef(it.id); const card = h('div', { class: 'card stack' });
   if (['gap', 'order', 'trans'].includes(it.kind) && !(def && def.ex && def.exEn && /\[[^\]]+\]/.test(def.ex))) it.kind = 'r';
   if (it.kind === 'mc' && !def) it.kind = 'r';
-  v.append(h('div', { class: 'lesson-top rv-top' }, h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, reviewTitle()), h('span', { class: 'lbl' }, `${PR.done + 1} / ${PR.total}`))),
+  // Night Glass (screens/7-review.jpg): close, title and count on the stage, one segment per card, then Protoa's line in German and English
+  const say = RV_SAY[it.kind] || RV_SAY.r, n = Math.min(PR.done + 1, PR.total);
+  const progress = PR.total <= 24 ? h('div', { class: 'rv-segs', 'aria-hidden': 'true', style: `grid-template-columns:repeat(${PR.total},1fr)` }, ...Array.from({ length: PR.total }, (_, i) => h('i', { class: i < PR.done ? 'done' : i === PR.done ? 'now' : '' })))
+    : h('div', { class: 'bar' }, h('i', { style: `width:${Math.round(100 * PR.done / Math.max(1, PR.total))}%` }));
+  v.append(h('div', { class: 'lesson-top rv-top' },
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Stop reviewing', html: ICONS.x, onclick: () => { const back = PR && PR.stop; PR = null; if (back) route = 'learn'; NAV = 'fade'; render(); } }),
-    h('div', { class: 'bar' }, h('i', { style: `width:${Math.round(100 * PR.done / Math.max(1, PR.total))}%` }))));
-  v.append(card);
-  const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false;
+    h('b', { class: 'rv-title', lang: 'de' }, reviewTitle()), h('span', { class: 'rv-count', 'aria-label': `Card ${n} of ${PR.total}` }, `${n} / ${PR.total}`), progress,
+    h('div', { class: 'rv-say' }, teacherSlot(44, 'neutral'), h('div', {}, h('b', { lang: 'de' }, say[0]), h('span', {}, say[1])))));
+  card.classList.add('rv-card'); v.append(card);
+  const deck = it.kind === 'p' ? it.c.p : it.c.r, box = rvBox(deck);
+  const meta = () => h('div', { class: 'rv-meta' }, h('span', { lang: 'de' }, def && def.lesson ? 'Lektion ' + def.lesson + ' · ' + courseOf(def.lesson).station : it.c.sent ? 'Gespräch' : 'Deine Wörter'), h('span', { lang: 'de' }, 'Fach ' + box));
+  v.append(h('div', { class: 'rv-boxes', role: 'img', 'aria-label': `Box ${box} of 5. You know ${learnedCount()} words.` }, h('span', { lang: 'de' }, 'Fach 1–5'),
+    h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', { lang: 'de' }, learnedCount() + ' Wörter')));
+  const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null;
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
   const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
   const bare = def ? it.id.replace(/^(der|die|das) /, '') : '';
   const exRow = () => def && def.ex ? h('div', { class: 'row' }, glossEl(def.ex.replace(/[\[\]]/g, ''), def.exG || null), playBtn(def.ex.replace(/[\[\]]/g, ''))) : '';
   if (it.kind === 'r' || it.kind === 'li' || it.kind === 'ls') {
     const sentence = def && def.ex ? def.ex.replace(/[\[\]]/g, '') : bare; const heard = it.kind === 'ls' ? sentence : bare;
-    if (it.kind === 'r') { const head = h('div', { class: 'wcard' }); if (def && def.pic && PICS[def.pic]) { const i = h('div', { class: 'illus' }); i.innerHTML = PICS[def.pic]; head.append(i); } head.append(h('div', { class: 'de' }, artEl(it.id)), playBtn(bare)); card.append(h('div', { class: 'eyebrow' }, 'What does it mean?'), head); }
-    else { card.append(h('div', { class: 'eyebrow' }, it.kind === 'ls' ? 'Listening: type the sentence you hear' : 'Listening: type the word you hear'), h('div', { class: 'row', style: 'justify-content:center' }, h('button', { class: 'btn quiet', html: ICONS.play + ' Play again', onclick: () => speak(heard) }), h('button', { class: 'btn quiet sm', html: ICONS.slow + ' Slow', onclick: () => speak(heard, { rate: .7 }) }))); setTimeout(() => speak(heard), 300); }
+    if (it.kind === 'r') { // the flashcard: picture over a hazard stripe, lesson and box, the article in its colour, the word, its example
+      const pic = def && wordPic(def), m = it.id.match(/^(der|die|das) (.+)$/);
+      if (pic) { const f = h('div', { class: 'rv-pic' + (nightWord(def) ? ' photo' : ''), 'aria-hidden': 'true' }); f.innerHTML = pic; if (nightWord(def)) f.prepend(h('i', { class: 'haze', style: `background-image:url(art/night/words/${nightWord(def)}.jpg)` })); card.append(f); }
+      card.append(meta(), h('div', { class: 'rv-word' }, h('div', { class: 'grow' }, m ? h('span', { class: 'rv-art g-' + { der: 'm', die: 'f', das: 'n' }[m[1]], lang: 'de' }, m[1]) : '', h('div', { class: 'rv-de', lang: 'de' }, m ? m[2] : it.id)), playBtn(bare, 'Play', 'rv-play')));
+      if (def && (def.ipa || TYPE_LABEL[def.type])) card.append(h('div', { class: 'rv-ipa' }, [def.ipa ? '[' + def.ipa + ']' : '', TYPE_LABEL[def.type] || ''].filter(Boolean).join(' · ')));
+      if (def && def.ex) { const de = def.ex.replace(/[\[\]]/g, ''), en = h('span', { class: 'en' }, 'Tap to hear it'); const ex = h('button', { class: 'rv-ex', 'aria-label': 'Play the example: ' + de, onclick: () => speak(de, { el: ex.firstChild }) }, h('span', { lang: 'de' }, de), en); card.append(ex); reveal = () => { en.textContent = def.exEn || ''; ex.classList.add('open'); }; }
+    }
+    else { card.append(meta(), h('div', { class: 'row', style: 'justify-content:center' }, h('button', { class: 'btn quiet', html: ICONS.play + ' Play again', onclick: () => speak(heard) }), h('button', { class: 'btn quiet sm', html: ICONS.slow + ' Slow', onclick: () => speak(heard, { rate: .7 }) }))); setTimeout(() => speak(heard), 300); }
     const inp = it.kind === 'r' ? h('input', { type: 'text', placeholder: 'in English', 'aria-label': 'English meaning', autocomplete: 'off' }) : deInput({ placeholder: 'in German', 'aria-label': 'What you heard' });
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return; fb.innerHTML = '';
-      if (it.kind === 'r') { result = checkEnglish(a, def ? def.en : []); if (result.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ ' + esc(def.en.join(', ')) + (result.note ? ' — ' + esc(result.note) : '')); } else { uiSound('bad'); fb.append(exRow()); showGrades(0, 'bad', '<em lang="de">' + esc(it.id) + '</em> = ' + esc(def ? def.en.join(', ') : '?')); } }
+      if (it.kind === 'r') { result = checkEnglish(a, def ? def.en : []); if (reveal) reveal(); if (result.ok) { uiSound('ok'); if (!reveal) fb.append(exRow()); showGrades(2, 'ok', '✓ ' + esc(def.en.join(', ')) + (result.note ? ' — ' + esc(result.note) : '')); } else { uiSound('bad'); if (!reveal) fb.append(exRow()); showGrades(0, 'bad', '<em lang="de">' + esc(it.id) + '</em> = ' + esc(def ? def.en.join(', ') : '?')); } }
       else { const target = it.kind === 'ls' ? sentence : it.id; const r = diagnose(a, target, mergedLex({}), def ? def.exG : null, it.kind === 'ls' ? [] : [bare]); result = r; if (r.ok) { uiSound('ok'); fb.append(exRow()); showGrades(2, 'ok', '✓ <em lang="de">' + esc(target) + '</em> — ' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + (r.note ? ' ' + r.note : '')); } else { uiSound('bad', r); fb.append(exRow()); showGrades(0, 'bad', 'It was <em lang="de">' + esc(target) + '</em> (' + esc(def ? (it.kind === 'ls' ? def.exEn : def.en.join(', ')) : '') + ').'); } }
     };
     card.append(inp, it.kind === 'r' ? '' : h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, check)), fb); setTimeout(() => inp.focus(), 50);
@@ -545,7 +566,7 @@ function renderReview(v) {
   } else if (['mc', 'gap', 'order', 'trans'].includes(it.kind)) {
     renderDrill(card, it, def, fb, showGrades, exRow);
   } else if (it.kind === 'p') {
-    card.append(h('div', { class: 'eyebrow' }, 'Say it in German'), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
+    card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
     const w = typeWidget({ placeholder: 'auf Deutsch', 'aria-label': 'German word' }, () => check()); const inp = w.inputs[0];
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return; const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
