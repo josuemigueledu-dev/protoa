@@ -255,6 +255,7 @@ const SCENARIOS = [
   { id: 'wohnung', title: 'Meine Wohnung', en: 'Describe where you live', icon: 'key', n: 8, brief: 'Over coffee you ask the student about their flat or house: how big it is, the rooms, what is nice, the city they live in.', open: 'Erzählen Sie mal: Wo wohnen Sie?', openG: 'Erzählen Sie mal:=tell me | Wo=where | wohnen=live | Sie?=you (formal)', openEn: 'Tell me: where do you live?' },
   { id: 'tag', title: 'Mein Tag', en: 'Talk about your day', icon: 'clock', n: 3, brief: 'Chat about what the student does today, what they are learning, what they like to eat and drink.', open: 'Und, was machen Sie heute?', openG: 'Und,=so | was=what | machen=are doing | Sie=you (formal) | heute?=today', openEn: 'So, what are you doing today?' },
 ];
+const TALK_SCENE = { kennen: 'classroom', cafe: 'cafe', wohnung: 'flat', tag: 'neukoelln' };
 let TALK = null;
 function talkActive() { return route === 'talk' && TALK && TALK.active; }
 function renderTalk(v) {
@@ -262,7 +263,8 @@ function renderTalk(v) {
   if (TALK && TALK.summary) { renderTalkSummary(v); return; }
   v.append(h('div', { class: 'talkhero' }, teacherSlot(72, 'pleased'), h('div', { class: 'grow' }, h('h1', { lang: 'de' }, 'Sprechen'), h('p', {}, 'A real conversation with Protoa at your level. Every line you write is corrected, and the replies keep to the words you know.'))));
   if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen needs Claude'), h('p', { class: 'faint' }, 'Protoa\'s replies and corrections are written by Claude, through the Protoa server. It is not reachable right now, so this section stays closed.')));
-  v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen', disabled: !S.ai, onclick: () => startTalk(sc) }, sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
+  // Night Glass: each scenario shows the painted place it happens in
+  v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen' + (TALK_SCENE[sc.id] ? ' pic' : ''), disabled: !S.ai, onclick: () => startTalk(sc) }, TALK_SCENE[sc.id] ? h('span', { class: 'scpic', 'aria-hidden': 'true', style: `background-image:url(art/night/scenes/${TALK_SCENE[sc.id]}.jpg)` }) : sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
   const hist = (S.progress.talks || []).slice(-5).reverse();
   if (hist.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Recent conversations'), ...hist.map(t => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { lang: 'de' }, t.title), h('span', { class: 'faint' }, `${t.date} · ${t.turns} lines · ${t.fixes} corrected`)))));
 }
@@ -275,9 +277,10 @@ function renderTalkChat(v) {
   const T = TALK, sc = T.sc;
   v.append(h('div', { class: 'lesson-top' }, h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, sc.title), h('span', {}, 'Sprechen · ' + T.turns + ' of ~10 lines'))),
     h('button', { class: 'icon-btn sm close', 'aria-label': 'End conversation', html: ICONS.x, onclick: () => endTalk() }), h('div', { class: 'segs', style: 'grid-template-columns:1fr' }, h('i', {}, h('b', { style: `width:${Math.min(100, T.turns * 10)}%` })))));
+  if (TALK_SCENE[sc.id]) v.append(h('div', { class: 'talkband', role: 'img', 'aria-label': sc.en, style: `background-image:url(art/night/scenes/${TALK_SCENE[sc.id]}.jpg)` }, h('span', { lang: 'de' }, sc.title)));
   const log = h('div', { class: 'chatlog', role: 'log', 'aria-live': 'polite' }); v.append(log);
   const bubble = m => {
-    if (m.who === 'w') { const ul = m.g ? glossEl(m.de, m.g) : glossEl(m.de, null); const box = h('div', { class: 'box' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play', html: ICONS.play, onclick: () => { Voice.mood(m.mood || 'neutral'); speak(m.de, { el: ul }); } }))); const en = h('div', { class: 'en-after', hidden: true }, m.en || ''); box.append(en, h('button', { class: 'faint', style: 'font-size:var(--t-cap);text-decoration:underline', onclick: e => { en.hidden = false; e.currentTarget.remove(); } }, 'show English')); return h('div', { class: 'bub w' }, box); }
+    if (m.who === 'w') { const ul = m.g ? glossEl(m.de, m.g) : glossEl(m.de, null); const box = h('div', { class: 'box' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play', html: ICONS.play, onclick: () => { Voice.mood(m.mood || 'neutral'); speak(m.de, { el: ul }); } }))); const en = h('div', { class: 'en-after', hidden: true }, m.en || ''); box.append(en, h('button', { class: 'faint', style: 'font-size:var(--t-cap);text-decoration:underline', onclick: e => { en.hidden = false; e.currentTarget.remove(); } }, 'show English')); return h('div', { class: 'bub w' }, h('span', { class: 'pface', 'aria-hidden': 'true' }, h('img', { src: 'art/night/orb.png', alt: '' })), box); }
     const wrap = h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'bub l' + (m.corr && m.corr.ok ? ' done' : '') }, h('div', { class: 'box' }, h('span', { lang: 'de', style: 'font-family:var(--display);font-weight:700' }, m.de))));
     if (m.corr) { if (m.corr.ok) wrap.append(h('div', { class: 'fb ok corr' }, '✓ ' + (m.corr.note || 'Verständlich und richtig.'))); else { const c = h('div', { class: 'fb note corr', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, h('b', {}, 'Better: '), h('span', { lang: 'de', style: 'font-family:var(--display);font-weight:800' }, m.corr.corrected || '')), m.corr.note ? h('div', {}, m.corr.note) : ''); wrap.append(c); } }
     return wrap;
