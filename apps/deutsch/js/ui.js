@@ -50,18 +50,21 @@ function leave(old, dir, keepTop) {
 let renderedDay = null; // the day the screen on show was drawn for (screens.js redraws it when a new day starts)
 /* the old screen starts leaving first, and the new one is built a frame later: building a screen takes the phone a
    moment, and the leaving slabs keep moving on their own layers meanwhile instead of standing still and then jumping */
-let drawTok = null;
+let drawTok = null, drawing = false;
 function lessonMode() { return !!((route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam'); }
 function render() {
   const dir = DIRS[NAV], old = view.querySelector(':scope > .view:not(.leaving)'), tok = drawTok = {};
-  if (dir && old && old.animate && !reduced()) {
+  // a screen that moves straight on while it is being drawn (past the last word to the check, past the last build item
+  // to the conversation) is drawn at once in its place: leaving the half-built one would cut the old screen's slabs short
+  if (dir && old && old.animate && !reduced() && !drawing) {
     leave(old, dir, document.body.classList.contains('in-lesson') && lessonMode());
     requestAnimationFrame(() => requestAnimationFrame(() => { if (drawTok === tok) draw(); }));
     return;
   }
   draw();
 }
-function draw() {
+function draw() { const was = drawing; drawing = true; try { drawScreen(); } finally { drawing = was; } }
+function drawScreen() {
   renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
   const inLesson = lessonMode();
   document.body.classList.toggle('in-lesson', !!inLesson);
