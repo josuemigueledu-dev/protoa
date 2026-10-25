@@ -203,7 +203,7 @@ function dueCards() {
 function actionBar(opts) {
   document.querySelector('.actionbar')?.remove();
   const bar = h('div', { class: 'actionbar ' + (opts.state || '') });
-  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig.' : opts.state === 'bad' ? 'Nicht ganz' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
+  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig.' : opts.state === 'bad' ? 'Nicht ganz.' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
   const inner = h('div', { class: 'in' }); (opts.buttons || []).forEach(b => inner.append(b)); bar.append(inner); document.body.append(bar); return bar;
 }
 
@@ -809,7 +809,7 @@ function renderSettings(v) {
 /* ---------- Onboarding (§5) ---------- */
 function onboarding() {
   const p = S.profile; const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'About you' }); const inner = h('div', { class: 'in' });
-  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', {}, 'Guten Tag. Ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
+  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
   const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
   const close = saveIt => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); render(); };

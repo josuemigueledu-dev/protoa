@@ -267,7 +267,7 @@ function renderTalk(v) {
   if (TALK && TALK.active) { renderTalkChat(v); return; }
   if (TALK && TALK.summary) { renderTalkSummary(v); return; }
   v.append(h('div', { class: 'talkhero' }, teacherSlot(72, 'pleased'), h('div', { class: 'grow' }, h('h1', { lang: 'de' }, 'Sprechen'), h('p', {}, 'A real conversation with Protoa at your level. Every line you write is corrected, and the replies keep to the words you know.'))));
-  if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen is closed for now'), h('p', { class: 'faint' }, 'Protoa’s replies and corrections are written by Claude, through the Protoa server, which is not reachable right now. Lessons and Practice work as usual.')));
+  if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen is closed for now'), h('p', { class: 'faint' }, 'Protoa’s AI writes the replies and corrections here, and it is not reachable right now. Lessons and Practice work as usual.')));
   // Night Glass: each scenario shows the painted place it happens in
   v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen' + (TALK_SCENE[sc.id] ? ' pic' : ''), disabled: !S.ai, onclick: () => startTalk(sc) }, TALK_SCENE[sc.id] ? h('span', { class: 'scpic', 'aria-hidden': 'true', style: `background-image:url(art/night/scenes/${TALK_SCENE[sc.id]}.jpg)` }) : sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
   const hist = (S.progress.talks || []).slice(-5).reverse();
@@ -340,7 +340,7 @@ function endTalk() {
 }
 function renderTalkSummary(v) {
   const T = TALK; document.body.classList.add('in-lesson');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke für das Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. ${T.turns} lines in German about "${T.sc.en.toLowerCase()}". ${T.fixes.length ? T.fixes.length + ' of them got a correction.' : 'No corrections needed.'}`)));
+  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke fürs Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. ${T.turns} lines in German about "${T.sc.en.toLowerCase()}". ${T.fixes.length ? T.fixes.length + ' of them got a correction.' : 'No corrections needed.'}`)));
   if (T.fixes.length) {
     const card = h('div', { class: 'card stack' }, h('h2', {}, 'Your corrected lines'));
     T.fixes.forEach(f => card.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'faint', lang: 'de', style: 'text-decoration:line-through' }, f.said), h('div', { class: 'row' }, glossEl(f.de, null), playBtn(f.de)), f.note ? h('div', { class: 'faint' }, f.note) : '')));
