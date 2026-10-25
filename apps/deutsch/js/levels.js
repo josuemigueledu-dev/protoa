@@ -272,7 +272,7 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
     const toks = ex.split(/\s+/); const extra = shuffle(V1_WORDS.filter(w => w.type !== 'phrase' && !toks.map(fold).includes(fold(w.de)))).slice(0, 1).map(w => w.de.replace(/^(der|die|das) /, ''));
     const tw = tilesWidget(toks, extra, () => { });
     card.append(h('div', { class: 'eyebrow' }, 'Build the sentence'), h('p', {}, h('b', {}, def.exEn)), tw.el, fb);
-    const check = () => { if (done) return; const a = tw.value(); if (!a) return; done = true; tw.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : esc(stripTags(r.hint)) + ' The sentence is <em lang="de">' + esc(ex) + '</em>.'); };
+    const check = () => { if (done) return; const a = tw.value(); if (!a) return; done = true; tw.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : esc(stripTags(r.hint)) + ' The sentence is <em lang="de">' + esc(ex) + '</em>' + fullStop(ex)); };
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
     return;
   }
