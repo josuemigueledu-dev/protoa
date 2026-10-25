@@ -106,7 +106,9 @@ function renderMap(v) {
   // scroll just far enough that your stop clears the tab bar (the head stays in view when it can); a pill brings it back
   const floor = () => window.innerHeight - (document.body.classList.contains('lay-mobile') ? 128 : 40);   // phones: clear the tab bar
   const focusY = () => { const b = nowEl.getBoundingClientRect(), y = PANE.scrollTop - PANE.getBoundingClientRect().top; return Math.min(b.top + y - 96, b.bottom + y - floor()); };
-  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) PANE.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); });
+  // phones: and no face is left half under the tab bar; scroll on until it is whole
+  const wholeFaces = () => { if (!document.body.classList.contains('lay-mobile')) return; const bar = tabsEl.getBoundingClientRect().top, cut = [...list.querySelectorAll('.bust')].map(b => b.getBoundingClientRect()).find(r => r.top < bar && r.bottom > bar); if (cut) PANE.scrollTop += cut.bottom - bar + 8; };
+  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) { PANE.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); wholeFaces(); } });
   if (nowEl && 'IntersectionObserver' in window) {
     const pill = h('button', { class: 'weiter', hidden: true, onclick: () => PANE.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
     document.body.append(pill);
