@@ -192,7 +192,8 @@ test('each lesson file holds the lesson its name says', () => {
 
 // lesson-experience.md §2: never test what wasn't taught. Every German word the
 // learner must choose or produce (build tiles, gap answers and distractors, the
-// learner's own conversation lines) was introduced in this lesson or an earlier one.
+// learner's own conversation lines) was introduced in this lesson or an earlier one:
+// as a word, or in a notice line (the glossed pattern the lesson opens with, e.g. einen in lesson 14).
 // Lessons on this list still break the rule and wait for the story agent's rework;
 // remove a number when its lesson is fixed (a stale entry fails the test).
 const NOT_YET_REWORKED = new Set([]);
@@ -203,6 +204,7 @@ const tokens = s => String(s).toLowerCase().replace(/\{(\w+)\}/g, '$1').split(/[
 function untaught(upTo) {
   const known = new Set(NAMES);
   for (const L of lessons.filter(l => l.n <= upTo.n)) {
+    for (const t of tokens(L.notice?.de ?? '')) known.add(t);
     for (const w of L.words) {
       for (const t of tokens(w.de)) known.add(t);
       for (const t of tokens(w.pl ?? '')) known.add(t);
