@@ -14,7 +14,7 @@ LESSONS.push({
   warmup: ['wer', 'wann', 'warum', 'die Frage'],
   twist: { at: 8, event: 'event.phone', mood: 'surprised' },
   words: [
-    { de: 'Das stimmt', en: ['that is right', 'that is correct'], type: 'phrase', ipa: 'das ʃtɪmt', resp: 'dahss SHTIMT', syl: 'Das stimmt', ex: 'Ana kommt aus Mexiko. [Das stimmt].', exEn: 'Ana comes from Mexico. That is right.', exG: 'Ana=Ana | kommt=comes | aus=from | Mexiko.=Mexico | Das stimmt.=that is right' },
+    { de: 'Das stimmt', en: ['that is right', 'that is correct'], type: 'phrase', parts: 'das (that) + stimmt (is right)', ipa: 'das ʃtɪmt', resp: 'dahss SHTIMT', syl: 'Das stimmt', ex: 'Ana kommt aus Mexiko. [Das stimmt].', exEn: 'Ana comes from Mexico. That is right.', exG: 'Ana=Ana | kommt=comes | aus=from | Mexiko.=Mexico | Das stimmt.=that is right' },
     { de: 'richtig', en: ['right', 'correct'], type: 'adj', ipa: 'ˈʁɪçtɪç', resp: 'RIKH·tikh', syl: 'rich·tig', ex: 'Die Antwort ist [richtig].', exEn: 'The answer is right.', exG: 'Die=the | Antwort=answer | ist=is | richtig.=right' },
     { de: 'falsch', en: ['wrong'], type: 'adj', ipa: 'falʃ', resp: 'FALSH', syl: 'falsch', ex: 'Das Wort ist [falsch].', exEn: 'The word is wrong.', exG: 'Das=the | Wort=word | ist=is | falsch.=wrong' },
     { de: 'genau', en: ['exactly'], type: 'adv', ipa: 'ɡəˈnaʊ̯', resp: 'guh·NOW', syl: 'ge·nau', ex: 'Lena kommt aus Rom? [Genau].', exEn: 'Lena comes from Rome? Exactly.', exG: 'Lena=Lena | kommt=comes | aus=from | Rom?=Rome | Genau.=exactly' },
