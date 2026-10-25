@@ -72,6 +72,6 @@ GRAMMAR.push({ id: 'num', title: 'Numbers 0–10', lesson: 9,
     drills: [
       { q: 'Write the number: sieben', a: ['7'], en: 'seven' },
       { q: 'Wir sind ___. (7)', a: ['sieben'], en: 'There are seven of us.' },
-      { q: 'Raum 2.04 reads: zwei ___ vier.', a: ['null'], en: 'Room two zero four.' },
+      { q: 'Raum 2.04: zwei ___ vier.', a: ['null'], en: 'Room two zero four.' },
       { q: 'Ich lerne ___ Wörter. (10)', a: ['zehn'], en: 'I am learning ten words.' },
       { q: 'Write the word: 8', a: ['acht'], en: 'eight' } ] });

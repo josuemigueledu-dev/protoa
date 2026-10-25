@@ -625,7 +625,9 @@ function countUp(el, n) { if (reduced() || n === 0) { el.textContent = n; return
 
 /* ---------- PRACTICE: reviews + word bank ---------- */
 let PR = null; // review session
-function reviewTitle() { const q = PR.queue, k = q[0] && q[0].kind; const T = { mc: 'Word meanings', gap: 'Fill the gaps', order: 'Build sentences', trans: 'Translate to German', li: 'Listening', ls: 'Say it in German', sent: 'Conversation lines' }; return PR.stop ? 'Wiederholung' : (k && q.every(x => x.extra && x.kind === k) && T[k]) || 'Daily review'; }
+/* a session is titled by the Practice mode that started it, so the header matches the button the learner tapped */
+const DRILL_TITLE = { mc: 'Word meanings', gap: 'Fill the gaps', order: 'Build sentences', trans: 'Translate' };
+function reviewTitle() { return PR.stop ? 'Wiederholung' : PR.title || 'Daily review'; }
 function renderPractice(v) {
   if (PR && PR.queue.length) { renderReview(v); return; }
   renderPracticeHub(v);
@@ -636,17 +638,19 @@ function finishReviewSession() {
   REVIEW_SUMMARY = Object.assign({ stop }, stats); route = 'practice'; NAV = 'fwd'; render();
 }
 function summarize(due) { const k = {}; due.forEach(d => k[d.kind] = (k[d.kind] || 0) + 1); return Object.entries(k).map(([t, n]) => n + ' ' + ({ r: 'word → meaning', p: 'meaning → word', sent: 'conversation line', li: 'listening' }[t])).join(', ') + '.'; }
-function startReview(items) { // every 3rd recognition card with interval ≥7 becomes a listening card (word or its sentence)
+function startReview(items, title) { // every 3rd recognition card with interval ≥7 becomes a listening card (word or its sentence)
   // daily reviews mix in every exercise type once a word is settling in (interval in days): listening ≥7, gap ≥4, sentence order ≥7, translation ≥10
   const q = shuffle(items).map((it, i) => { if (it.kind !== 'r' || !it.c.r || it.extra) return it; const iv = it.c.r[1], k = i % 6;
     const kind = iv >= 10 && k === 5 ? 'trans' : iv >= 7 && k === 4 ? 'order' : iv >= 4 && k === 2 ? 'gap' : iv >= 7 && k === 0 ? (i % 2 ? 'li' : 'ls') : iv < 4 && k === 3 ? 'mc' : 'r';
     return kind === 'r' ? it : Object.assign({}, it, { kind }); });
-  PR = { queue: q, done: 0, total: q.length, stats: { n: 0, good: 0, missed: [], t0: Date.now() } }; REVIEW_SUMMARY = null; route = 'practice'; NAV = 'fwd'; render();
+  PR = { queue: q, done: 0, total: q.length, title, stats: { n: 0, good: 0, missed: [], t0: Date.now() } }; REVIEW_SUMMARY = null; route = 'practice'; NAV = 'fwd'; render();
 }
 /* what Protoa says above each kind of card, German first */
 const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?'], li: ['Hör mal. Welches Wort ist das?', 'Listen. Which word is it?'], ls: ['Hör gut zu. Schreib den Satz.', 'Listen closely. Write the sentence.'],
   p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'What does it mean?'],
   gap: ['Welches Wort fehlt?', 'Which word is missing?'], order: ['Bau den Satz.', 'Build the sentence.'], trans: ['Sag es auf Deutsch.', 'Say it in German.'] };
+/* diagnose() kinds whose hint teaches something after the answer is shown; the others only point at the answer */
+const MISS_TEACHES = ['gender', 'case', 'verb', 'sep', 'related'];
 /* the Leitner box a card sits in, from its interval in days: 1 new or missed, 5 a month or more */
 const rvBox = r => { const iv = r ? r[1] : 0; return iv < 2 ? 1 : iv < 7 ? 2 : iv < 14 ? 3 : iv < 30 ? 4 : 5; };
 function renderReview(v) {
@@ -660,7 +664,7 @@ function renderReview(v) {
     : h('div', { class: 'bar' }, h('i', { style: `width:${Math.round(100 * PR.done / Math.max(1, PR.total))}%` }));
   v.append(h('div', { class: 'lesson-top rv-top' },
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Stop reviewing', html: ICONS.x, onclick: () => { const back = PR && PR.stop; PR = null; if (back) route = 'learn'; NAV = 'down'; render(); } }),
-    h('b', { class: 'rv-title', lang: 'de' }, reviewTitle()), h('span', { class: 'rv-count', 'aria-label': `Card ${n} of ${PR.total}` }, `${n} / ${PR.total}`), progress,
+    h('b', PR.stop ? { class: 'rv-title', lang: 'de' } : { class: 'rv-title' }, reviewTitle()), h('span', { class: 'rv-count', 'aria-label': `Card ${n} of ${PR.total}` }, `${n} / ${PR.total}`), progress,
     h('div', { class: 'rv-say' }, teacherSlot(44, 'neutral'), h('div', {}, h('b', { lang: 'de' }, say[0]), h('span', {}, say[1])))));
   card.classList.add('rv-card'); v.append(card);
   const deck = it.kind === 'p' ? it.c.p : it.c.r, box = rvBox(deck);
@@ -698,7 +702,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return; const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
       if (r.ok) { uiSound('ok'); const noArt = def.type === 'n' && !/^(der|die|das)\b/i.test(a); showGrades(noArt ? 1 : 2, 'ok', '✓ <em lang="de">' + esc(it.id) + '</em>' + (noArt ? ' — say the article with it: ' + { m: 'der', f: 'die', n: 'das' }[def.g] : '') + (r.note ? ' ' + r.note : '')); }
-      else { uiSound('bad', r); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>. ' + (r.hint || '')); }
+      else { uiSound('bad', r); speak(bare); showGrades(0, 'bad', 'It is <em lang="de">' + esc(it.id) + '</em>.' + (MISS_TEACHES.includes(r.kind) ? ' ' + r.hint : '')); }
     };
     card.append(w.el, fb); setTimeout(() => inp.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   } else { // conversation line with the help ladder
@@ -748,6 +752,13 @@ function wordBank() {
 }
 
 /* ---------- GRAMMAR ---------- */
+/* a missed drill shows the whole line with the answer in bold, the phrase the learner will actually say */
+function drillMiss(d) {
+  const a = d.a[0], stop = x => /[.?!]$/.test(x) ? '' : '.';
+  if (!d.q.includes('___')) return 'Nicht ganz. The answer is <em lang="de">' + esc(a) + '</em>' + stop(a);
+  const line = d.q.replace(/\s*\([^)]*\)\s*$/, '');
+  return 'Nicht ganz. ' + (/[.?!]$/.test(line) ? 'The line is' : 'It is') + ' <em lang="de">' + esc(line).replace('___', '<b>' + esc(a) + '</b>') + '</em>' + stop(line);
+}
 function renderGrammar(v, openId) {
   if (!v) { route = 'grammar'; renderTabs(); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); v = newView(); }
   if (openId) { const u = GRAMMAR.find(g => g.id === openId); if (u) { grammarUnit(v, u); return; } }
@@ -769,7 +780,7 @@ function grammarUnit(v, u) {
   const c = h('div', { class: 'card stack', html: u.body }); if (u.table) { const g = h('div', { class: 'conj' }); u.table.forEach(([p, f]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, f)))); c.append(g); } v.append(c);
   const ex = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Examples')); u.examples.forEach(e => { const ul = glossEl(e.de, e.g); ex.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', html: ICONS.play, 'aria-label': 'Play', onclick: () => speak(e.de, { el: ul }) })), h('div', { class: 'muted small' }, e.en))); }); v.append(ex);
   const dr = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Drills'));
-  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (d.a.some(x => fold(stripPunct(x).trim()) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓ Richtig.')); } else { uiSound('bad'); fb.append(fbEl('hint', 'Nicht ganz. The answer is <em lang="de">' + esc(d.a[0]) + '</em>')); } }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
+  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (d.a.some(x => fold(stripPunct(x).trim()) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓ Richtig.')); } else { uiSound('bad'); fb.append(fbEl('hint', drillMiss(d))); } }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
   v.append(dr);
 }
 

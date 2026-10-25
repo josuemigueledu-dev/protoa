@@ -242,7 +242,7 @@ function renderExamResult(v) {
     v.append(c); }
   const done = () => { EXAM_RESULT = null; route = R.passed ? 'learn' : 'practice'; NAV = 'fade'; render(); };
   const btns = [h('button', { class: 'btn', onclick: done }, R.passed ? 'Continue' : 'Practise my mistakes')];
-  if (!R.passed && R.missed.length) btns[0].onclick = () => { EXAM_RESULT = null; const items = R.missed.map(id => ({ id, sh: cardShard(id), c: cardOf(id), kind: 'r', extra: true })).filter(x => x.c); if (items.length) startReview(items); else done(); };
+  if (!R.passed && R.missed.length) btns[0].onclick = () => { EXAM_RESULT = null; const items = R.missed.map(id => ({ id, sh: cardShard(id), c: cardOf(id), kind: 'r', extra: true })).filter(x => x.c); if (items.length) startReview(items, 'Missed in the exam'); else done(); };
   actionBar({ buttons: btns });
 }
 
@@ -292,5 +292,5 @@ function drillPool(n, needEx) {
   const pick = [...new Map([...shuffle(weak).slice(0, Math.ceil(n / 4)), ...shuffle(newest).slice(0, Math.ceil(n / 2)), ...shuffle(all)].map(x => [x.id, x])).values()].slice(0, n);
   return shuffle(pick);
 }
-function drillSession(kind, n = 12) { const items = drillPool(n, kind !== 'mc').map(x => ({ id: x.id, sh: cardShard(x.id), c: x.c, kind, extra: true })); if (!items.length) { toast('Not enough words with example sentences yet.'); return; } startReview(items); }
+function drillSession(kind, n = 12) { const items = drillPool(n, kind !== 'mc').map(x => ({ id: x.id, sh: cardShard(x.id), c: x.c, kind, extra: true })); if (!items.length) { toast('Not enough words with example sentences yet.'); return; } startReview(items, DRILL_TITLE[kind]); }
 
