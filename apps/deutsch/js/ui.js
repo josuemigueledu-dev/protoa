@@ -604,7 +604,16 @@ function renderGrammar(v, openId) {
   if (!v) { route = 'grammar'; renderTabs(); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); v = newView(); }
   if (openId) { const u = GRAMMAR.find(g => g.id === openId); if (u) { grammarUnit(v, u); return; } }
   v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Short reference units, each with glossed examples and five drills. Lessons link here with "Show how it works"; nothing here is required.'));
-  const list = h('div', { class: 'stack' }); GRAMMAR.forEach(u => list.append(h('button', { class: 'card listrow', onclick: () => { const vv = newView(); grammarUnit(vv, u); } }, h('div', { class: 'grow' }, h('b', {}, u.title), h('div', { class: 'faint' }, u.stub ? 'Outline · full unit arrives with lesson ' + u.lesson : 'From lesson ' + u.lesson)), h('span', { class: 'muted' }, '›')))); v.append(list);
+  // Night Glass: the rule of the lesson you are on comes first, as a dark slab with its table
+  const open = u => { const vv = newView(); grammarUnit(vv, u); };
+  const cur = currentLessonN() || 1, done = new Set(S.progress.lessonsDone);
+  const feat = GRAMMAR.filter(u => !u.stub && u.lesson <= cur).sort((a, b) => b.lesson - a.lesson)[0];
+  if (feat) {
+    const f = h('button', { class: 'gfeat slab-dark', onclick: () => open(feat) }, h('span', { class: 'k' }, (feat.lesson === cur ? 'Today in lesson ' : 'From lesson ') + feat.lesson), h('b', { class: 't' }, feat.title));
+    if (feat.table) { const g = h('div', { class: 'conj' }); feat.table.forEach(([p, x]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, x)))); f.append(g); }
+    f.append(h('span', { class: 'go' }, 'Open the unit →')); v.append(f);
+  }
+  const list = h('div', { class: 'stack' }); GRAMMAR.forEach(u => list.append(h('button', { class: 'card listrow' + (u.stub ? ' soon' : ''), onclick: () => open(u) }, h('span', { class: 'gnum' + (done.has(u.lesson) ? ' done' : '') }, 'L' + u.lesson), h('div', { class: 'grow' }, h('b', {}, u.title), h('div', { class: 'faint' }, u.stub ? 'Outline · full unit arrives with lesson ' + u.lesson : done.has(u.lesson) ? 'From lesson ' + u.lesson + ' · done' : 'From lesson ' + u.lesson)), h('span', { class: 'muted' }, '›')))); v.append(list);
 }
 function grammarUnit(v, u) {
   v.append(h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => go('grammar') }, '‹ Grammar')), h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, u.title)));
