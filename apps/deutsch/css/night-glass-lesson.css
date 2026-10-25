@@ -40,9 +40,10 @@
     --line:rgba(17,21,27,.1); --line-2:rgba(17,21,27,.2); --bg-2:rgba(17,21,27,.06); --chip:rgba(255,255,255,.6); --card:rgba(255,255,255,.5);
     --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08); --rim:rgba(255,255,255,.7);
     --yellow-soft:rgba(44,74,116,.12); --blue:#2c5aa8; --green:#23804f; --red:#d81e6c;
+    --field:rgba(255,255,255,.7); --field-focus:var(--steel); --field-ph:#5d6673;
   }
   :root:not([data-theme="dark"]) #app::before{background:linear-gradient(180deg,var(--night) 0,var(--night) 210px,rgba(223,230,238,.6) 330px,rgba(223,230,238,0) 440px)}
-  :root:not([data-theme="dark"]) .actionbar,:root:not([data-theme="dark"]) .actionbar.ok,:root:not([data-theme="dark"]) .actionbar.bad{background:rgba(244,246,249,.97);box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
+  :root:not([data-theme="dark"]) .actionbar,:root:not([data-theme="dark"]) .actionbar.ok,:root:not([data-theme="dark"]) .actionbar.bad{background:#f4f6f9;box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
   :root:not([data-theme="dark"]) .actionbar.ok .msg .ttl,:root:not([data-theme="dark"]) .actionbar.ok .ico{color:var(--green)}
   :root:not([data-theme="dark"]) .actionbar.bad .msg .ttl,:root:not([data-theme="dark"]) .actionbar.bad .ico{color:var(--red)}
   :root:not([data-theme="dark"]) .actionbar.ok .in .btn:not(.ghost),:root:not([data-theme="dark"]) .actionbar.bad .in .btn:not(.ghost){background:var(--steel);color:#eef1f4}
@@ -56,9 +57,10 @@
   --line:rgba(17,21,27,.1); --line-2:rgba(17,21,27,.2); --bg-2:rgba(17,21,27,.06); --chip:rgba(255,255,255,.6); --card:rgba(255,255,255,.5);
   --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08); --rim:rgba(255,255,255,.7);
   --yellow-soft:rgba(44,74,116,.12); --blue:#2c5aa8; --green:#23804f; --red:#d81e6c;
+  --field:rgba(255,255,255,.7); --field-focus:var(--steel); --field-ph:#5d6673;
 }
 :root[data-theme="light"] #app::before{background:linear-gradient(180deg,var(--night) 0,var(--night) 210px,rgba(223,230,238,.6) 330px,rgba(223,230,238,0) 440px)}
-:root[data-theme="light"] .actionbar,:root[data-theme="light"] .actionbar.ok,:root[data-theme="light"] .actionbar.bad{background:rgba(244,246,249,.97);box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
+:root[data-theme="light"] .actionbar,:root[data-theme="light"] .actionbar.ok,:root[data-theme="light"] .actionbar.bad{background:#f4f6f9;box-shadow:inset 0 1px 0 rgba(17,21,27,.08)}
 :root[data-theme="light"] .actionbar.ok .msg .ttl,:root[data-theme="light"] .actionbar.ok .ico{color:var(--green)}
 :root[data-theme="light"] .actionbar.bad .msg .ttl,:root[data-theme="light"] .actionbar.bad .ico{color:var(--red)}
 :root[data-theme="light"] .actionbar.ok .in .btn:not(.ghost),:root[data-theme="light"] .actionbar.bad .in .btn:not(.ghost){background:var(--steel);color:#eef1f4}

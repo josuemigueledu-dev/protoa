@@ -73,6 +73,7 @@
   --bg-2:rgba(238,241,244,.08); --chip:rgba(238,241,244,.1); --card:rgba(238,241,244,.08);
   --glass-hi:rgba(255,255,255,.12); --glass-edge:rgba(255,255,255,.07); --rim:rgba(255,255,255,.14);
   --yellow-soft:rgba(143,180,220,.16); --blue:#8fb4dc; --green:#5fd39a; --red:#ff5c9e;
+  --field:rgba(238,241,244,.1); --field-focus:var(--pale); --field-ph:var(--ngrey);
   color:var(--ink);
 }
 /* an intro line right under a page title still sits on the navy stage */
@@ -188,8 +189,10 @@ h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .btn.go::after{content:"→";width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:var(--r-xs);background:var(--nink);color:var(--steel);font-size:18px}
 
 /* ---------- inputs ---------- */
-input[type=text],input[type=number],input[type=date],select,textarea{background:rgba(255,255,255,.5);border:1px solid var(--line-2);border-radius:var(--r);box-shadow:none;font-family:var(--text);font-weight:400}
-input:focus,select:focus,textarea:focus{border-color:var(--steel);box-shadow:0 0 0 3px var(--yellow-soft)}
+/* a field on a dark surface is a darker well, not a pale grey box that looks switched off */
+input[type=text],input[type=number],input[type=date],select,textarea{background:var(--field,rgba(255,255,255,.5));border:1px solid var(--line-2);border-radius:var(--r);box-shadow:none;font-family:var(--text);font-weight:400}
+input::placeholder,textarea::placeholder{color:var(--field-ph,#5d6673);opacity:1;font-weight:400}
+input:focus,select:focus,textarea:focus{border-color:var(--field-focus,var(--steel));box-shadow:0 0 0 3px var(--yellow-soft)}
 .toggle input:checked{background:var(--steel);box-shadow:none}
 .seg button[aria-pressed="true"]{background:var(--steel);color:var(--nink);box-shadow:none}
 
@@ -231,11 +234,11 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .conv-band{top:var(--lt-h,0px)}
 /* lesson header: a navy band over the stage */
 .lesson-top{--band:var(--night);background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
-/* the bar at the bottom of a lesson step is the prototype's feedback sheet: dark frosted glass */
+/* the bar at the bottom of a lesson step is the prototype's feedback sheet, in solid night */
 /* The bars over the scroller carry no live blur: the page moves under them on every scroll frame, and WebKit re-blurs
-   all of it each frame. Near-opaque, they look the same. */
-.actionbar{background:rgba(18,26,39,.97);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.actionbar.ok,.actionbar.bad{background:rgba(18,26,39,.97);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+   all of it each frame. They are solid: at 97% the lines scrolling under them still showed through as ghost text. */
+.actionbar{background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.actionbar.ok,.actionbar.bad{background:var(--night);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .actionbar.ok .msg .ttl,.actionbar.ok .ico{color:#7ee2a8} .actionbar.bad .msg .ttl,.actionbar.bad .ico{color:#ff7ab2}
 /* after an answer the sheet's main button is light, as in the prototype; magenta or green stays in the title */
 .actionbar.ok .in .btn:not(.ghost),.actionbar.bad .in .btn:not(.ghost){background:var(--nink);color:#11151b}
@@ -539,6 +542,13 @@ body.lay-mobile .rv-card .umlauts button:nth-child(n+5){display:none}   /* phone
 .rv-boxes .bx i.on{height:26px;background:var(--magenta)}
 /* four grade buttons on a phone: no room for the keyboard hints (there is no keyboard) */
 body.lay-mobile .actionbar .in .kbd{display:none}
+/* Sprechen on a phone: ä ö ü ß and "How do I say…?" on one row, so the bar takes less of the chat (capitals by typing A: O: U:) */
+body.lay-mobile .actionbar .tools{flex-wrap:nowrap}
+body.lay-mobile .actionbar .tools .umlauts{flex-wrap:nowrap}
+body.lay-mobile .actionbar .tools .umlauts button:nth-child(n+5){display:none}
+body.lay-mobile .actionbar .tools .btn{flex:none;margin-left:auto}
+/* the reply row lines up with the keys above it and the conversation header (both 680 px wide) */
+.actionbar .tools+.in{max-width:680px}
 
 /* ---------- breathing room (owner, Oct 25: "the screens shouldn't look super compact") ----------
    one rhythm on every screen, no tighter than the mock-ups: 24 px between slabs (20 in a lesson),
