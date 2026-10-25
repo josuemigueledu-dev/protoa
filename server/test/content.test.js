@@ -195,7 +195,7 @@ test('each lesson file holds the lesson its name says', () => {
 // learner's own conversation lines) was introduced in this lesson or an earlier one.
 // Lessons on this list still break the rule and wait for the story agent's rework;
 // remove a number when its lesson is fixed (a stale entry fails the test).
-const NOT_YET_REWORKED = new Set([5, 6, 7, 8, 9]);
+const NOT_YET_REWORKED = new Set([5, 6, 7, 8]);
 const NAMES = new Set(['herr', 'frau', 'weber', 'ana', 'lena', 'murat', 'alex', 'name', 'city', 'field',
   'berlin', 'madrid', 'paris', 'mexiko', 'rom', 'neukölln']); // people and places, not vocabulary
 const tokens = s => String(s).toLowerCase().replace(/\{(\w+)\}/g, '$1').split(/[^\p{L}]+/u).filter(Boolean);
