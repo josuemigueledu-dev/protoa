@@ -89,7 +89,8 @@
 .lesson-top .steplbl{color:var(--magenta)}
 .notice-line{border-left:0;box-shadow:inset 3px 0 0 var(--magenta),inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
 .coach .say{border-radius:var(--r) var(--r) var(--r) 2px}
-.wcard .de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
+/* a long word (Entschuldigung) breaks at a German hyphen instead of running out of the card, as on the review card */
+.wcard .de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}
 .wcard .kind{letter-spacing:.04em}
 .wcard .illus,.wcard .wtile{border-radius:var(--r)}
 /* article colours wherever a gendered word is shown */
