@@ -38,5 +38,5 @@ carry `who: 'cast.ana'` / `'cast.lena'`, and a learner turn's reaction carries `
 
 | id | what | first used | notes |
 |---|---|---|---|
-| `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Lesson 13 uses it too (a cup set down for the learner, *Kaffee mit Milch, ohne Zucker*): until it is drawn lesson 13 has no `twist`; add `twist: { at: 12, event: 'event.order', mood: 'surprised' }` when the file lands |
+| `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Lesson 13 uses it too (a cup set down for the learner, *Kaffee mit Milch, ohne Zucker*): until it is drawn lesson 13 has no `twist`; add `twist: { at: 13, event: 'event.order', mood: 'surprised' }` when the file lands |
 | `event.test` | Herr Weber's hand putting a test sheet face down on a desk | lesson 12 | the twist of lesson 12 (*Das war nicht schlecht*, conv line 14). Until it is drawn lesson 12 has no `twist`; add `twist: { at: 14, event: 'event.test', mood: 'surprised' }` when the file lands |
