@@ -310,7 +310,7 @@ function renderTalkChat(v) {
     openSheet((inner, close) => {
       const out = h('div', {}); const go_ = async () => { const q = ask.value.trim(); if (!q) return; out.innerHTML = ''; out.append(fbEl('hint', '<span class="typing"><i></i><i></i><i></i></span>'));
         try { const r = await AI.run('talkHelp', { brief: sc.brief, question: q }); out.innerHTML = ''; out.append(h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'row' }, glossEl(r.de, null), playBtn(r.de)), r.tip ? fbEl('note', esc(r.tip)) : '', h('button', { class: 'btn', onclick: () => { inp.value = r.de; close(); inp.focus(); } }, 'Use this'))); }
-        catch (e) { out.innerHTML = ''; out.append(fbEl('bad', 'Could not get a suggestion right now.')); } };
+        catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, 'Could not get a suggestion right now.'))); } };
       ask.addEventListener('keydown', e => { if (e.key === 'Enter') go_(); });
       inner.append(h('h2', {}, 'How do I say…?'), h('p', { class: 'faint' }, 'Type it in English. You get the German, and you still say it yourself.'), ask, h('button', { class: 'btn', onclick: go_ }, 'Show me'), out);
       setTimeout(() => ask.focus(), 80);
