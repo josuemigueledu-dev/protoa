@@ -8,6 +8,9 @@ import { getConnInfo } from '@hono/node-server/conninfo';
 import { aiAvailable, askJSON, askLongJSON, AIError } from './claude.js';
 import { rateLimiter, memoryRateStore } from './ratelimit.js';
 import { staticFiles } from './static.js';
+import { monetizationOn } from './entitlements.js';
+import { createQuota } from './quota.js';
+import { freeForAll } from './payments.js';
 import { tasks as deutsch } from './apps/deutsch/tasks.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -30,7 +33,11 @@ function clientKey(c) {
 
 // runJSON / runLong / aiOn are swapped for stubs in tests and for the practice AI (fake-ai.js).
 // rateStore is where the AI rate limit counts (ratelimit.js); a shared store goes here with several instances.
-export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiAvailable, rateStore = memoryRateStore() } = {}) {
+// Quotas apply only when MONETIZATION=on. Until there are accounts, the "user" is the client address.
+export function createApp({
+  runJSON = askJSON, runLong = askLongJSON, aiOn = aiAvailable, rateStore = memoryRateStore(),
+  monetization = monetizationOn(), payments = freeForAll, quota = createQuota(), userOf = clientKey,
+} = {}) {
   const app = new Hono();
 
   app.get('/api/health', c => c.json({ ok: true, ai: aiOn() }));
@@ -46,6 +53,14 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiA
       const vars = task.input.safeParse(body);
       if (!vars.success) return c.json({ error: { code: 'bad_request', message: vars.error.issues[0]?.message || 'Invalid input.' } }, 400);
       if (!aiOn()) return c.json({ error: { code: 'unavailable', message: 'AI is not configured on this server.' } }, 503);
+      let taken;
+      if (monetization) {
+        const user = userOf(c);
+        taken = await quota.take(user, await payments.planOf(user), name);
+        if (!taken.ok) {
+          return c.json({ error: { code: 'quota_exceeded', message: 'You have used your allowance for now.', limit: taken.limit, resetsAt: taken.resetsAt ? new Date(taken.resetsAt).toISOString() : null } }, 429);
+        }
+      }
       try {
         const prompt = task.prompt(vars.data);
         // The signal aborts when the learner disconnects, so an abandoned call stops instead of running (and costing) to the end.
@@ -55,6 +70,7 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiA
       } catch (e) {
         const err = e instanceof AIError ? e : new AIError('upstream', 'Something went wrong.');
         if (!(e instanceof AIError)) console.error(e);
+        await taken?.release();
         return c.json({ error: { code: err.code, message: err.message } }, err.status);
       }
     });
