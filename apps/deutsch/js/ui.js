@@ -52,11 +52,14 @@ let renderedDay = null; // the day the screen on show was drawn for (screens.js 
    moment, and the leaving slabs keep moving on their own layers meanwhile instead of standing still and then jumping */
 let drawTok = null, drawing = false;
 function lessonMode() { return !!((route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam'); }
+let lastRoute = route;
 function render() {
+  Perf.screen(lastRoute, route, NAV); lastRoute = route;
   const dir = DIRS[NAV], old = view.querySelector(':scope > .view:not(.leaving)'), tok = drawTok = {};
   // a screen that moves straight on while it is being drawn (past the last word to the check, past the last build item
   // to the conversation) is drawn at once in its place: leaving the half-built one would cut the old screen's slabs short
   if (dir && old && old.animate && !reduced() && !drawing) {
+    Still.hold(1300, true);   // the decor holds still from the first frame of the move
     leave(old, dir, document.body.classList.contains('in-lesson') && lessonMode());
     requestAnimationFrame(() => requestAnimationFrame(() => { if (drawTok === tok) draw(); }));
     return;
@@ -74,6 +77,7 @@ function drawScreen() {
   try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
+  document.body.classList.toggle('on-map', !!v.querySelector('.khead'));   // the map hides the navy stage (a class, not :has(), which makes WebKit recheck the page on every change)
   Still.hold(DIRS[NAV] ? 1000 : NAV === 'fade' ? 250 : 600, true);   // until the new screen has slid or risen in
   NAV = 'fade';
 }
@@ -104,6 +108,35 @@ const Still = (() => {
   return { hold };
 })();
 PANE.addEventListener('scroll', () => Still.hold(200), { passive: true });
+/* ---------- frame meter: how smooth it really is on the learner's phone ----------
+   Off unless something asks for it: Arthur's own copy passes window.PROTOA_PERF_SINK (it keeps the records in his
+   private data so the team can read real iPhone numbers), and ?perf or localStorage 'weg:perf' turns it on to look at.
+   It counts frames only for a moment after a screen change and while scrolling. */
+const Perf = (() => {
+  let on = false; try { on = !!window.PROTOA_PERF_SINK || /[?&]perf\b/.test(location.search) || localStorage.getItem('weg:perf') === '1'; } catch (e) { }
+  if (!on) return { screen() { } };
+  const log = [];
+  let run = null;
+  function sample(kind, what, ms) {
+    if (run) { run.until = Math.max(run.until, performance.now() + ms); return; }
+    const r = run = { kind, what, t0: performance.now(), until: performance.now() + ms, f: [] };
+    let last = performance.now();
+    const step = t => { r.f.push(t - last); last = t; if (t < r.until) requestAnimationFrame(step); else done(r); };
+    requestAnimationFrame(step);
+  }
+  function done(r) {
+    run = null; const f = r.f.slice(1); if (f.length < 3) return;
+    const sorted = f.slice().sort((a, b) => a - b);
+    const rec = { at: new Date().toISOString(), kind: r.kind, what: r.what, frames: f.length, worst: Math.round(sorted[sorted.length - 1]), med: Math.round(sorted[f.length >> 1] * 10) / 10, over17: f.filter(x => x > 17.5).length, over33: f.filter(x => x > 34).length, w: innerWidth, dpr: devicePixelRatio, ua: navigator.userAgent.slice(0, 120) };
+    log.push(rec); if (log.length > 60) log.shift();
+    try { window.PROTOA_PERF_SINK && window.PROTOA_PERF_SINK(rec); } catch (e) { }
+    if (/[?&]perf\b/.test(location.search)) console.log('[perf]', JSON.stringify(rec));
+  }
+  let scrolling = false;
+  PANE.addEventListener('scroll', () => { if (!scrolling) { scrolling = true; sample('scroll', route, 400); setTimeout(() => { scrolling = false; }, 400); } else if (run) run.until = performance.now() + 300; }, { passive: true });
+  window.PROTOA_PERF_LOG = log;
+  return { screen(from, to, nav) { sample('screen', from + '>' + to + ' ' + nav, 1300); } };
+})();
 // a sideways swipe moves to the tab beside this one (not inside a lesson, review or talk, where swipes are for the exercise)
 (() => {
   let x0 = 0, y0 = 0, t0 = 0, on = false;
@@ -193,7 +226,7 @@ function micBtn(input, onDone) {
 function progressHeader() {
   const g = goalInfo(), s = S.settings;
   return h('div', { class: 'card prog' },
-    h('div', { class: 'nums' }, h('div', {}, h('span', { class: 'big' }, g.learned.toLocaleString()), h('span', { class: 'muted' }, ' of ' + s.target.toLocaleString() + ' words'), h('span', { class: 'chip', style: 'margin-left:10px;vertical-align:middle' }, s.level)), h('div', { class: 'muted small', style: 'font-variant-numeric:tabular-nums' }, g.pct + '%')),
+    h('div', { class: 'nums' }, h('div', {}, h('span', { class: 'big' }, g.learned.toLocaleString('en')), h('span', { class: 'muted' }, ' of ' + s.target.toLocaleString('en') + ' words'), h('span', { class: 'chip', style: 'margin-left:10px;vertical-align:middle' }, s.level)), h('div', { class: 'muted small', style: 'font-variant-numeric:tabular-nums' }, g.pct + '%')),
     h('div', { class: 'bar' }, h('i', { style: `width:${g.pct}%` })),
     h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, g.today >= g.perDay ? `today: ${g.today} new words, goal of ${g.perDay} met` : `today: ${g.today} of your ${g.perDay} new words`), g.date ? h('span', {}, 'plan: ' + s.level + ' by ' + fmtDate(g.date)) : ''));
 }
@@ -232,7 +265,7 @@ function renderToday(v) {
   const resume = !!(L && ls && ls.n === L.n);
   v.append(h('div', { class: 'today-hero' }, teacherSlot(64, 'pleased'), h('div', { class: 'grow' }, h('h1', {}, greet + (name ? ', ' + name : '') + '.'), protoaLine(L, resume, due.length)),
     h('div', { class: 'goal', role: 'img', 'aria-label': `${g0.today} of ${g0.perDay} new words today` }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner', 'aria-hidden': 'true' }, h('span', {}, g0.today), h('small', {}, 'of ' + g0.perDay)))));
-  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { style: 'font-size:var(--t-title)' }, gateT.code + ' exam'), h('div', { class: 'faint' }, 'Pass with 90% to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
+  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString('en') + ' words reached'), h('h2', { style: 'font-size:var(--t-title)' }, gateT.code + ' exam'), h('div', { class: 'faint' }, 'Pass with 90% to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
   if (L) v.append(todayLessonCard(L, resume));
   else if (!gateT) v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map')));
   v.append(todayLine(due.length));
@@ -506,7 +539,7 @@ function lessonConv(v, L, ls) {
     if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && (NIGHT_CAST[speaker(m)] || ART[speaker(m)])) b.append(bustEl(speaker(m), m.mood, 40)); }
     const box = h('div', { class: 'box' });
     const ul = glossEl(m.de, m.g); box.append(h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } })));
-    if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'show English')); }
+    if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'Show English')); }
     if (m.react) box.append(h('div', { class: 'reaction' }, m.react));
     b.append(box); return b;
   }
@@ -519,7 +552,7 @@ function lessonConv(v, L, ls) {
   }
   function learnerTurn(q, t) {
     const type = q.type; const attempts = { n: C.attempts || 0 }; const ladder = h('div', { class: 'ladder' });
-    const prompt = h('div', { class: 'prompt' }, q.again ? 'Once more: ' : 'Your line: ', type === 'tiles' ? 'build it from the tiles.' : type === 'gap' ? 'fill the gap' + (t.gaps.length > 1 ? 's' : '') + '.' : type === 'translate' ? h('span', {}, 'say in German: ', h('b', {}, fill(t.en))) : h('span', {}, 'answer truthfully, in German.'));
+    const prompt = h('div', { class: 'prompt' }, q.again ? 'Once more. ' : '', type === 'tiles' ? 'Build your line from the tiles.' : type === 'gap' ? 'Fill the gap' + (t.gaps.length > 1 ? 's' : '') + ' in your line.' : type === 'translate' ? h('span', {}, 'Say it in German: ', h('b', {}, fill(t.en))) : h('span', {}, 'Answer truthfully, in German.'));
     if (type === 'tiles' || type === 'gap') prompt.append(h('div', { class: 'faint', style: 'font-weight:400' }, 'The English appears if you miss.'));
     turnbox.append(prompt);
     let widget;
@@ -610,9 +643,9 @@ function startReview(items) { // every 3rd recognition card with interval ≥7 b
   PR = { queue: q, done: 0, total: q.length, stats: { n: 0, good: 0, missed: [], t0: Date.now() } }; REVIEW_SUMMARY = null; route = 'practice'; NAV = 'fwd'; render();
 }
 /* what Protoa says above each kind of card, German first */
-const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?'], li: ['Hör mal. Welches Wort ist das?', 'Listen. Type the word you hear.'], ls: ['Hör gut zu. Schreib den Satz.', 'Listen. Type the sentence you hear.'],
-  p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'Pick the meaning.'],
-  gap: ['Welches Wort fehlt?', 'Which word is missing?'], order: ['Bau den Satz.', 'Put the words in German order.'], trans: ['Sag es auf Deutsch.', 'Say it in German.'] };
+const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?'], li: ['Hör mal. Welches Wort ist das?', 'Listen. Which word is it?'], ls: ['Hör gut zu. Schreib den Satz.', 'Listen closely. Write the sentence.'],
+  p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'What does it mean?'],
+  gap: ['Welches Wort fehlt?', 'Which word is missing?'], order: ['Bau den Satz.', 'Build the sentence.'], trans: ['Sag es auf Deutsch.', 'Say it in German.'] };
 /* the Leitner box a card sits in, from its interval in days: 1 new or missed, 5 a month or more */
 const rvBox = r => { const iv = r ? r[1] : 0; return iv < 2 ? 1 : iv < 7 ? 2 : iv < 14 ? 3 : iv < 30 ? 4 : 5; };
 function renderReview(v) {
@@ -691,7 +724,7 @@ function emptyState(icon, title, text, action) {
 function wordBank() {
   const c = h('div', { class: 'card stack' }, h('h2', {}, 'Your words'), h('p', { class: 'muted small' }, 'A growing collection of Berlin. The ring fills as a word gets stronger. Tap a tile for its card and history.'));
   const search = h('input', { type: 'text', placeholder: 'Search', 'aria-label': 'Search words', id: 'bank-search' });
-  const fLesson = h('select', { 'aria-label': 'Filter by set' }, h('option', { value: '' }, 'All sets')); const fType = h('select', { 'aria-label': 'Filter by type' }, h('option', { value: '' }, 'All types'), ...['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'pron', 'conj', 'part', 'q', 'num'].map(t => h('option', { value: t }, TYPE_LABEL[t] + 's')));
+  const fLesson = h('select', { 'aria-label': 'Filter by lesson' }, h('option', { value: '' }, 'All lessons')); const fType = h('select', { 'aria-label': 'Filter by type' }, h('option', { value: '' }, 'All types'), ...['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'pron', 'conj', 'part', 'q', 'num'].map(t => h('option', { value: t }, TYPE_LABEL[t] + 's')));
   const fStr = h('select', { 'aria-label': 'Filter by strength' }, h('option', { value: '' }, 'Any strength'), h('option', { value: 'weak' }, 'Weak (missed 2+ times)'), h('option', { value: 'new' }, 'New (< 4 days)'), h('option', { value: 'strong' }, 'Strong (≥ 14 days)'));
   const grid = h('div', { class: 'bank' }); const detail = h('div', { class: 'stack' });
   const entries = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, cd]) => cd.learned && !cd.sent);
@@ -708,7 +741,7 @@ function wordBank() {
     items.forEach(([id, cd]) => { const d = wordDef(id) || { en: ['?'] }; const k = groupKey(cd); if (k !== last) { last = k; grid.append(h('div', { class: 'grp' }, sigEl(groupIcon(k)), h('span', { class: 'eyebrow' }, groupLabel(k)))); }
       const t = h('button', { class: 'btile', onclick: () => showDetail(id, cd, d) }); if (d.pic && PICS[d.pic]) { const i = h('div', { class: 'illus sm' }); i.innerHTML = PICS[d.pic]; t.append(i); } t.append(h('div', { class: 'de', lang: 'de' }, artEl(id)), h('div', { class: 'en' }, d.en.join(', ')), ringEl(strengthOf(cd.r), 22)); grid.append(t); });
   };
-  const showDetail = (id, cd, d) => { detail.innerHTML = ''; const full = wordDef(id); detail.append(full && full.ex ? wordCard(full) : h('div', { class: 'card' }, h('b', {}, id), ' — ', d.en.join(', '))); const hist = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since ? fmtDate(cd.since) : '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? fmtDate(cd.r[0]) + ' (every ' + cd.r[1] + (cd.r[1] === 1 ? ' day)' : ' days)') : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · lapses ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'Production'), h('span', {}, cd.p ? 'unlocked, next ' + cd.p[0] : 'unlocks when recognition ≥ 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${dt} ${({ r: 'meaning', p: 'word', li: 'listening', ls: 'sentence', sent: 'line' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); detail.append(hist); detail.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); };
+  const showDetail = (id, cd, d) => { detail.innerHTML = ''; const full = wordDef(id); detail.append(full && full.ex ? wordCard(full) : h('div', { class: 'card' }, h('b', {}, id), ' — ', d.en.join(', '))); const hist = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since ? fmtDate(cd.since) : '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? fmtDate(cd.r[0]) + (cd.r[1] >= 1 ? ' (every ' + cd.r[1] + (cd.r[1] === 1 ? ' day)' : ' days)') : '') : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · missed ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'Meaning → word'), h('span', {}, cd.p ? 'open, next ' + fmtDate(cd.p[0]) : 'opens once the meaning holds for 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${fmtDate(dt)} ${({ r: 'meaning', p: 'word', li: 'listening', ls: 'sentence', sent: 'line', mc: 'meaning', gap: 'gap', order: 'order', trans: 'translation' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); detail.append(hist); detail.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); };
   [search, fLesson, fType, fStr].forEach(e => e.addEventListener('input', draw)); draw();
   c.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, search), fLesson, fType, fStr), grid); return h('div', { class: 'stack' }, c, detail);
 }
@@ -794,7 +827,7 @@ function renderSettings(v) {
   const LEVEL_WORDS = { A1: 600, A2: 1200, B1: 2400, B2: 4000 };
   level.addEventListener('change', () => { if (LEVEL_WORDS[level.value]) target.value = LEVEL_WORDS[level.value]; persist(); });
   const persist = () => { s.level = level.value; s.target = Math.max(s.level === 'B2' ? 4000 : 2400, +target.value || 2400); target.value = s.target; s.perDay = Math.max(1, +perDay.value || 20); s.targetDate = date.value; s.minutes = +minutes.value || 20; save('settings'); calc.textContent = calcText(); fixedSeg.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', (i === 0) === (s.fixed === 'perDay'))); perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay'; };
-  const calcText = () => { const g = goalInfo(); return s.fixed === 'date' ? (s.targetDate ? `That is ${g.perDay} new words a day from today.` : 'Pick a date.') : `At ${g.perDay} a day you reach ${s.target.toLocaleString()} words around ${g.date}.`; };
+  const calcText = () => { const g = goalInfo(); return s.fixed === 'date' ? (s.targetDate ? `That is ${g.perDay} new words a day from today.` : 'Pick a date.') : `At ${g.perDay} a day you reach ${s.target.toLocaleString('en')} words around ${g.date}.`; };
   const calc = h('p', { class: 'small muted' }, calcText());
   goal.append(h('p', { class: 'faint' }, 'Every course runs to at least B1. A1 (600 words) and A2 (1,200) are milestones on the way; each ends with an exam you pass at 90% before the line continues.'));
   [target, perDay, date, minutes].forEach(i => i.addEventListener('change', persist));

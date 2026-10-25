@@ -14,7 +14,7 @@ The project itself is described in `../CLAUDE.md`. Your working copy of the repo
 
 ## The team
 
-Five agents run as scheduled tasks in the cloud, in fresh sessions with no memory. Normally each runs every 4 hours; during the A1 sprint (from Oct 24, 2026, Arthur's request) they run **every hour**, and go back to the 4-hour times below once the brief's sprint goal is done:
+Six agents run as scheduled tasks in the cloud, in fresh sessions with no memory. Normally each runs every 4 hours; during the A1 sprint (from Oct 24, 2026, Arthur's request) they run **every hour**, and go back to the 4-hour times below once the brief's sprint goal is done:
 
 | agent | area | runs (UTC) |
 |---|---|---|
@@ -23,6 +23,7 @@ Five agents run as scheduled tasks in the cloud, in fresh sessions with no memor
 | ux | front end, phone layout, accessibility | 02:57, 06:57, 10:57, 14:57, 18:57, 22:57 (sprint: every hour at :57) |
 | platform | launch and R&D: research, hosting, accounts, payments, PWA/stores, team tooling (added Oct 24, 2026; `trig_017ZCmaJNHQ5YqXAusnxJjNL`) | 03:07, 07:07, 11:07, 15:07, 19:07, 23:07 (sprint: every hour at :07) |
 | story | story bible, reviews every `[content]` PR, refines merged lessons (added Oct 24, 2026; `trig_01EwR1Z9tXWrNEN871Za6M5Z`) | 03:47, 07:47, 11:47, 15:47, 19:47, 23:47 (sprint: every hour at :47) |
+| tester | plays the app on a phone screen, measures frame rates, keeps the imperfection list in issue #146 (added Oct 25, 2026 at Arthur's request; `trig_01XMSpts3vbAYHTWyqqw1TV6`) | every hour at :27 |
 
 They take direction from GitHub issue #1, the **Team brief**, and only from text written by Arthur's account (you post as his account, so they trust you):
 

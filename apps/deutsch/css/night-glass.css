@@ -403,7 +403,7 @@ body.in-lesson .view[class*=" in-"]>.lesson-top{animation:none}
    place in A1, the level bar and a seat for Protoa. The stage gradient is off on this screen, so the line below it
    always sits on the ground and its dark text never runs onto navy. */
 #app::before,.aurora::after{transition:opacity .5s ease}
-#app:has(.view:not(.leaving) .khead)::before,body:has(.view:not(.leaving) .khead) .aurora::after{opacity:0}   /* fades, so a screen change never flips the ground */   /* the map is a U-Bahn line itself: no drawn one behind it */
+body.on-map #app::before,body.on-map .aurora::after{opacity:0}   /* fades, so a screen change never flips the ground */   /* the map is a U-Bahn line itself: no drawn one behind it */
 .khead{position:relative;background:var(--night);padding:20px 22px 22px;border-radius:var(--r);
   clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
 body:not(.lay-mobile) .khead{background:var(--glass-dark);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
@@ -547,6 +547,12 @@ body:not(.lay-desktop) .widget{padding:22px;gap:14px}   /* the desktop rail is n
 .listrow{padding:20px 24px}
 .kpi{padding:18px}
 .mode,.scen{padding:18px}
+/* a mode with nothing to practise yet: readable, not faded; its icon goes quiet and a lock sits clear of the chamfer */
+.mode[disabled]{opacity:1}
+.mode[disabled] .sig{opacity:.4;filter:grayscale(1)}
+.mode .mlock{position:absolute;top:18px;right:24px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.mode .mlock svg{width:13px;height:13px}
+.hubfresh h2{margin:2px 0 4px}
 body.lay-mobile .today-hero,.today-hero{padding:22px 20px;gap:14px}
 .today-hero .say{margin-top:12px}
 .today-hero .say p{line-height:1.4}
