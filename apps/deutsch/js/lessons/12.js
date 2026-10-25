@@ -76,5 +76,5 @@ GRAMMAR.push({ id: 'neg', title: 'nicht, sehr, zu and gern', lesson: 12,
       { q: 'Das ist ___ leicht. (not)', a: ['nicht'], en: 'That is not easy.' },
       { q: 'Ich lese ___. (I like it)', a: ['gern', 'gerne'], en: 'I like reading.' },
       { q: 'Sie lesen ___ schnell, Herr Weber. (too)', a: ['zu'], en: 'You are reading too fast, Mr Weber.' },
-      { q: 'Put in order: ich / heute / koche / nicht', a: ['ich koche heute nicht', 'heute koche ich nicht'], en: 'I am not cooking today.' },
+      { q: 'Put in order: ich / heute / koche / nicht', a: ['Ich koche heute nicht.', 'Heute koche ich nicht.'], en: 'I am not cooking today.' },
       { q: 'Lena ___ gern. (read)', a: ['liest'], en: 'Lena likes reading.' } ] });

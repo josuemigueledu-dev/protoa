@@ -751,7 +751,7 @@ function wordBank() {
 function renderGrammar(v, openId) {
   if (!v) { route = 'grammar'; renderTabs(); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); v = newView(); }
   if (openId) { const u = GRAMMAR.find(g => g.id === openId); if (u) { grammarUnit(v, u); return; } }
-  v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Short reference units, each with glossed examples and five drills. Lessons link here with "Show how it works"; nothing here is required.'));
+  v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Each rule in short, with examples you can hear and a few drills. Lessons open the one you need; nothing here is required.'));
   // Night Glass: the rule of the lesson you are on comes first, as a dark slab with its table
   const open = u => { const vv = newView(); grammarUnit(vv, u); };
   const done = new Set(S.progress.lessonsDone), ff = featuredGrammar();
@@ -769,7 +769,7 @@ function grammarUnit(v, u) {
   const c = h('div', { class: 'card stack', html: u.body }); if (u.table) { const g = h('div', { class: 'conj' }); u.table.forEach(([p, f]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, f)))); c.append(g); } v.append(c);
   const ex = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Examples')); u.examples.forEach(e => { const ul = glossEl(e.de, e.g); ex.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', html: ICONS.play, 'aria-label': 'Play', onclick: () => speak(e.de, { el: ul }) })), h('div', { class: 'muted small' }, e.en))); }); v.append(ex);
   const dr = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Drills'));
-  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (d.a.some(x => fold(x) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓')); } else { uiSound('bad'); fb.append(fbEl('hint', 'Not yet. Answer: <em>' + esc(d.a[0]) + '</em>')); } }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
+  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (d.a.some(x => fold(stripPunct(x).trim()) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓ Richtig.')); } else { uiSound('bad'); fb.append(fbEl('hint', 'Nicht ganz. The answer is <em lang="de">' + esc(d.a[0]) + '</em>')); } }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
   v.append(dr);
 }
 
@@ -794,7 +794,7 @@ function renderMethod(v) {
 }
 function voiceCard(s) {
   const card = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, "Protoa's voice"),
-    h('p', { class: 'small muted' }, 'Protoa speaks with the best German voice on this device, chosen for a modern, educated, deep male voice. You can pick another one here.'));
+    h('p', { class: 'small muted' }, 'Protoa uses the best German voice on this device. You can pick another one here.'));
   const sel = h('select', { id: 'voice-select', 'aria-label': "Protoa's voice" }), note = h('div', {});
   sel._fill = () => {
     const all = germanVoices(); sel.innerHTML = '';
@@ -820,7 +820,7 @@ function voiceCard(s) {
 function renderSettings(v) {
   const s = S.settings, p = S.profile;
   v.append(backMore(), h('h1', {}, 'Settings'));
-  const goal = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Goal · German'));
+  const goal = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Your goal'));
   const level = h('select', { id: 'goal-level' }, ...[['B1', 'B1 · 2,400 words (minimum)'], ['B2', 'B2 · 4,000 words']].map(([l, t]) => h('option', { value: l, selected: s.level === l }, t)));
   const target = h('input', { type: 'number', id: 'goal-target', value: s.target, min: 2400, step: 100 });
   const fixedSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What stays fixed' }, h('button', { 'aria-pressed': String(s.fixed === 'perDay'), onclick: () => { s.fixed = 'perDay'; persist(); } }, 'Words per day'), h('button', { 'aria-pressed': String(s.fixed === 'date'), onclick: () => { s.fixed = 'date'; persist(); } }, 'Target date'));
@@ -828,7 +828,7 @@ function renderSettings(v) {
   const LEVEL_WORDS = { A1: 600, A2: 1200, B1: 2400, B2: 4000 };
   level.addEventListener('change', () => { if (LEVEL_WORDS[level.value]) target.value = LEVEL_WORDS[level.value]; persist(); });
   const persist = () => { s.level = level.value; s.target = Math.max(s.level === 'B2' ? 4000 : 2400, +target.value || 2400); target.value = s.target; s.perDay = Math.max(1, +perDay.value || 20); s.targetDate = date.value; s.minutes = +minutes.value || 20; save('settings'); calc.textContent = calcText(); fixedSeg.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', (i === 0) === (s.fixed === 'perDay'))); perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay'; };
-  const calcText = () => { const g = goalInfo(); return s.fixed === 'date' ? (s.targetDate ? `That is ${g.perDay} new words a day from today.` : 'Pick a date.') : `At ${g.perDay} a day you reach ${s.target.toLocaleString('en')} words around ${g.date}.`; };
+  const calcText = () => { const g = goalInfo(); return s.fixed === 'date' ? (s.targetDate ? `That is ${g.perDay} new words a day from today.` : 'Pick a date.') : `At ${g.perDay} a day you reach ${s.target.toLocaleString('en')} words around ${fmtDate(g.date)}.`; };
   const calc = h('p', { class: 'small muted' }, calcText());
   goal.append(h('p', { class: 'faint' }, 'Every course runs to at least B1. A1 (600 words) and A2 (1,200) are milestones on the way; each ends with an exam you pass at 90% before the line continues.'));
   [target, perDay, date, minutes].forEach(i => i.addEventListener('change', persist));
@@ -844,12 +844,12 @@ function renderSettings(v) {
   pref.append(tog('autoWord', 'Play word audio automatically'), tog('uiSounds', 'Soft UI sounds'), tog('hideGloss', 'Hide glosses (self-test)'));
   const theme = h('div', { class: 'seg', role: 'group', 'aria-label': 'Theme' }, ...['system', 'light', 'dark'].map(t => h('button', { 'aria-pressed': String(s.theme === t), onclick: () => { s.theme = t; s.themeChosen = true; save('settings'); applyTheme(); theme.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
   const diff = h('div', { class: 'seg', role: 'group', 'aria-label': 'Conversation difficulty' }, ...['auto', 'easier', 'default', 'harder'].map(t => h('button', { 'aria-pressed': String(s.difficulty === t), onclick: () => { s.difficulty = t; save('settings'); diff.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
-  pref.append(h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Theme'), theme), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Conversation difficulty (auto follows your last 40 lines)'), diff), h('p', { class: 'faint' }, SR ? '"Say it" (microphone) is available in this browser.' : '"Say it" (speaking your line) needs Chrome; it is hidden here.'));
+  pref.append(h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Theme'), theme), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Conversation difficulty (auto follows your last 40 lines)'), diff), h('p', { class: 'faint' }, SR ? 'The microphone button (say your line aloud) works in this browser.' : 'This browser can’t listen, so the microphone button is hidden. Chrome, Edge and Safari can.'));
   const lay = h('div', { class: 'seg', role: 'group', 'aria-label': 'Layout' }, ...[['auto', 'Auto'], ['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([k, l]) => h('button', { 'aria-pressed': String((s.layout || 'auto') === k), onclick: () => { s.layout = k; save('settings'); lastLayout = applyLayout(); renderTabs(); lay.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', ['auto', 'desktop', 'mobile'][i] === k)); } }, l)));
   pref.append(h('div', { class: 'stack', style: 'gap:8px' }, h('span', { class: 'small muted' }, 'Layout (Auto follows the screen width)'), lay));
   v.append(pref);
   v.append(voiceCard(s));
-  const io = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Import progress'), h('p', { class: 'small muted' }, 'Paste a JSON export from Protoa v1 or from this app. Words are merged, never overwritten with older data; imported words count as learned and show as "already yours" in lessons.'));
+  const io = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Move your progress'), h('p', { class: 'small muted' }, 'To move to another phone or browser: tap Export here, then paste the text into the box there and tap Import. Nothing is lost: the two copies are merged word by word, and imported words show as "already yours" in lessons.'));
   const ta = h('textarea', { id: 'import-json', placeholder: '{ "lang": "de", "words": [ … ] }' }); const ifb = h('div', {});
   io.append(ta, h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => { try { const r = importJSON(ta.value); ifb.innerHTML = ''; ifb.append(fbEl('ok', `Imported: ${r.added} new, ${r.merged} merged.`)); ta.value = ''; } catch (e) { ifb.innerHTML = ''; ifb.append(fbEl('bad', 'Could not read that: ' + esc(e.message))); } } }, 'Import'), h('button', { class: 'btn ghost', onclick: async () => { const j = exportJSON(); ta.value = j; try { await navigator.clipboard.writeText(j); toast('Export copied to clipboard'); } catch (e) { ta.select(); toast('Export is in the box: copy it'); } } }, 'Export')), ifb);
   v.append(io);

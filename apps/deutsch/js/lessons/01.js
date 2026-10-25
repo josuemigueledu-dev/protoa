@@ -58,8 +58,8 @@ GRAMMAR.push({ id: 'greet', title: 'Greetings: formal and informal', lesson: 1,
       { de: 'Hallo, wie geht\'s?', g: 'Hallo,=hi | wie geht\'s?=how are you (informal)', en: 'Hi, how are you?' },
       { de: 'Auf Wiedersehen, Frau Klein.', g: 'Auf Wiedersehen,=goodbye | Frau=Mrs | Klein.=Klein', en: 'Goodbye, Mrs Klein.' } ],
     drills: [
-      { q: 'Guten ___, Herr Weber. (it is 9 a.m.)', a: ['morgen'], en: 'Good morning, Mr Weber.' },
+      { q: 'Guten ___, Herr Weber. (it is 9 a.m.)', a: ['Morgen'], en: 'Good morning, Mr Weber.' },
       { q: 'Wie geht\'s? Gut, ___.', a: ['danke'], en: 'Fine, thank you.' },
-      { q: 'Auf ___, Frau Klein. (formal goodbye)', a: ['wiedersehen'], en: 'Goodbye, Mrs Klein.' },
-      { q: '___! (bye, between friends)', a: ['tschüss'], en: 'Bye!' },
-      { q: '___, Herr Weber. (you bump into him)', a: ['entschuldigung'], en: 'Excuse me, Mr Weber.' } ] });
+      { q: 'Auf ___, Frau Klein. (formal goodbye)', a: ['Wiedersehen'], en: 'Goodbye, Mrs Klein.' },
+      { q: '___! (bye, between friends)', a: ['Tschüss'], en: 'Bye!' },
+      { q: '___, Herr Weber. (you bump into him)', a: ['Entschuldigung'], en: 'Excuse me, Mr Weber.' } ] });

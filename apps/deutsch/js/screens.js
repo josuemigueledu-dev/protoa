@@ -83,7 +83,7 @@ function stationListWidget() {
     row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.c.station), h('small', {}, it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
     list.append(row);
   });
-  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All stations'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' / ' + COURSE.length)), list);
+  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All lessons'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' of ' + COURSE.length)), list);
 }
 function strengthCounts() {
   const b = [0, 0, 0, 0];
@@ -171,7 +171,7 @@ function renderProfile(v) {
   v.append(h('div', { class: 'prof' }, h('div', { class: 'avatar orbbadge', 'aria-hidden': 'true' }, h('img', { src: 'art/night/orb.png', alt: '' })), h('div', { class: 'grow' }, h('h1', {}, p.name || 'Your profile'), h('div', { class: 'faint' }, (p.city ? p.city + ' · ' : '') + 'learning German since ' + fmtDate(since)), h('button', { class: 'btn ghost sm', onclick: () => openMore(renderSettings) }, 'Settings'))));
   v.append(h('div', { class: 'goalline' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Goal: spoken ' + (S.settings.level || 'B1')), h('span', { class: 'faint' }, g.date ? 'by ' + fmtDate(g.date) : '')), h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(g.pct) }, h('i', { style: `width:${Math.max(2, g.pct)}%` })), h('div', { class: 'row faint', style: 'justify-content:space-between' }, h('span', {}, g.learned.toLocaleString('en') + ' of ' + (S.settings.target || 2400).toLocaleString('en') + ' words'), h('span', {}, g.pct + '%'))));
   const kpi = (n, l) => h('div', { class: 'kpi' }, h('div', { class: 'n' }, n), h('div', { class: 'l' }, l));
-  v.append(h('div', { class: 'kpis' }, kpi(words, 'words yours'), kpi(S.progress.lessonsDone.length + '/' + COURSE.length, 'stations'), kpi(activeDays, 'days practised'), kpi(mins, 'minutes')));
+  v.append(h('div', { class: 'kpis' }, kpi(words, 'your words'), kpi(S.progress.lessonsDone.length + '/' + COURSE.length, 'lessons'), kpi(activeDays, activeDays === 1 ? 'day practised' : 'days practised'), kpi(mins, mins === 1 ? 'minute' : 'minutes')));
   const cls = [['weber', 'Herr Weber', 'teacher'], ['ana', 'Ana', 'from Mexico City'], ['lena', 'Lena', 'from Rome'], ['murat', 'The barista', 'café next door']];
   v.append(h('div', { class: 'card stack classcard' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Your class'), h('span', { class: 'faint' }, 'Room 2.04 · Tue and Thu')),
     h('div', { class: 'classrow' }, ...cls.map(([id, name, sub]) => h('div', { class: 'mate' }, h('span', { class: 'face', style: `background-image:url(art/night/ava-${id}.jpg)`, role: 'img', 'aria-label': name }), h('b', {}, name), h('span', { class: 'faint' }, sub))))));
@@ -270,6 +270,7 @@ const SCENARIOS = [
 ];
 const TALK_SCENE = { kennen: 'classroom', cafe: 'cafe', wohnung: 'flat', tag: 'neukoelln' };
 let TALK = null;
+const lineCount = n => n === 1 ? '1 line' : n + ' lines';
 function talkActive() { return route === 'talk' && TALK && TALK.active; }
 function renderTalk(v) {
   if (TALK && TALK.active) { renderTalkChat(v); return; }
@@ -279,7 +280,7 @@ function renderTalk(v) {
   // Night Glass: each scenario shows the painted place it happens in
   v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen' + (TALK_SCENE[sc.id] ? ' pic' : ''), disabled: !S.ai, onclick: () => startTalk(sc) }, TALK_SCENE[sc.id] ? h('span', { class: 'scpic', 'aria-hidden': 'true', style: `background-image:url(art/night/scenes/${TALK_SCENE[sc.id]}.jpg)` }) : sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
   const hist = (S.progress.talks || []).slice(-5).reverse();
-  if (hist.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Recent conversations'), ...hist.map(t => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { lang: 'de' }, t.title), h('span', { class: 'faint' }, `${t.date} · ${t.turns} lines · ${t.fixes} corrected`)))));
+  if (hist.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Recent conversations'), ...hist.map(t => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { lang: 'de' }, t.title), h('span', { class: 'faint' }, `${fmtDate(t.date)} · ${lineCount(t.turns)} · ${t.fixes} corrected`)))));
 }
 function startTalk(sc) {
   TALK = { active: true, sc, log: [{ who: 'w', de: sc.open, g: sc.openG, en: sc.openEn, mood: 'pleased' }], turns: 0, fixes: [], busy: false, t0: Date.now() };
@@ -301,7 +302,7 @@ function renderTalkChat(v) {
   T.log.forEach(m => log.append(bubble(m)));
   const typing = h('div', { class: 'bub w', hidden: !T.busy }, h('div', { class: 'box' }, h('span', { class: 'typing', 'aria-label': 'Typing' }, h('i'), h('i'), h('i'))));
   log.append(typing);
-  const inp = deInput({ placeholder: 'Antworten Sie auf Deutsch …', 'aria-label': 'Your reply in German', id: 'talk-input' });
+  const inp = deInput({ placeholder: 'Ihre Antwort …', 'aria-label': 'Your reply in German', id: 'talk-input' });
   const send = async () => {
     const txt = inp.value.trim(); if (!txt || T.busy) return;
     T.log.push({ who: 'l', de: txt }); T.turns++; T.busy = true; Voice.busy(true); inp.value = '';
@@ -348,7 +349,7 @@ function endTalk() {
 }
 function renderTalkSummary(v) {
   const T = TALK; document.body.classList.add('in-lesson');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke fürs Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. ${T.turns} lines in German about "${T.sc.en.toLowerCase()}". ${T.fixes.length ? T.fixes.length + ' of them got a correction.' : 'No corrections needed.'}`)));
+  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke fürs Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. You wrote ${lineCount(T.turns)} in German. ${T.fixes.length ? (T.fixes.length === 1 ? 'One' : T.fixes.length) + ' got a correction.' : 'None needed a correction.'}`)));
   if (T.fixes.length) {
     const card = h('div', { class: 'card stack' }, h('h2', {}, 'Your corrected lines'));
     T.fixes.forEach(f => card.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'faint', lang: 'de', style: 'text-decoration:line-through' }, f.said), h('div', { class: 'row' }, glossEl(f.de, null), playBtn(f.de)), f.note ? h('div', { class: 'faint' }, f.note) : '')));
