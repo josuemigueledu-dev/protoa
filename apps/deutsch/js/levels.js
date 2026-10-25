@@ -264,7 +264,7 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
     const m = def.ex.match(/\[([^\]]+)\]/), target = m ? m[1] : def.de; const parts = def.ex.split(/\[[^\]]+\]/);
     const inp = deInput({ 'aria-label': 'Missing word', id: 'drill-input' }); inp.style.width = Math.max(6, target.length + 2) + 'ch';
     card.append(h('div', { class: 'eyebrow' }, 'Fill the gap'), h('p', {}, h('b', {}, def.exEn)), h('div', { class: 'gapline', lang: 'de' }, h('span', {}, parts[0].trim()), inp, h('span', {}, (parts[1] || '').trim())), umlautRow(inp), fb);
-    const check = () => { if (done) return; const a = inp.value.trim(); if (!a) return; done = true; const ok = fold(stripPunct(applyShortcuts(a))) === fold(stripPunct(target)); inp.disabled = true; uiSound(ok ? 'ok' : 'bad'); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(ok ? 2 : 0, ok ? 'ok' : 'bad', ok ? '✓ <em lang="de">' + esc(target) + '</em>' : 'The word is <em lang="de">' + esc(target) + '</em>.'); };
+    const check = () => { if (done) return; const a = inp.value.trim(); if (!a) return answerFirst(fb); done = true; fb.innerHTML = ''; const ok = fold(stripPunct(applyShortcuts(a))) === fold(stripPunct(target)); inp.disabled = true; uiSound(ok ? 'ok' : 'bad'); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(ok ? 2 : 0, ok ? 'ok' : 'bad', ok ? '✓ <em lang="de">' + esc(target) + '</em>' : 'The word is <em lang="de">' + esc(target) + '</em>.'); };
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); }; setTimeout(() => inp.focus(), 50);
     return;
   }
@@ -272,14 +272,14 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
     const toks = ex.split(/\s+/); const extra = shuffle(V1_WORDS.filter(w => w.type !== 'phrase' && !toks.map(fold).includes(fold(w.de)))).slice(0, 1).map(w => w.de.replace(/^(der|die|das) /, ''));
     const tw = tilesWidget(toks, extra, () => { });
     card.append(h('div', { class: 'eyebrow' }, 'Build the sentence'), h('p', {}, h('b', {}, def.exEn)), tw.el, fb);
-    const check = () => { if (done) return; const a = tw.value(); if (!a) return; done = true; tw.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : esc(stripTags(r.hint)) + ' The sentence is <em lang="de">' + esc(ex) + '</em>.'); };
+    const check = () => { if (done) return; const a = tw.value(); if (!a) return answerFirst(fb, true); done = true; fb.innerHTML = ''; tw.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : esc(stripTags(r.hint)) + ' The sentence is <em lang="de">' + esc(ex) + '</em>.'); };
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
     return;
   }
   if (it.kind === 'trans') {
     const w = typeWidget({ id: 'drill-input', placeholder: 'Auf Deutsch …' }, () => check());
     card.append(h('div', { class: 'eyebrow' }, 'Translate to German'), h('div', { class: 'examword' }, def.exEn), w.el, fb);
-    const check = () => { if (done) return; const a = w.value().trim(); if (!a) return; done = true; w.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : r.hint + ' Model answer: <em lang="de">' + esc(ex) + '</em>'); if (!r.ok) fb.append(explainBtn(a, ex, def.exEn)); };
+    const check = () => { if (done) return; const a = w.value().trim(); if (!a) return answerFirst(fb); done = true; fb.innerHTML = ''; w.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : r.hint + ' Model answer: <em lang="de">' + esc(ex) + '</em>'); if (!r.ok) fb.append(explainBtn(a, ex, def.exEn)); };
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); }; setTimeout(() => w.focus(), 50);
   }
 }
