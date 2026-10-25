@@ -81,6 +81,25 @@ test('answers match loosely on umlauts, case and punctuation', () => {
   assert.equal(call('applyShortcuts', 'Scho:n, Mu:ller, a"'), 'Schön, Müller, ä');
 });
 
+test('a word-order miss names the verb rule only when the verb moved, and otherwise the first word out of place', () => {
+  exec('var orderLex = mergedLex({ verbs: {} })');
+  const hint = (answer, target) => run(`diagnose(${JSON.stringify(answer)}, ${JSON.stringify(target)}, orderLex, null)`);
+  assert.equal(hint('Ich komme aus Berlin.', 'Ich komme aus Berlin.').ok, true);
+  const order = (answer, target) => { const r = hint(answer, target); assert.equal(r.kind, 'order', answer); return r.hint.replace(/<\/?em>/g, ''); };
+  // lines with no verb get no verb rule
+  assert.equal(order('Morgen Guten, Herr Weber.', 'Guten Morgen, Herr Weber.'), 'All the right words. It starts with Guten.');
+  assert.equal(order('Guten Morgen, Weber Herr.', 'Guten Morgen, Herr Weber.'), 'All the right words. Guten Morgen is right; next comes Herr.');
+  assert.equal(order('null zwei vier Raum', 'Raum zwei null vier.'), 'All the right words. It starts with Raum.');
+  // the verb moved
+  assert.equal(order('Ich aus Berlin komme.', 'Ich komme aus Berlin.'), 'All the right words. In a statement the verb is the second element.');
+  assert.equal(order('Warum du lernst Deutsch?', 'Warum lernst du Deutsch?'), 'All the right words. The question word comes first, then the verb.');
+  assert.equal(order('Du trinkst auch Kaffee, Lena?', 'Trinkst du auch Kaffee, Lena?'), 'All the right words. In a yes/no question the verb comes first.');
+  assert.equal(order('Danke. Du spielst Gitarre?', 'Danke. Spielst du Gitarre?'), 'All the right words. In a yes/no question the verb comes first.');
+  assert.equal(order('Arbeitest du dort, oder?', 'Du arbeitest dort, oder?'), 'All the right words. In a statement the verb is the second element.');
+  // the verb is where it belongs, so the slip is elsewhere
+  assert.equal(order('Deutsch lerne ich heute.', 'Heute lerne ich Deutsch.'), 'All the right words. It starts with Heute.');
+});
+
 test('checkEnglish accepts the meaning, forgives plurals, rejects other words', () => {
   assert.equal(call('checkEnglish', 'the house', ['house']).ok, true);
   assert.equal(call('checkEnglish', 'houses', ['house']).ok, true);

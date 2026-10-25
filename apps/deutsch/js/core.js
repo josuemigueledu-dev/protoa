@@ -408,6 +408,22 @@ const GENDER_ART = { m: 'der', f: 'die', n: 'das' };
 const GENDER_EIN = { m: 'ein', f: 'eine', n: 'ein' };
 const PERSON_END = { ich: '-e', du: '-st', er: '-t', wir: '-en', ihr: '-t', Sie: '-en' };
 
+// Word order went wrong: name the verb rule only when the line has a verb and the answer moved it;
+// otherwise (greetings, numbers, "Gut, danke.") point at the first word out of place
+const QUESTION_WORDS = /^(wie|wo|woher|wohin|was|wer|wen|wem|wann|warum|welche[rsnm]?)$/i;
+function orderHint(Af, T, target, lex) {
+  const raw = fill(target).trim().split(/\s+/).filter(t => stripPunct(t)); // T with its punctuation
+  const v = T.findIndex(t => verbLemmaOf(t, lex));
+  if (v >= 0 && Af[v] !== fold(T[v])) {
+    if (v > 0 && QUESTION_WORDS.test(T[v - 1])) return 'The question word comes first, then the verb.';
+    let end = v; while (end < raw.length - 1 && !/[.!?]$/.test(raw[end])) end++;
+    if ((v === 0 || /[.!?]$/.test(raw[v - 1])) && /\?$/.test(raw[end])) return 'In a yes/no question the verb comes first.';
+    return 'In a statement the verb is the second element.';
+  }
+  const k = Math.max(0, T.findIndex((t, i) => fold(t) !== Af[i]));
+  return k === 0 ? `It starts with <em>${esc(T[0])}</em>.` : `<em>${esc(raw.slice(0, k).join(' ').replace(/[,;:]$/, ''))}</em> is right; next comes <em>${esc(T[k])}</em>.`;
+}
+
 // Compare answer with target line. Returns {ok:true, exact, note?} or {ok:false, kind, hint, caps?}
 function diagnose(answer, target, lex, glossStr, alts = []) {
   answer = applyShortcuts(answer);
@@ -432,7 +448,7 @@ function diagnose(answer, target, lex, glossStr, alts = []) {
   const Af = A.map(fold), Tf = T.map(fold);
   // 1. word order: same multiset
   if (A.length === T.length && [...Af].sort().join(' ') === [...Tf].sort().join(' '))
-    return { ok: false, kind: 'order', hint: 'All the right words. ' + (T[0] && /^(wie|wo|woher|was|wer|wann)$/i.test(T[0]) ? 'The question word comes first, then the verb.' : /\?$/.test(target) ? 'In a yes/no question the verb comes first.' : 'In a statement the verb is the second element.') };
+    return { ok: false, kind: 'order', hint: 'All the right words. ' + orderHint(Af, T, target, lex) };
   // walk target tokens, find first problem
   for (let i = 0; i < T.length; i++) {
     const t = T[i], tf = Tf[i];
