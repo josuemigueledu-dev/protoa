@@ -197,7 +197,7 @@ test('each lesson file holds the lesson its name says', () => {
 // remove a number when its lesson is fixed (a stale entry fails the test).
 const NOT_YET_REWORKED = new Set([6, 7, 8]);
 const NAMES = new Set(['herr', 'frau', 'weber', 'ana', 'lena', 'murat', 'alex', 'name', 'city', 'field',
-  'berlin', 'madrid', 'paris', 'mexiko', 'rom', 'neukölln']); // people and places, not vocabulary
+  'tomasz', 'berlin', 'madrid', 'paris', 'mexiko', 'rom', 'neukölln']); // people and places, not vocabulary
 const tokens = s => String(s).toLowerCase().replace(/\{(\w+)\}/g, '$1').split(/[^\p{L}]+/u).filter(Boolean);
 
 function untaught(upTo) {
