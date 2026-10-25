@@ -15,6 +15,7 @@ shared/brand/        logo files (mark, lockups, favicon, app icons) and the bran
 server/              one Node server for all apps: static files + /api
   src/app.js           routes; apps register their AI tasks in APPS
   src/claude.js        the only place that calls the Claude API
+  src/static.js        static files: no-cache + ETag/304 for code (updates show on the next load), gzip for text
   src/apps/deutsch/    the German course's AI tasks (prompts + schemas)
   test/                node:test; Claude is stubbed, tests are free and offline
 ```
