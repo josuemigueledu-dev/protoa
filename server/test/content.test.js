@@ -189,3 +189,41 @@ test('each lesson file holds the lesson its name says', () => {
   assert.deepEqual(ns, lessonFiles().map(f => Number(f.match(/(\d+)\.js$/)[1])).sort((a, b) => a - b));
   assert.equal(new Set(ns).size, ns.length, 'two lessons share a number');
 });
+
+// lesson-experience.md §2: never test what wasn't taught. Every German word the
+// learner must choose or produce (build tiles, gap answers and distractors, the
+// learner's own conversation lines) was introduced in this lesson or an earlier one.
+// Lessons on this list still break the rule and wait for the story agent's rework;
+// remove a number when its lesson is fixed (a stale entry fails the test).
+const NOT_YET_REWORKED = new Set([2, 3, 4, 5, 6, 7, 8, 9]);
+const NAMES = new Set(['herr', 'frau', 'weber', 'ana', 'lena', 'murat', 'alex', 'name', 'city', 'field',
+  'berlin', 'madrid', 'paris', 'mexiko', 'rom', 'neukölln']); // people and places, not vocabulary
+const tokens = s => String(s).toLowerCase().replace(/\{(\w+)\}/g, '$1').split(/[^\p{L}]+/u).filter(Boolean);
+
+function untaught(upTo) {
+  const known = new Set(NAMES);
+  for (const L of lessons.filter(l => l.n <= upTo.n)) {
+    for (const w of L.words) {
+      for (const t of tokens(w.de)) known.add(t);
+      for (const t of tokens(w.pl ?? '')) known.add(t);
+      for (const f of Object.values(w.forms ?? {})) for (const t of tokens(f)) known.add(t);
+    }
+  }
+  const used = [];
+  const add = (where, text) => { for (const t of tokens(text)) if (!known.has(t)) used.push(`${where}: "${t}"`); };
+  upTo.build.forEach((b, i) => { add(`build ${i}`, b.de); for (const e of b.extra ?? []) add(`build ${i} extra`, e); });
+  upTo.conv.forEach((t, i) => {
+    if (!t.l) return;
+    add(`conv ${i}`, t.de);
+    for (const e of t.extra ?? []) add(`conv ${i} extra`, e);
+  });
+  return used;
+}
+
+for (const L of lessons) {
+  test(`lesson ${L.n} only tests words taught so far`, () => {
+    const bad = untaught(L);
+    if (NOT_YET_REWORKED.has(L.n)) return assert.ok(bad.length > 0, `lesson ${L.n} is clean now: remove it from NOT_YET_REWORKED`);
+    assert.equal(bad.length, 0, `untaught words in lesson ${L.n}: ${bad.join(', ')}`);
+  });
+}
