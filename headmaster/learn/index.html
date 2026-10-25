@@ -5,6 +5,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#060a24;--ink:#eef1ff;--muted:#a7afd4;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#060a24;--ink:#eef1ff;--muted:#a7afd4;color-scheme:dark}
 body{background:var(--bg);color:var(--ink)}
+#pl-splash{background:#121a27;color:#a3adbb}
 #pl-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg);color:var(--muted);font:500 15px/1.4 system-ui,sans-serif;z-index:100;padding:0 24px;text-align:center}
 #pl-splash .o{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#fff 0 6%,#8fc4ff 14%,#2f6bff 30%,rgba(47,107,255,.15) 58%,transparent 62%),radial-gradient(circle at 35% 28%,rgba(255,255,255,.6),rgba(255,255,255,.06) 50%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 @media (prefers-reduced-motion:no-preference){#pl-splash .o{animation:pl-bob 2.4s ease-in-out infinite}@keyframes pl-bob{50%{transform:translateY(-6px)}}}
@@ -12,7 +13,7 @@ body{background:var(--bg);color:var(--ink)}
 <div id="pl-splash" role="status"><div class="o" aria-hidden="true"></div><span id="pl-msg">Waking Protoa…</span></div>
 <script>
 (() => {
-  const FALLBACK = { id: '60b8d6e', date: 'Oct 24' }; // the build this page was published with
+  const FALLBACK = { id: '3005c3d', date: 'Oct 25' }; // the build this page was published with
   const PREFIX = 'weg:';
   const msg = t => { const m = document.getElementById('pl-msg'); if (m) m.textContent = t; };
   let db = null, uid = null, latest = FALLBACK, current = null;
@@ -62,9 +63,14 @@ body{background:var(--bg);color:var(--ink)}
     const get = async f => { const r = await fetch(base + f); if (!r.ok) throw new Error('missing ' + f); return r.text(); };
     const [body, scripts, fonts] = await Promise.all([get('body.html'), get('scripts.txt'), get('fonts.txt')]);
     if (fonts.trim()) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: fonts.trim() }));
-    await Promise.all(['tokens', 'base', 'glass', 'depth'].map(n => load('link', { rel: 'stylesheet', href: base + 'css/' + n + '.css' })));
+    const css = await get('css.txt').then(t => t.split('\n').map(s => s.trim()).filter(Boolean)).catch(() => ['tokens', 'base', 'glass', 'depth']);
+    // AI: no Protoa server here, so the app's AI tasks go to Claude directly (sample capability)
+    try { await load('script', { src: 'ai-bridge.js' }); await window.PROTOA_BRIDGE_SETUP?.(); } catch (e) { }
+    // the app refers to its pictures relative to its own folder: point the page there
+    document.head.prepend(Object.assign(document.createElement('base'), { href: base }));
+    await Promise.all(css.map(n => load('link', { rel: 'stylesheet', href: 'css/' + n + '.css' })));
     document.body.insertAdjacentHTML('afterbegin', body);
-    for (const s of scripts.split('\n').map(s => s.trim()).filter(Boolean)) await load('script', { src: base + 'js/' + s });
+    for (const s of scripts.split('\n').map(s => s.trim()).filter(Boolean)) await load('script', { src: 'js/' + s });
     document.getElementById('pl-splash')?.remove();
     new MutationObserver(addUpdateCard).observe(document.body, { childList: true, subtree: true });
   }
@@ -110,7 +116,9 @@ body{background:var(--bg);color:var(--ink)}
         await restore();
         watch();
       } else if (!db) msg('Opening without your account: progress stays in this browser only.');
-      await boot(current.id);
+      // a build that is gone (old builds are cleared now and then) falls back to the newest one
+      try { await boot(current.id); }
+      catch (e) { if (current.id === latest.id) throw e; current = latest; if (db && uid) await db.doc(statePath()).set({ build: latest.id, at: Date.now() }).catch(() => {}); await boot(latest.id); }
     } catch (e) {
       msg('Protoa could not start: ' + (e.message || e) + '. Reload to try again.');
     }
