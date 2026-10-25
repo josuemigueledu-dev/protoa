@@ -108,7 +108,8 @@ function progressHeader() {
     h('div', { class: 'bar' }, h('i', { style: `width:${g.pct}%` })),
     h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, `today: ${g.today} of your ${g.perDay} new words`), g.date ? h('span', {}, 'plan: ' + s.level + ' by ' + fmtDate(g.date)) : ''));
 }
-function fbEl(kind, html) { const f = h('div', { class: 'fb ' + kind, role: 'status' }); f.innerHTML = html; return f; }
+// .fb is a flex row: the html goes in one span, or each text run and <em> would become its own column
+function fbEl(kind, html) { return h('div', { class: 'fb ' + kind, role: 'status' }, h('span', { html })); }
 function confetti() { const c = h('div', { class: 'confetti', 'aria-hidden': 'true' }); const cs = getComputedStyle(document.documentElement), cols = ['--ice', '--yellow', '--paper', '--seq-2'].map(k => cs.getPropertyValue(k).trim()); for (let i = 0; i < 60; i++) c.append(h('i', { style: `left:${Math.random() * 100}vw;background:${cols[i % 4]};animation-delay:${Math.random() * .6}s;transform:rotate(${Math.random() * 360}deg)` })); document.body.append(c); setTimeout(() => c.remove(), 2600); }
 function ringEl(frac, size = 44) { const r = (size - 6) / 2, c = 2 * Math.PI * r; const d = h('div', { html: `<svg class="ring" viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px" aria-hidden="true"><circle class="bg" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - Math.max(0, Math.min(1, frac)))}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>` }); return d.firstElementChild; }
 function difficultyMode() {
@@ -465,7 +466,7 @@ function lessonConv(v, L, ls) {
         const [rde, ren] = t.react ? fill(t.react).split('=') : ['', '']; const react = rde ? rde + (ren ? ' · ' + ren : '') : '';
         C.log.push({ who: 'l', de: ans.replace(/\s+/g, ' '), g: null, en: t.en, done: true, showEn: !first, react, note: r.note });
         C.pos++; C.attempts = 0; save('progress');
-        log.append(bubble(C.log[C.log.length - 1])); if (r.note) log.append(h('div', { class: 'fb ok', style: 'align-self:flex-end;max-width:90%', html: '✓ ' + r.note }));
+        log.append(bubble(C.log[C.log.length - 1])); if (r.note) log.append(h('div', { class: 'fb ok', style: 'align-self:flex-end;max-width:90%' }, h('span', { html: '✓ ' + r.note })));
         turnbox.innerHTML = ''; document.querySelector('.actionbar')?.remove(); setTimeout(advance, r.note ? 1200 : 500);
       } else {
         attempts.n++; C.attempts = attempts.n; save('progress'); uiSound('bad', r);
