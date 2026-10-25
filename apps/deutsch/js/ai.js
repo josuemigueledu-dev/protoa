@@ -2,7 +2,7 @@
    AI.connect() asks the server whether AI is configured (false when the page is opened as a
    file or the server has no API key; the app then works without the AI features).
    AI.run(task, vars) resolves to the task's result or throws an Error with .code:
-   'unavailable' | 'rate_limited' | 'refused' | 'bad_output' | 'bad_request' | 'upstream' | 'network'. */
+   'unavailable' | 'rate_limited' | 'timeout' | 'refused' | 'bad_output' | 'bad_request' | 'upstream' | 'network'. */
 const AI = (() => {
   const APP = 'deutsch';
   const base = () => (window.PROTOA_API || '') + '/api';
@@ -27,6 +27,7 @@ const AI = (() => {
   function message(e, fallback) {
     if (e && e.code === 'rate_limited') return 'Too many requests. Try again in a moment.';
     if (e && e.code === 'network') return 'Could not reach the Protoa server.';
+    if (e && e.code === 'timeout') return 'Protoa took too long to answer. Try again.';
     return fallback;
   }
   const api = { run };

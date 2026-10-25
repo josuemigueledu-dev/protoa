@@ -47,7 +47,8 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiA
       if (!aiOn()) return c.json({ error: { code: 'unavailable', message: 'AI is not configured on this server.' } }, 503);
       try {
         const prompt = task.prompt(vars.data);
-        const job = { task: name, vars: vars.data, tier: task.tier, prompt };
+        // The signal aborts when the learner disconnects, so an abandoned call stops instead of running (and costing) to the end.
+        const job = { task: name, vars: vars.data, tier: task.tier, prompt, signal: c.req.raw.signal };
         const result = task.long ? await runLong(job) : await runJSON({ ...job, schema: task.output });
         return c.json({ result });
       } catch (e) {

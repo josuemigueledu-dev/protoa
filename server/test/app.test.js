@@ -133,6 +133,16 @@ test('AI errors keep their code and status', withKey(async () => {
   assert.equal(r.status, 422); assert.equal((await r.json()).error.code, 'refused');
 }));
 
+test('the AI call gets a signal that aborts when the learner disconnects, and a timeout answers 504', withKey(async () => {
+  let signal;
+  const ctl = new AbortController();
+  const app = createApp({ runJSON: async job => { signal = job.signal; ctl.abort(); throw new AIError('timeout', 'Claude took too long to answer. Try again.', 504); } });
+  const r = await app.request('/api/deutsch/ai/correctSentence', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(SAMPLE.correctSentence), signal: ctl.signal });
+  assert.equal(r.status, 504);
+  assert.equal((await r.json()).error.code, 'timeout');
+  assert.ok(signal instanceof AbortSignal && signal.aborted, 'the request signal reaches the Claude call');
+}));
+
 test('AI calls are rate limited per client', withKey(async () => {
   const old = process.env.AI_RATE_LIMIT; process.env.AI_RATE_LIMIT = '3';
   const app = createApp({ runJSON: async () => ({ corrected: '', error: '', extend: '' }) });

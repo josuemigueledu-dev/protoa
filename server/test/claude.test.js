@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { askJSON, askLongJSON, setClientForTests, AIError } from '../src/claude.js';
+import { askJSON, askLongJSON, setClientForTests, AIError, DEADLINE_MS } from '../src/claude.js';
 
 const keep = process.env.ANTHROPIC_API_KEY;
 process.env.ANTHROPIC_API_KEY = 'test-key';
@@ -14,7 +14,7 @@ test.after(() => {
 
 const schema = z.object({ ok: z.boolean() });
 const withParse = (impl) => setClientForTests({ beta: { messages: { parse: impl } } });
-const withStream = (impl) => setClientForTests({ beta: { messages: { stream: (p) => ({ finalMessage: () => impl(p) }) } } });
+const withStream = (impl) => setClientForTests({ beta: { messages: { stream: (p, o) => ({ finalMessage: () => impl(p, o) }) } } });
 const rejects = (p, code, status) => assert.rejects(p, e => e instanceof AIError && e.code === code && e.status === status);
 const apiErr = (Cls, status) => new Cls(status, { error: { message: 'x' } }, 'x', new Headers());
 
@@ -82,4 +82,44 @@ test('without an API key, calls fail with 503 before touching the client', async
   delete process.env.ANTHROPIC_API_KEY;
   try { await rejects(askJSON({ tier: 'quick', prompt: 'x', schema }), 'unavailable', 503); }
   finally { process.env.ANTHROPIC_API_KEY = 'test-key'; }
+});
+
+// A call that never answers on its own: it ends only when its signal aborts, the way the SDK does.
+// (AbortSignal.timeout does not keep the process alive, so the interval stands in for the server.)
+const hangs = async (_p, opts) => {
+  const alive = setInterval(() => {}, 1000);
+  await new Promise(resolve => opts.signal.addEventListener('abort', resolve, { once: true }));
+  clearInterval(alive);
+  throw new Anthropic.APIUserAbortError();
+};
+
+test('a call that runs past its deadline fails with 504 timeout instead of hanging', async () => {
+  withParse(hangs);
+  await rejects(askJSON({ tier: 'quick', prompt: 'x', schema, timeoutMs: 20 }), 'timeout', 504);
+  withStream(hangs);
+  await rejects(askLongJSON({ tier: 'default', prompt: 'x', timeoutMs: 20 }), 'timeout', 504);
+  withParse(async () => { throw new Anthropic.APIConnectionTimeoutError(); });
+  await rejects(askJSON({ tier: 'quick', prompt: 'x', schema }), 'timeout', 504);
+});
+
+test('when the caller aborts (the learner left), the Claude call is cancelled', async () => {
+  withParse(hangs);
+  const ctl = new AbortController(), call = askJSON({ tier: 'default', prompt: 'x', schema, signal: ctl.signal });
+  ctl.abort();
+  await rejects(call, 'cancelled', 499);
+  withStream(hangs);
+  const ctl2 = new AbortController(), long = askLongJSON({ tier: 'default', prompt: 'x', signal: ctl2.signal });
+  ctl2.abort();
+  await rejects(long, 'cancelled', 499);
+});
+
+test('every call carries a deadline signal, longest for lesson writing', async () => {
+  const seen = [];
+  withParse(async (_p, opts) => { seen.push(opts.signal); return { stop_reason: 'end_turn', parsed_output: { ok: true } }; });
+  await askJSON({ tier: 'quick', prompt: 'x', schema });
+  withStream(async (_p, opts) => { seen.push(opts.signal); return { stop_reason: 'end_turn', content: [{ type: 'text', text: '{}' }] }; });
+  await askLongJSON({ tier: 'default', prompt: 'x' });
+  assert.ok(seen.every(sig => sig instanceof AbortSignal && !sig.aborted));
+  assert.ok(DEADLINE_MS.quick < DEADLINE_MS.default && DEADLINE_MS.default < DEADLINE_MS.long);
+  assert.ok(DEADLINE_MS.quick >= 30_000, 'quick calls get time for a retry');
 });
