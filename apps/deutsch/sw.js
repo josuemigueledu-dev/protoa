@@ -14,6 +14,8 @@ const WARM = [
   'art/night/scenes/bar.jpg', 'art/night/scenes/cafe.jpg', 'art/night/scenes/classroom.jpg',
   'art/night/scenes/feld.jpg', 'art/night/scenes/flat.jpg', 'art/night/scenes/hermannplatz.jpg',
   'art/night/scenes/market.jpg', 'art/night/scenes/neukoelln.jpg', 'art/night/scenes/ubahn.jpg',
+  ...['apfel', 'brot', 'buch', 'cafe', 'fahrkarte', 'frau', 'freund', 'freundin', 'fussball', 'gitarre', 'handy', 'kaffee',
+    'kuchen', 'lehrer', 'mann', 'schluessel', 'stadt', 'student', 'stuhl', 'tasse', 'tee', 'tisch', 'wasser'].map(w => `art/night/words/${w}.jpg`),
 ];
 const CODE = /\.(html|js|mjs|css|json|webmanifest)$/;
 
