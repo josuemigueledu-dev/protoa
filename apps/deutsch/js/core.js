@@ -232,10 +232,13 @@ function addSentenceCard(turn, lessonN, opts = {}) {
 function goalInfo() {
   const s = S.settings, learned = learnedCount(), remaining = Math.max(0, s.target - learned), t = todayStr();
   let perDay = s.perDay, date = s.targetDate;
-  if (s.fixed === 'date' && date) { const d = Math.max(1, daysBetween(t, date)); perDay = Math.ceil(remaining / d); }
+  // a target date that has gone by is over: the words-per-day pace takes over until a new date is picked
+  // (dividing what is left by one day asked a learner back after weeks for every remaining word today)
+  const passed = s.fixed === 'date' && !!date && date < t;
+  if (s.fixed === 'date' && date && !passed) { const d = Math.max(1, daysBetween(t, date)); perDay = Math.ceil(remaining / d); }
   else if (perDay > 0) date = addDays(t, Math.ceil(remaining / perDay));
   const today = (S.progress.days[t] || {}).new || 0;
-  return { learned, remaining, perDay: perDay || 0, date, today, pct: Math.min(100, Math.round(100 * learned / Math.max(1, s.target))) };
+  return { learned, remaining, perDay: perDay || 0, date, today, passed, pct: Math.min(100, Math.round(100 * learned / Math.max(1, s.target))) };
 }
 
 /* ---------- VoiceLight: the teacher's core brightens with the cadence and loudness of the voice ----------
