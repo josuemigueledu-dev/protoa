@@ -631,5 +631,8 @@ body.lay-tablet .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 24px)}
    size it last had (auto) so the scrollbar doesn't jump.
    The containment clips what a slab draws outside its box (its 3D edge and shadows), so the clip reaches 48 px out. */
 .view>*{content-visibility:auto;contain-intrinsic-size:auto 240px;overflow-clip-margin:48px}
+/* except Sprechen's chat: it scrolls to its newest line the moment it is drawn, so it needs its real height then, not
+   the 240 px stand-in (the tester, #146: the replies stayed under the input, the chat at the top) */
+.view>.chatlog{content-visibility:visible}
 /* the map is one long list: its stations skip the work one by one */
 .kline>.kst{content-visibility:auto;contain-intrinsic-size:auto 82px;overflow-clip-margin:48px}
