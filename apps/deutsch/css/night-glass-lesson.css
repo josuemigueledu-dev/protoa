@@ -145,3 +145,17 @@
 .mate:first-child .face{box-shadow:0 0 0 2px var(--card-solid),0 0 0 4px var(--magenta)}
 .mate b{font-size:.875rem}
 .mate .faint{font-size:.75rem;line-height:1.2}
+
+/* ---------- Grammar (screens/5-grammar.jpg) ---------- */
+.gfeat{display:grid;gap:10px;width:100%;text-align:left;padding:18px;border-radius:var(--r);background:var(--glass-dark);color:var(--nink);
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07);transition:transform .15s var(--ease)}
+.gfeat:active{transform:scale(.99)}
+.gfeat .k{color:var(--magenta);font-weight:700;font-size:.8125rem}
+.gfeat .t{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.5rem;line-height:1.1}
+.gfeat .conj{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;min-width:0;overflow-wrap:anywhere;background:rgba(127,140,160,.14);border-radius:var(--r);padding:12px 14px;font-size:1.0625rem}
+.gfeat .conj span:nth-child(odd){color:var(--ngrey)} .gfeat .conj b{color:var(--cyan)}
+.gfeat .go{font-weight:700;font-size:.875rem;color:var(--ngrey)}
+.gnum{width:40px;height:40px;flex:none;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-family:var(--hero);font-size:.8125rem;background:rgba(44,74,116,.14);color:var(--steel)}
+.gnum.done{background:var(--steel);color:#eef1f4}
+.listrow.soon{opacity:.7}
