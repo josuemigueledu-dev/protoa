@@ -606,10 +606,10 @@ function renderGrammar(v, openId) {
   v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Short reference units, each with glossed examples and five drills. Lessons link here with "Show how it works"; nothing here is required.'));
   // Night Glass: the rule of the lesson you are on comes first, as a dark slab with its table
   const open = u => { const vv = newView(); grammarUnit(vv, u); };
-  const cur = currentLessonN() || 1, done = new Set(S.progress.lessonsDone);
-  const feat = GRAMMAR.filter(u => !u.stub && u.lesson <= cur).sort((a, b) => b.lesson - a.lesson)[0];
-  if (feat) {
-    const f = h('button', { class: 'gfeat slab-dark', onclick: () => open(feat) }, h('span', { class: 'k' }, (feat.lesson === cur ? 'Today in lesson ' : 'From lesson ') + feat.lesson), h('b', { class: 't' }, feat.title));
+  const done = new Set(S.progress.lessonsDone), ff = featuredGrammar();
+  if (ff) {
+    const feat = ff.unit;
+    const f = h('button', { class: 'gfeat slab-dark', onclick: () => open(feat) }, h('span', { class: 'k' }, (ff.today ? 'Today in lesson ' : 'From lesson ') + feat.lesson), h('b', { class: 't' }, feat.title));
     if (feat.table) { const g = h('div', { class: 'conj' }); feat.table.forEach(([p, x]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, x)))); f.append(g); }
     f.append(h('span', { class: 'go' }, 'Open the unit →')); v.append(f);
   }

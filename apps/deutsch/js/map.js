@@ -14,6 +14,12 @@ function currentLessonN() {
   if (ls && written.includes(ls.n) && !done.has(ls.n)) return ls.n;
   return written.sort((a, b) => a - b).find(n => !done.has(n)) ?? null;
 }
+// the unit Grammar puts first: the rule of the lesson you are on, or past the written line the newest rule you have done
+function featuredGrammar() {
+  const cur = currentLessonN(), upTo = cur ?? Math.max(1, ...S.progress.lessonsDone);
+  const unit = GRAMMAR.filter(u => !u.stub && u.lesson <= upTo).sort((a, b) => b.lesson - a.lesson)[0];
+  return unit ? { unit, today: unit.lesson === cur } : null;
+}
 function reviewCardsFor(from, to) {
   const out = [];
   for (const [sh, shd] of Object.entries(S.cards)) for (const [id, c] of Object.entries(shd.w || {})) {
