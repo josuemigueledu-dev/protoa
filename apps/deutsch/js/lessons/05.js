@@ -10,7 +10,7 @@ LESSONS.push({
     q: 'Compare "Ich wohne" and "Du wohnst". What stays the same in the verb, and what changes?',
     note: 'The stem <em>wohn-</em> stays and the ending follows the person: <em>ich -e</em>, <em>du -st</em>, <em>Sie -en</em>. Spanish does the same (<em>vivo, vives</em>), but German always says the pronoun. A stem ending in <em>-t</em> adds an <em>e</em> so you can hear the ending: <em>du arbeitest</em>. There is no separate "am living" form: <em>Ich wohne</em> means both "I live" and "I am living".', grammar: 'verbs' },
   can: 'say where you live, work and study, with ich, du and Sie.',
-  sound: { focus: 'w', say: 'German <em>w</em> is English "v": <em>wo</em> sounds like "voh". It is not the Spanish <em>b</em>: let your upper teeth touch your lower lip.', words: [['wo', 'where'], ['wohnen', 'to live'], ['wann', 'when'], ['wir', 'we']] },
+  sound: { focus: 'eu and au', say: 'German <em>eu</em> is the Spanish <em>oy</em> of <em>hoy</em>, and <em>heute</em> even means the same: say <em>hoy</em> with a breathed <em>h</em> (Spanish keeps it silent, German says it), then a soft "tuh". German <em>au</em> is the Spanish <em>au</em> of <em>pausa</em>: <em>Pause</em> is nearly the same word.', words: [['heute', 'today'], ['neu', 'new'], ['Pause', 'break'], ['auch', 'too']] },
   warmup: ['Spanien', 'der Kurs', 'neu', 'oder'],
   twist: { at: 9, event: 'event.delay', mood: 'surprised' },
   words: [
@@ -20,7 +20,7 @@ LESSONS.push({
     { de: 'wo', en: ['where'], type: 'adv', ipa: 'voː', resp: 'VOH', syl: 'wo', ex: '[Wo] wohnst du, Ana?', exEn: 'Where do you live, Ana?', exG: 'Wo=where | wohnst=live | du,=you (informal) | Ana?=Ana' },
     { de: 'in', en: ['in'], type: 'prep', ipa: 'ɪn', resp: 'IN', syl: 'in', ex: 'Ana wohnt [in] Neukölln.', exEn: 'Ana lives in Neukölln.', exG: 'Ana=Ana | wohnt=lives | in=in | Neukölln.=Neukölln' },
     { de: 'hier', en: ['here'], type: 'adv', ipa: 'hiːɐ̯', resp: 'HEER', syl: 'hier', ex: 'Ich wohne [hier].', exEn: 'I live here.', exG: 'Ich=I | wohne=live | hier.=here' },
-    { de: 'dort', en: ['there'], type: 'adv', ipa: 'dɔʁt', resp: 'DORT', syl: 'dort', ex: 'Das Café ist [dort].', exEn: 'The café is over there.', exG: 'Das=the | Café=café | ist=is | dort.=over there' },
+    { de: 'dort', en: ['there'], type: 'adv', ipa: 'dɔʁt', resp: 'DORT', syl: 'dort', ex: 'Das Café ist [dort].', exEn: 'The café is over there.', exG: 'Das=the | Café=café | ist=is | dort.=there' },
     { de: 'mit', en: ['with'], type: 'prep', ipa: 'mɪt', resp: 'MIT', syl: 'mit', ex: 'Ich lerne [mit] Ana.', exEn: 'I study with Ana.', exG: 'Ich=I | lerne=study | mit=with | Ana.=Ana' },
     { de: 'heute', en: ['today'], type: 'adv', ipa: 'ˈhɔʏ̯tə', resp: 'HOY·tuh', syl: 'heu·te', ex: '[Heute] lerne ich Deutsch.', exEn: 'Today I am learning German.', exG: 'Heute=today | lerne=am learning | ich=I | Deutsch.=German' },
     { de: 'jetzt', en: ['now'], type: 'adv', ipa: 'jɛtst', resp: 'YETST', syl: 'jetzt', ex: 'Wir lernen [jetzt].', exEn: 'We are studying now.', exG: 'Wir=we | lernen=are studying | jetzt.=now' },
