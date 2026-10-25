@@ -21,36 +21,49 @@ function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { c
 function go(r) { if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
-function newView() { const dir = DIRS[NAV]; if (dir) leave(view.querySelector(':scope > .view'), dir); view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); return v; }
+function newView() { const dir = DIRS[NAV]; view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); if (dir) setTimeout(() => v.classList.remove('in-' + dir), 1200); return v; }
 /* ---------- screens travel (owner, Oct 25): the old screen's slabs leave one by one in the direction of travel while
    the new screen's slabs come in from the other side. Tabs to the right push the screen left (and back), opening a
    lesson, review or talk goes left too, a tab opened from nowhere rises up, leaving a lesson sinks down. ---------- */
 const DIRS = { fwd: 'left', back: 'right', rise: 'up', left: 'left', right: 'right', up: 'up', down: 'down' };
 const tabIndex = r => TABS.findIndex(([id]) => id === (r === 'more' || r === 'grammar' ? 'profile' : r));
 function tabDir(from, to) { const i = tabIndex(from), j = tabIndex(to); return i < 0 || j < 0 || i === j ? 'up' : j > i ? 'left' : 'right'; }
-function leave(old, dir) {
+function leave(old, dir, keepTop) {
   view.querySelectorAll(':scope > .leaving').forEach(e => e.remove());
-  if (!old || reduced() || !old.animate) return;
   // the old screen stays where it was on screen (the pane scrolls back to the top for the new one), out of the flow
-  const top = old.offsetTop - PANE.scrollTop, inLesson = document.body.classList.contains('in-lesson');
+  const top = old.offsetTop - PANE.scrollTop;
   old.className = 'view stack leaving'; old.setAttribute('aria-hidden', 'true'); old.inert = true;
-  Object.assign(old.style, { position: 'absolute', top: top + 'px', left: 0, right: 0, pointerEvents: 'none' });
-  const far = { left: ['-70vw', '0'], right: ['70vw', '0'], up: ['0', '-40vh'], down: ['0', '40vh'] }[dir];
+  Object.assign(old.style, { position: 'absolute', top: top + 'px', left: 0, right: 0, pointerEvents: 'none' }); PANE.scrollTo({ top: 0 });
+  const far = { left: ['-45vw', '0'], right: ['45vw', '0'], up: ['0', '-28vh'], down: ['0', '28vh'] }[dir];
   const vh = innerHeight; let i = 0, last = 0;
   for (const el of old.children) {
     const r = el.getBoundingClientRect();
-    // in a lesson the header stays put: the new one is drawn on the same spot
-    if (r.bottom < 0 || r.top > vh || (inLesson && el.classList.contains('lesson-top'))) { el.style.visibility = 'hidden'; continue; }
-    const delay = Math.min(i++, 6) * 40; last = Math.max(last, delay);
+    // between two steps of a lesson the header stays put until the new one is drawn over it
+    if (keepTop && el.classList.contains('lesson-top')) continue;
+    if (r.bottom < 0 || r.top > vh) { el.style.visibility = 'hidden'; continue; }
+    const delay = Math.min(i++, 6) * 35; last = Math.max(last, delay); el.style.willChange = 'translate, opacity';
     // translate, not transform: the slabs' transform is pinned (night-glass.css, "no 3D tilt on glass")
-    el.animate([{ translate: '0 0', opacity: 1 }, { translate: far[0] + ' ' + far[1], opacity: 0 }], { duration: 340, delay, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' });
+    el.animate([{ translate: '0 0', opacity: 1 }, { translate: far[0] + ' ' + far[1], opacity: 0 }], { duration: 300, delay, easing: 'cubic-bezier(.3,0,.8,.6)', fill: 'both' });
   }
-  setTimeout(() => old.remove(), last + 380);
+  setTimeout(() => old.remove(), last + 340);
 }
 let renderedDay = null; // the day the screen on show was drawn for (screens.js redraws it when a new day starts)
+/* the old screen starts leaving first, and the new one is built a frame later: building a screen takes the phone a
+   moment, and the leaving slabs keep moving on their own layers meanwhile instead of standing still and then jumping */
+let drawTok = null;
+function lessonMode() { return !!((route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam'); }
 function render() {
+  const dir = DIRS[NAV], old = view.querySelector(':scope > .view:not(.leaving)'), tok = drawTok = {};
+  if (dir && old && old.animate && !reduced()) {
+    leave(old, dir, document.body.classList.contains('in-lesson') && lessonMode());
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (drawTok === tok) draw(); }));
+    return;
+  }
+  draw();
+}
+function draw() {
   renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
-  const inLesson = (route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam';
+  const inLesson = lessonMode();
   document.body.classList.toggle('in-lesson', !!inLesson);
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);
   const v = newView();
