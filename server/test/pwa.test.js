@@ -136,6 +136,24 @@ test('every file the real index.html loads, and every warm picture, is on disk a
   }
 });
 
+test('every painted picture art.js can ask for (cast, scenes, word pictures) is warm, so it shows offline', () => {
+  const { ctx } = loadSW({ fetchImpl: site });
+  const warm = new Set(vm.runInContext('WARM', ctx));
+  const art = vm.createContext({});
+  vm.runInContext(read('js/art.js'), art, { filename: 'art.js' });
+  const table = name => Object.values(vm.runInContext(name, art));
+  const painted = [
+    ...table('NIGHT_CAST').map(n => `art/night/ava-${n}.jpg`),
+    ...table('NIGHT_SCENE').map(n => `art/night/scenes/${n}.jpg`),
+    ...table('NIGHT_WORD').map(n => `art/night/words/${n}.jpg`),
+  ];
+  assert.ok(painted.length > 30);
+  for (const p of painted) {
+    assert.ok(existsSync(new URL(p, APP)), p + ' is missing on disk');
+    assert.ok(warm.has(p), p + ' is not in WARM in sw.js');
+  }
+});
+
 test('requests are sorted: /api, POST, other origins and ranges are left alone; code goes network first; pictures cache first', () => {
   const { ctx } = loadSW({ fetchImpl: site });
   const how = (path, o) => ctx.strategy(req(path, o), ORIGIN);
