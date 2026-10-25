@@ -217,12 +217,12 @@ function renderPracticeHub(v) {
     ['question', 'Word meanings', 'Pick the meaning: new and older words', learnedAll.length, () => drillSession('mc', 15)],
     ['puzzle', 'Fill the gaps', 'Complete real sentences with the right form', learnedAll.length, () => drillSession('gap', 12)],
     ['stairs', 'Build sentences', 'Put the words in German order', learnedAll.length, () => drillSession('order', 10)],
-    ['pencil', 'Translate to German', 'English sentence → German, typed', learnedAll.length, () => drillSession('trans', 10)],
-    ['sound', 'Listening', 'Hear a word or sentence, type it', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c], i) => mk(id, c, i % 2 ? 'li' : 'ls')))],
-    ['ticket', 'Say it in German', SR ? 'Meaning → German word, by voice or typing' : 'Meaning → German word, typed', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c]) => mk(id, c, 'p')))],
-    ['people', 'Conversation lines', conv.length ? conv.length + (conv.length === 1 ? ' line' : ' lines') + ' from lessons and Sprechen' : 'Lines you save from a lesson or Sprechen come here', conv.length, () => startReview(pick(conv, 10).map(([id, c]) => ({ id, sh: 'sent', c, kind: 'sent', extra: true })))],
-    ['plaster', 'Weak words', weak.length ? weak.length + (weak.length === 1 ? ' word' : ' words') + ' you missed twice or more' : 'Words you miss twice come here for extra practice', weak.length, () => startReview(weak.map(([id, c], i) => mk(id, c, ['r', 'gap', 'p', 'mc'][i % 4])))],
-    ['review', 'Mixed workout', 'Every exercise type in one session', learnedAll.length, () => { const p = drillPool(16, false); startReview(p.map((x, i) => mk(x.id, x.c, ['mc', 'gap', 'order', 'trans', 'li', 'p', 'r', 'ls'][i % 8]))); }],
+    ['pencil', 'Translate', 'English sentence → German, typed', learnedAll.length, () => drillSession('trans', 10)],
+    ['sound', 'Listening', 'Hear a word or sentence, type it', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c], i) => mk(id, c, i % 2 ? 'li' : 'ls')), 'Listening')],
+    ['ticket', 'Say it in German', SR ? 'Meaning → German word, by voice or typing' : 'Meaning → German word, typed', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c]) => mk(id, c, 'p')), 'Say it in German')],
+    ['people', 'Conversation lines', conv.length ? conv.length + (conv.length === 1 ? ' line' : ' lines') + ' from lessons and Sprechen' : 'Lines you save from a lesson or Sprechen come here', conv.length, () => startReview(pick(conv, 10).map(([id, c]) => ({ id, sh: 'sent', c, kind: 'sent', extra: true })), 'Conversation lines')],
+    ['plaster', 'Weak words', weak.length ? weak.length + (weak.length === 1 ? ' word' : ' words') + ' you missed twice or more' : 'Words you miss twice come here for extra practice', weak.length, () => startReview(weak.map(([id, c], i) => mk(id, c, ['r', 'gap', 'p', 'mc'][i % 4])), 'Weak words')],
+    ['review', 'Mixed workout', 'Every exercise type in one session', learnedAll.length, () => { const p = drillPool(16, false); startReview(p.map((x, i) => mk(x.id, x.c, ['mc', 'gap', 'order', 'trans', 'li', 'p', 'r', 'ls'][i % 8])), 'Mixed workout'); }],
     ['frame', 'Grammar', 'Reference units with drills', 1, () => go('grammar')],
   ];
   // a mode with nothing to practise yet stays readable and says so with a lock, rather than fading out
@@ -232,7 +232,7 @@ function renderPracticeHub(v) {
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
-  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4]))) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? ' word' : ' words')); }))));
+  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? ' word' : ' words')); }))));
   // the forecast and strength charts are empty until the first words; Your words below says how to start
   if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
   v.append(wordBank());
