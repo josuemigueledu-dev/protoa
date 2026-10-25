@@ -192,10 +192,13 @@ function newcomer(L) {
   const c = (L.scene.cast || []).find(c => !seen.has(c.id) && CAST_DE[c.id]); return c ? c.id : null;
 }
 const leadOf = L => { const c = (L && L.scene && L.scene.cast || []).find(c => CAST_DE[c.id]); return c ? c.id : null; };
+/* Protoa's line on Today: what it has noticed about the next scene (PROTOA_TODAY, content.js), else who or where */
 function protoaLine(L, resume, due) {
-  const who = !resume && newcomer(L), plate = L && L.scene && L.scene.plate;
-  const [de, deHtml, en] = !L ? (due ? ['Heute wiederholst du deine Wörter.', '', 'Today you review your words.'] : ['Bald geht es weiter.', '', 'More stops are coming soon.'])
-    : resume ? ['Weiter geht es.', '', 'Let’s carry on where you stopped.']
+  const who = !resume && newcomer(L), plate = L && L.scene && L.scene.plate, lead = resume && leadOf(L);
+  const own = !resume && L && typeof PROTOA_TODAY !== 'undefined' && LESSONS.includes(L) && PROTOA_TODAY[L.n];
+  const [de, deHtml, en] = !L ? (due ? [due === 1 ? 'Ein Wort wartet auf dich.' : `${due} Wörter warten auf dich.`, '', due === 1 ? 'One word is waiting for you.' : `${due} words are waiting for you.`] : ['Bald geht es weiter.', '', 'More stops are coming soon.'])
+    : resume ? (lead ? [`${lead === 'cast.barista' ? 'Der Barista' : CAST_DE[lead][1]} wartet noch.`, '', `${lead === 'cast.barista' ? 'The barista' : CAST_DE[lead][1]} is still waiting. Carry on where you stopped.`] : ['Weiter geht es.', '', 'Let’s carry on where you stopped.'])
+    : own ? [own[0], '', own[1]]
     : who ? [`Heute triffst du ${CAST_DE[who][0]}.`, `Heute triffst du <b>${CAST_DE[who][0]}</b>.`, `Today you meet ${CAST_DE[who][1]}.`]
     : plate === 'plate.cafe' ? ['Heute geht es ins Café.', 'Heute geht es ins <b>Café</b>.', 'Today we go to the café.']
     : plate === 'plate.classroom' ? ['Heute geht es in den Kurs.', 'Heute geht es in den <b>Kurs</b>.', 'Today it’s back to class.']
