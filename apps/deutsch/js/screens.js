@@ -112,8 +112,8 @@ function computeStamps() {
   const activeDays = Object.values(S.progress.days || {}).filter(d => (d.new || 0) + (d.reviews || 0) > 0 || (d.secs || 0) >= 60).length;
   const reviews = Object.values(S.progress.days || {}).reduce((a, d) => a + (d.reviews || 0), 0), talks = S.progress.talkCount || 0;
   const st = [{ id: 'laute', t: 'Laute', s: 'Lesson 0', icon: 'sound', on: !!S.progress.sounds }];
-  COURSE.forEach(c => st.push({ id: 'st' + c.n, t: c.station, s: 'Lesson ' + c.n, icon: c.icon, on: done.has(c.n) }));
-  [50, 100, 250, 500, 1000, 1500, 2400].forEach(n => st.push({ id: 'w' + n, t: n + ' Wörter', s: n === 2400 ? 'B1 vocabulary' : 'words yours', icon: n >= 1000 ? 'bulb' : 'puzzle', on: words >= n }));
+  COURSE.forEach(c => st.push({ id: 'st' + c.n, t: c.station, s: 'Lesson ' + c.n + ' · ' + c.topic, icon: c.icon, on: done.has(c.n) }));
+  [50, 100, 250, 500, 1000, 1500, 2400].forEach(n => st.push({ id: 'w' + n, t: n + ' Wörter', s: n === 2400 ? 'B1 vocabulary' : 'your words', icon: n >= 1000 ? 'bulb' : 'puzzle', on: words >= n }));
   LEVELS.forEach(l => st.push({ id: 'lv' + l.code, t: l.code + ' bestanden', s: 'level exam ≥ 90%', icon: 'exam', on: levelsPassed().includes(l.code) }));
   st.push({ id: 'talk1', t: 'Erstes Gespräch', s: 'Sprechen', icon: 'question', on: talks >= 1 }, { id: 'talk10', t: '10 Gespräche', s: 'Sprechen', icon: 'people', on: talks >= 10 });
   st.push({ id: 'd7', t: '7 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 7 }, { id: 'd30', t: '30 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 30 });
@@ -191,7 +191,7 @@ function renderProfile(v) {
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
   const sorted = [...stamps.filter(s => s.on), ...stamps.filter(s => !s.on)];
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', { lang: 'de' }, 'Stempelheft'), h('span', { class: 'faint' }, got + ' of ' + stamps.length + ' stamps')), h('div', { class: 'stamps', id: 'stamp-grid' }, ...sorted.slice(0, got + 10).map(stampEl)), stamps.length > got + 10 ? h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: e => { const g = document.getElementById('stamp-grid'); g.innerHTML = ''; sorted.forEach((s, i) => g.append(stampEl(s, i))); e.currentTarget.remove(); } }, 'Show all ' + stamps.length + ' stamps') : ''));
-  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Sounds (Lesson 0)', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, audio, theme, layout, import & export', () => openMore(renderSettings)]];
+  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Sounds (Lesson 0)', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, theme, voice, moving your progress', () => openMore(renderSettings)]];
   links.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: fn }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›'))));
 }
 

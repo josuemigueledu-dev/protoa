@@ -700,7 +700,7 @@ function renderReview(v) {
   } else if (['mc', 'gap', 'order', 'trans'].includes(it.kind)) {
     renderDrill(card, it, def, fb, showGrades, exRow);
   } else if (it.kind === 'p') {
-    card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.filter((m, i) => !def.en.some((o, j) => j !== i && o !== m && o.includes(m))).join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
+    card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.filter(m => !def.en.some(o => o.startsWith(m + ' ('))).join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
     const w = typeWidget({ placeholder: 'auf Deutsch', 'aria-label': 'German word' }, () => check()); const inp = w.inputs[0];
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return answerFirst(fb); const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
@@ -846,16 +846,16 @@ function renderSettings(v) {
   const calc = h('p', { class: 'small muted' }, calcText());
   goal.append(h('p', { class: 'faint' }, 'Every course runs to at least B1. A1 (600 words) and A2 (1,200) are milestones on the way; each ends with an exam you pass at 90% before the line continues.'));
   [target, perDay, date, minutes].forEach(i => i.addEventListener('change', persist));
-  goal.append(h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'Target level', level), h('label', { class: 'f' }, 'Target words', target)), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Keep fixed:'), fixedSeg), h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'New words per day', perDay), h('label', { class: 'f' }, 'Target date', date)), h('label', { class: 'f' }, 'Minutes per day', minutes), calc);
+  goal.append(h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'Target level', level), h('label', { class: 'f' }, 'Target words', target)), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Keep fixed'), fixedSeg), h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'New words per day', perDay), h('label', { class: 'f' }, 'Target date', date)), h('label', { class: 'f' }, 'Minutes per day', minutes), calc);
   perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay';
   v.append(goal);
   const about = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'About me'));
-  const fields = [['name', 'Your name'], ['city', 'Where you live'], ['field', 'What you study or do'], ['interests', 'Interests (3–5)'], ['why', "Why you're learning"]];
+  const fields = [['name', 'Your name'], ['city', 'Where you live'], ['field', 'What you study or do'], ['interests', 'Three to five interests'], ['why', "Why you're learning German"]];
   fields.forEach(([k, l]) => { const i = k === 'interests' || k === 'why' ? h('textarea', { id: 'about-' + k }, p[k] || '') : h('input', { type: 'text', id: 'about-' + k, value: p[k] || '' }); i.addEventListener('change', () => { p[k] = i.value.trim(); save('profile'); }); about.append(h('label', { class: 'f' }, l, i)); });
   v.append(about);
   const pref = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Preferences'));
   const tog = (k, label) => { const i = h('input', { type: 'checkbox', id: 'pref-' + k, checked: !!s[k] }); i.addEventListener('change', () => { s[k] = i.checked; save('settings'); applyTheme(); }); return h('label', { class: 'toggle' }, h('span', {}, label), i); };
-  pref.append(tog('autoWord', 'Play word audio automatically'), tog('uiSounds', 'Soft UI sounds'), tog('hideGloss', 'Hide glosses (self-test)'));
+  pref.append(tog('autoWord', 'Play word audio automatically'), tog('uiSounds', 'Soft UI sounds'), tog('hideGloss', 'Hide word-by-word glosses (test yourself)'));
   const theme = h('div', { class: 'seg', role: 'group', 'aria-label': 'Theme' }, ...['system', 'light', 'dark'].map(t => h('button', { 'aria-pressed': String(s.theme === t), onclick: () => { s.theme = t; s.themeChosen = true; save('settings'); applyTheme(); theme.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
   const diff = h('div', { class: 'seg', role: 'group', 'aria-label': 'Conversation difficulty' }, ...['auto', 'easier', 'default', 'harder'].map(t => h('button', { 'aria-pressed': String(s.difficulty === t), onclick: () => { s.difficulty = t; save('settings'); diff.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
   pref.append(h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Theme'), theme), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Conversation difficulty (auto follows your last 40 lines)'), diff), h('p', { class: 'faint' }, SR ? 'The microphone button (say your line aloud) works in this browser.' : 'This browser can’t listen, so the microphone button is hidden. Chrome, Edge and Safari can.'));
@@ -873,7 +873,7 @@ function renderSettings(v) {
 /* ---------- Onboarding (§5) ---------- */
 function onboarding() {
   const p = S.profile; const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'About you' }); const inner = h('div', { class: 'in' });
-  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
+  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Tell me a little about yourself, so our conversations fit your life. Skip it if you like: it’s also in Settings → About me.'))));
   const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
   const close = saveIt => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); render(); };
