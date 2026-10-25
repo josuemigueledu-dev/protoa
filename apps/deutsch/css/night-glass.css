@@ -624,3 +624,12 @@ body.lay-tablet .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 24px)}
   .khead .lvl b{transition:none}
   .stopline .riding .rider,.stopline .riding .fill{transition:none}
 }
+
+/* ---------- smooth screen changes (owner, Oct 25: "60 frames per second at least") ----------
+   Building a screen cost the phone a long frame: almost all of it style and layout for slabs nobody can see yet (the
+   tester, #146: 100 ms on the map at 4x). Each slab off screen now skips that work until it scrolls near, keeping the
+   size it last had (auto) so the scrollbar doesn't jump.
+   The containment clips what a slab draws outside its box (its 3D edge and shadows), so the clip reaches 48 px out. */
+.view>*{content-visibility:auto;contain-intrinsic-size:auto 240px;overflow-clip-margin:48px}
+/* the map is one long list: its stations skip the work one by one */
+.kline>.kst{content-visibility:auto;contain-intrinsic-size:auto 82px;overflow-clip-margin:48px}

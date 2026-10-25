@@ -30,17 +30,18 @@ const tabIndex = r => TABS.findIndex(([id]) => id === (r === 'more' || r === 'gr
 function tabDir(from, to) { const i = tabIndex(from), j = tabIndex(to); return i < 0 || j < 0 || i === j ? 'up' : j > i ? 'left' : 'right'; }
 function leave(old, dir, keepTop) {
   view.querySelectorAll(':scope > .leaving').forEach(e => e.remove());
+  // read everything first, then write: one layout instead of two (a full-page layout costs a phone a frame)
+  const top = old.offsetTop - PANE.scrollTop, vh = innerHeight;
+  const kids = [...old.children].map(el => { const r = el.getBoundingClientRect(); return { el, show: r.bottom >= 0 && r.top <= vh, keep: keepTop && el.classList.contains('lesson-top') }; });
   // the old screen stays where it was on screen (the pane scrolls back to the top for the new one), out of the flow
-  const top = old.offsetTop - PANE.scrollTop;
   old.className = 'view stack leaving'; old.setAttribute('aria-hidden', 'true'); old.inert = true;
   Object.assign(old.style, { position: 'absolute', top: top + 'px', left: 0, right: 0, pointerEvents: 'none' }); PANE.scrollTo({ top: 0 });
   const far = { left: ['-45vw', '0'], right: ['45vw', '0'], up: ['0', '-28vh'], down: ['0', '28vh'] }[dir];
-  const vh = innerHeight; let i = 0, last = 0;
-  for (const el of old.children) {
-    const r = el.getBoundingClientRect();
+  let i = 0, last = 0;
+  for (const { el, show, keep } of kids) {
     // between two steps of a lesson the header stays put until the new one is drawn over it
-    if (keepTop && el.classList.contains('lesson-top')) continue;
-    if (r.bottom < 0 || r.top > vh) { el.style.visibility = 'hidden'; continue; }
+    if (keep) continue;
+    if (!show) { el.style.visibility = 'hidden'; continue; }
     const delay = Math.min(i++, 6) * 35; last = Math.max(last, delay); el.style.willChange = 'translate, opacity';
     // translate, not transform: the slabs' transform is pinned (night-glass.css, "no 3D tilt on glass")
     el.animate([{ translate: '0 0', opacity: 1 }, { translate: far[0] + ' ' + far[1], opacity: 0 }], { duration: 300, delay, easing: 'cubic-bezier(.3,0,.8,.6)', fill: 'both' });
