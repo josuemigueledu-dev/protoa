@@ -107,3 +107,98 @@ test('export then import moves learned words and progress to a fresh copy', () =
   assert.equal(run('learnedCount()'), 1);
   assert.throws(() => vm.runInContext('importJSON("{}")', ctx), /words/);
 });
+
+const reset = () => exec('S.settings = DEF_SETTINGS(); S.profile = DEF_PROFILE(); S.progress = DEF_PROGRESS(); S.cards = {}; S.ready = true');
+
+test('fixLessonArt swaps an unknown plate for the best tag match, drops unknown pictures and events, and reports unknown cast', () => {
+  const manifest = [
+    { kind: 'plate', id: 'plate.classroom', tags: ['kurs'] },
+    { kind: 'plate', id: 'plate.cafe', tags: ['café', 'kaffee'] },
+    { kind: 'cast', id: 'cast.weber' },
+    { kind: 'word', id: 'word.kaffee' },
+    { kind: 'event', id: 'event.rain' },
+  ];
+  const lesson = {
+    title: 'Ein Kaffee im Café', theme: '', scene: { plate: 'plate.moon', place: '', cap: '', cast: [{ id: 'cast.weber' }, { id: 'cast.ghost' }] },
+    words: [{ de: 'Kaffee', pic: 'kaffee' }, { de: 'Tee', pic: 'word.tee' }, { de: 'Wasser' }],
+    twist: { event: 'event.snow' },
+  };
+  const out = JSON.parse(JSON.stringify(vm.runInContext(
+    `(() => { const L = ${JSON.stringify(lesson)}, log = []; const bad = fixLessonArt(L, ${JSON.stringify(manifest)}, m => log.push(m)); return { L, bad, log }; })()`, ctx)));
+  assert.equal(out.L.scene.plate, 'plate.cafe');
+  assert.deepEqual(out.bad, ['unknown cast cast.ghost']);
+  assert.equal(out.L.words[0].pic, 'kaffee');
+  assert.equal('pic' in out.L.words[1], false);
+  assert.equal('twist' in out.L, false);
+  assert.equal(out.log.length, 3);
+  // a known plate is kept, and the legacy scene id still resolves
+  const kept = call('fixLessonArt', { scene: { id: 'classroom' }, words: [] }, manifest, () => {});
+  assert.deepEqual(kept, []);
+});
+
+test('fixLessonArt falls back to the classroom when no tag matches, and reports a manifest without plates', () => {
+  const plates = [{ kind: 'plate', id: 'plate.cafe', tags: ['café'] }, { kind: 'plate', id: 'plate.classroom', tags: [] }];
+  const L = { title: 'Zahlen', scene: { plate: 'plate.nope' }, words: [] };
+  const r = JSON.parse(JSON.stringify(vm.runInContext(`(() => { const L = ${JSON.stringify(L)}; fixLessonArt(L, ${JSON.stringify(plates)}, () => {}); return L.scene.plate; })()`, ctx)));
+  assert.equal(r, 'plate.classroom');
+  assert.deepEqual(call('fixLessonArt', { scene: {}, words: [] }, [], () => {}), ['no plates available']);
+});
+
+test('checkGlosses accepts a gloss that follows the German word for word, and names each mismatch', () => {
+  const ok = { de: 'Guten Tag!', g: 'Guten=good|Tag=day' };
+  const lesson = {
+    notice: ok,
+    words: [{ de: 'Tag', ex: 'Guten [Tag].', exG: 'Guten=good|Tag=day' }, { de: 'Hallo', ex: 'Hallo!', exG: 'Hi=hello' }, { de: 'Ja', ex: 'Ja.', exG: '' }],
+    build: [{ de: 'Wie geht’s?', g: 'Wie=how|geht’s=goes' }],
+    conv: [{ w: 'Danke.', g: 'Danke=thanks' }, { de: 'Bitte.' }],
+  };
+  assert.deepEqual(call('checkGlosses', lesson), [
+    'word Hallo: "hallo" vs gloss "hi"',
+    'word Ja: no gloss',
+    'conv 1: no gloss',
+  ]);
+});
+
+test('markLearned creates the card once, counts the word as new once, and keeps it in its first shard', () => {
+  reset();
+  const w = { de: 'Tisch' };
+  exec(`markLearned(${JSON.stringify(w)}, 4); markLearned(${JSON.stringify(w)}, 7)`);
+  assert.equal(run('learnedCount()'), 1);
+  assert.equal(run(`cardShard('Tisch')`), 'l4');
+  assert.equal(run('S.cards.l7'), null);
+  assert.equal(run(`S.progress.days[todayStr()].new`), 1);
+  assert.equal(run(`cardOf('Tisch').since`), today);
+  assert.equal(run(`isLearned('Stuhl')`), false);
+});
+
+test('addSentenceCard stores a sentence card, and a repeat only pulls its due date earlier', () => {
+  reset();
+  const turn = { de: 'Ich [komme] aus Spanien.', en: 'I come from Spain.', g: 'x=y' };
+  exec(`addSentenceCard(${JSON.stringify(turn)}, 3, { due: '2099-01-10' })`);
+  const id = Object.keys(run('S.cards.sent.w'))[0];
+  assert.equal(id.startsWith('s:'), true);
+  assert.equal(run(`S.cards.sent.w[${JSON.stringify(id)}].learned`), true);
+  assert.equal(run(`S.cards.sent.w[${JSON.stringify(id)}].r[0]`), '2099-01-10');
+  exec(`addSentenceCard(${JSON.stringify(turn)}, 3, { due: '2099-01-20' })`);
+  assert.equal(run(`S.cards.sent.w[${JSON.stringify(id)}].r[0]`), '2099-01-10');
+  exec(`addSentenceCard(${JSON.stringify(turn)}, 3, { due: '2099-01-05' })`);
+  assert.equal(run(`S.cards.sent.w[${JSON.stringify(id)}].r[0]`), '2099-01-05');
+  assert.equal(run('Object.keys(S.cards.sent.w).length'), 1);
+});
+
+test('goalInfo projects the finish date from words per day, or words per day from a fixed date', () => {
+  reset();
+  exec(`S.settings.target = 100; S.settings.perDay = 10;
+        for (let i = 0; i < 20; i++) markLearned({ de: 'w' + i }, 1)`);
+  let g = run('goalInfo()');
+  assert.deepEqual([g.learned, g.remaining, g.perDay, g.today, g.pct], [20, 80, 10, 20, 20]);
+  assert.equal(g.date, run(`addDays(todayStr(), 8)`));
+  exec(`S.settings.fixed = 'date'; S.settings.targetDate = addDays(todayStr(), 4)`);
+  g = run('goalInfo()');
+  assert.equal(g.perDay, 20); // 80 words in 4 days
+  exec(`S.settings.targetDate = addDays(todayStr(), -3)`);
+  assert.equal(run('goalInfo().perDay'), 80); // a past date counts as one day, never divides by zero or goes negative
+  exec('S.settings.target = 10');
+  g = run('goalInfo()');
+  assert.deepEqual([g.remaining, g.perDay, g.pct], [0, 0, 100]);
+});

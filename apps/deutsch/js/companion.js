@@ -18,7 +18,9 @@ const Companion = (() => {
   const P = { x: -1, y: -1, vx: 0, vy: 0, raf: 0, last: 0, attend: null, sq: 0, ang: 0, seed: Math.random() * 50, a: null, aAt: 0, lookAt: null };
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const phone = () => document.body.classList.contains('lay-mobile');   /* inside a sheet on a phone the field has no free margin: perch on the sheet's corner instead, clear of its text */
-  const docked = () => phone() && document.body.classList.contains('in-lesson') && !!document.querySelector('#view .lesson-top .tslot');   /* on a phone a lesson has no free margin: the orb lives in the header slot and never covers a task */
+  const gutterless = () => { const top = document.querySelector('#view .lesson-top'); if (!top) return false; const b = top.getBoundingClientRect(), [L, R] = limits(); return Math.max(R - b.right, b.left - L) < 72 * .95; };
+  const dockable = () => document.body.classList.contains('in-lesson') && !!document.querySelector('#view .lesson-top .tslot') && (phone() || gutterless());   /* a lesson with no free margin (phones, narrow tablets): the orb lives in the header slot and never covers a task */
+  const docked = () => !!P.dock;   /* measured with each re-evaluation in target(), not every frame */
   const size = () => docked() ? 44 : document.body.classList.contains('lay-mobile') ? 58 : 72;
   const vis = el => { if (!el || !el.isConnected) return null; const b = el.getBoundingClientRect(); return b.width && b.height && b.bottom > 48 && b.top < innerHeight - 48 ? b : null; };
   function anchor() {
@@ -65,7 +67,7 @@ const Companion = (() => {
   function target(now, t) {
     const s = size(); let a = null;
     if (now - P.aAt > 90) {   /* re-evaluate about 11 times a second */
-      P.aAt = now; const n = anchor();
+      P.aAt = now; P.dock = dockable(); document.body.classList.toggle('orb-dock', P.dock && !phone()); const n = anchor();
       const same = (x, y) => x && y && x.kind === y.kind && Math.abs(x.b.top - y.b.top) < 40 && Math.abs(x.b.left - y.b.left) < 40;
       if (!P.a || !n || n.kind !== 'read' || P.a.kind !== 'read' || same(n, P.a)) { P.a = n; P.cand = null; }
       else if (P.cand && same(n, P.cand.a) && now - P.cand.t > 280) { P.a = n; P.cand = null; }
