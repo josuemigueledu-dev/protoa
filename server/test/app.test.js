@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { createApp } from '../src/app.js';
 import { parseJSONText, AIError } from '../src/claude.js';
@@ -191,12 +193,23 @@ test('serves the app, the shared orb, and nothing outside them', async () => {
 });
 
 test('static files are found when the server starts from the repository root', async () => {
-  const before = process.cwd(); process.chdir(new URL('../..', import.meta.url).pathname);
+  const before = process.cwd(); process.chdir(fileURLToPath(new URL('../..', import.meta.url)));
   try {
     const app = createApp();
     assert.equal((await app.request('/shared/orb/glorb.js')).status, 200);
     assert.equal((await app.request('/deutsch/css/base.css')).status, 200);
   } finally { process.chdir(before); }
+});
+
+// the pathname of a file URL is "/C:/..." on Windows and keeps %20 for a space: paths come from fileURLToPath
+test('file paths are made with fileURLToPath, not a file URL pathname', () => {
+  const root = fileURLToPath(new URL('../..', import.meta.url)), bad = [];
+  for (const dir of ['server/src', 'server/test', 'scripts']) {
+    for (const f of readdirSync(root + dir, { recursive: true })) {
+      if (/\.m?js$/.test(f) && /import\.meta\.url\)\.pathname/.test(readFileSync(`${root}${dir}/${f}`, 'utf8'))) bad.push(`${dir}/${f}`);
+    }
+  }
+  assert.deepEqual(bad, []);
 });
 
 test('parseJSONText accepts bare, fenced and wrapped JSON', () => {
