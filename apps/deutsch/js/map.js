@@ -56,8 +56,8 @@ function mapModel() {
 }
 
 /* ---------- the map (Night Glass: docs/designs/night-glass/screens/2-course-map.jpg) ----------
-   The chapter you are in heads the screen on the navy stage, with your place in A1, the level bar and Protoa (companion.js
-   perches on .khead .seat). Below it the line runs down the left: done stops are steel with a tick, yours is a magenta ring
+   The chapter you are in heads the screen on the navy stage, with your place in A1 and the level bar (Protoa
+   stays in its tab). Below it the line runs down the left: done stops are steel with a tick, yours is a magenta ring
    beside a card with its scene and a start button, the ones ahead are rings with a lock. The person you meet sits on the
    right of each lesson. A chapter with nothing written yet folds into one row. After a lesson the line fills down to your
    new stop. Only transform and opacity animate. */
