@@ -138,7 +138,7 @@ const strengthOf = c => !c ? 0 : Math.min(1, c[1] / 45);
 
 /* ---------- Storage (localStorage for now; server sync comes with accounts) ---------- */
 const S = { settings: null, profile: null, progress: null, cards: {}, lessonsGen: {}, ai: null, ready: false };
-const DEF_SETTINGS = () => ({ level: 'B1', target: 2400, fixed: 'perDay', perDay: 20, targetDate: '', minutes: 20, autoWord: true, uiSounds: true, hideGloss: false, theme: 'light', difficulty: 'auto', voiceName: '', voiceDepth: .5, voiceRate: .92, onboarded: false, updatedAt: 0 });
+const DEF_SETTINGS = () => ({ level: 'B1', target: 2400, fixed: 'perDay', perDay: 20, targetDate: '', minutes: 20, autoWord: true, uiSounds: true, hideGloss: false, theme: 'system', difficulty: 'auto', voiceName: '', voiceDepth: .5, voiceRate: .92, onboarded: false, updatedAt: 0 });
 const DEF_PROGRESS = () => ({ lessonsDone: [], lessonState: null, recent: [], days: {}, sounds: false, updatedAt: 0 });
 const DEF_PROFILE = () => ({ name: '', city: '', field: '', interests: '', why: '', updatedAt: 0 });
 const LS = (k, v) => { try { if (v === undefined) { const s = localStorage.getItem('weg:' + LANG + ':' + k); return s ? JSON.parse(s) : null; } localStorage.setItem('weg:' + LANG + ':' + k, JSON.stringify(v)); } catch (e) { return null; } };
@@ -155,7 +155,7 @@ function save(key, shard) {
 // every course goes to at least B1 (2,400 words); A1 and A2 are milestones, not goals
 function enforceLevelFloor() { const s = S.settings; if (!['B1', 'B2'].includes(s.level)) s.level = 'B1'; s.target = Math.max(s.level === 'B2' ? 4000 : 2400, +s.target || 0); }
 function loadLocal() {
-  S.settings = Object.assign(DEF_SETTINGS(), LS('settings') || {}); if (!S.settings.themeChosen) S.settings.theme = 'light'; enforceLevelFloor();
+  S.settings = Object.assign(DEF_SETTINGS(), LS('settings') || {}); if (!S.settings.themeChosen) S.settings.theme = 'system'; enforceLevelFloor();
   S.profile = Object.assign(DEF_PROFILE(), LS('profile') || {});
   S.progress = Object.assign(DEF_PROGRESS(), LS('progress') || {});
   S.cards = {};
