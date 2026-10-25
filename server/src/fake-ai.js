@@ -14,7 +14,7 @@ export const TALK_SCRIPT = [
   { de: 'Freut mich. Woher kommen Sie?', en: 'Nice to meet you. Where are you from?', gloss: 'Freut mich.=nice to meet you | Woher=where from | kommen=come | Sie?=you (formal)' },
   { de: 'Ah, interessant. Und wo wohnen Sie jetzt?', en: 'Ah, interesting. And where do you live now?', gloss: 'Ah,=ah | interessant.=interesting | Und=and | wo=where | wohnen=live | Sie=you (formal) | jetzt?=now' },
   { de: 'Schön. Was trinken Sie gern?', en: 'Nice. What do you like to drink?', gloss: 'Schön.=nice | Was=what | trinken=drink | Sie=you (formal) | gern?=like to' },
-  { de: 'Danke für das Gespräch. Bis bald.', en: 'Thanks for the chat. See you soon.', gloss: 'Danke=thanks | für=for | das=the | Gespräch.=conversation | Bis bald.=see you soon' },
+  { de: 'Danke fürs Gespräch. Bis bald.', en: 'Thanks for the chat. See you soon.', gloss: 'Danke=thanks | fürs=for the | Gespräch.=conversation | Bis bald.=see you soon' },
 ];
 
 const replies = {

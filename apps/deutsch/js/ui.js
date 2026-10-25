@@ -203,7 +203,7 @@ function dueCards() {
 function actionBar(opts) {
   document.querySelector('.actionbar')?.remove();
   const bar = h('div', { class: 'actionbar ' + (opts.state || '') });
-  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig!' : opts.state === 'bad' ? 'Nicht ganz' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
+  if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig.' : opts.state === 'bad' ? 'Nicht ganz.' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
   const inner = h('div', { class: 'in' }); (opts.buttons || []).forEach(b => inner.append(b)); bar.append(inner); document.body.append(bar); return bar;
 }
 
@@ -330,7 +330,7 @@ function writeYourOwn() {
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Write your own'), h('p', { class: 'muted small' }, "One German sentence with words you know. You get it back corrected, with the main error named and one way to extend it."));
   const inp = deInput({ placeholder: 'Ich komme aus …', id: 'wyo-input', 'aria-label': 'Say where you are from, in German' }); const out = h('div', { class: 'stack' });
   const btn = h('button', { class: 'btn', onclick: async () => {
-    const s = inp.value.trim(); if (!s) return; if (!S.ai) { out.innerHTML = ''; out.append(fbEl('note', 'Claude is not available right now, so I cannot check this.')); return; }
+    const s = inp.value.trim(); if (!s) return; if (!S.ai) { out.innerHTML = ''; out.append(fbEl('note', 'Protoa’s AI is not reachable right now, so this cannot be checked.')); return; }
     btn.disabled = true; Voice.busy(true); out.innerHTML = ''; out.append(fbEl('hint', 'Protoa is reading your sentence…'));
     try { const r = await AI.run('correctSentence', { sentence: s }); out.innerHTML = ''; out.append(h('div', { class: 'stack' }, h('div', { class: 'row' }, glossEl(r.corrected || s), playBtn(r.corrected || s)), fbEl(r.error && !/^no errors/i.test(r.error) ? 'hint' : 'ok', esc(r.error || '')), r.extend ? fbEl('note', 'Extend it: ' + esc(r.extend)) : '')); }
     catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, 'Could not check right now.'))); }
@@ -480,7 +480,7 @@ function lessonConv(v, L, ls) {
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
   const log = h('div', { class: 'log', role: 'log' }); conv.append(log);
   const modeLabel = { easier: 'shorter, more tiles', default: 'default mix', harder: 'longer, more typing' }[C.mode];
-  v.append(h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', {}, h('div', { class: 'eyebrow' }, 'The conversation · ' + L.scene.place), h('div', { class: 'faint' }, 'Difficulty: ' + modeLabel + (S.settings.difficulty === 'auto' ? ' (automatic)' : '') + ' · tap a word to hear it, twice for its card')), h('div', { class: 'seg', role: 'group', 'aria-label': 'Difficulty' }, ['easier', 'default', 'harder'].map(m => h('button', { 'aria-pressed': C.mode === m, onclick: () => { S.settings.difficulty = m; save('settings'); ls.conv = null; save('progress'); render(); } }, m)))));
+  v.append(h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', {}, h('div', { class: 'eyebrow' }, 'The conversation · ' + L.scene.place), h('div', { class: 'faint' }, 'Difficulty: ' + modeLabel + (S.settings.difficulty === 'auto' ? ' (automatic)' : '') + ' · tap a word to hear it, twice for its card')), h('div', { class: 'seg', role: 'group', 'aria-label': 'Difficulty' }, ['easier', 'default', 'harder'].map(m => h('button', { 'aria-pressed': String(C.mode === m), onclick: () => { S.settings.difficulty = m; save('settings'); ls.conv = null; save('progress'); render(); } }, m[0].toUpperCase() + m.slice(1))))));
   C.log.forEach(m => log.append(bubble(m)));
   v.append(conv);
   const turnbox = h('div', { class: 'turnbox' }); conv.append(turnbox);
@@ -530,7 +530,7 @@ function lessonConv(v, L, ls) {
     }
     function selfJudge(ans) { // Claude unavailable: show the model answer and let him judge (Right / Close / Wrong)
       ladder.innerHTML = ''; const ul = glossEl(t.de, t.g);
-      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Claude is not available to check a free answer. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?')));
+      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?')));
       actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => settle({ ok: false, hint: 'Compare your line with the model answer, then try once more.' }, ans) }, 'Wrong'), h('button', { class: 'btn ghost', onclick: () => settle({ ok: true, exact: false, note: 'Close enough to be understood.' }, ans) }, 'Close'), h('button', { class: 'btn', onclick: () => settle({ ok: true, exact: true }, ans) }, 'Right')] });
       KEYS = null;
     }
@@ -600,7 +600,7 @@ const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?']
 /* the Leitner box a card sits in, from its interval in days: 1 new or missed, 5 a month or more */
 const rvBox = r => { const iv = r ? r[1] : 0; return iv < 2 ? 1 : iv < 7 ? 2 : iv < 14 ? 3 : iv < 30 ? 4 : 5; };
 function renderReview(v) {
-  const it = PR.queue[0]; if (!it) { const stop = PR.stop; PR = null; if (stop) { S.progress.reviewStops = [...new Set([...(S.progress.reviewStops || []), stop])]; save('progress'); route = 'learn'; toast('Wiederholung done'); } NAV = 'fade'; render(); return; }
+  const it = PR.queue[0]; if (!it) { const stop = PR.stop; PR = null; if (stop) { S.progress.reviewStops = [...new Set([...(S.progress.reviewStops || []), stop])]; save('progress'); route = 'learn'; toast('Review stop done'); } NAV = 'fade'; render(); return; }
   const def = it.c.sent ? null : wordDef(it.id); const card = h('div', { class: 'card stack' });
   if (['gap', 'order', 'trans'].includes(it.kind) && !(def && def.ex && def.exEn && /\[[^\]]+\]/.test(def.ex))) it.kind = 'r';
   if (it.kind === 'mc' && !def) it.kind = 'r';
@@ -676,7 +676,7 @@ function wordBank() {
   const c = h('div', { class: 'card stack' }, h('h2', {}, 'Your words'), h('p', { class: 'muted small' }, 'A growing collection of Berlin. The ring fills as a word gets stronger. Tap a tile for its card and history.'));
   const search = h('input', { type: 'text', placeholder: 'Search', 'aria-label': 'Search words', id: 'bank-search' });
   const fLesson = h('select', { 'aria-label': 'Filter by set' }, h('option', { value: '' }, 'All sets')); const fType = h('select', { 'aria-label': 'Filter by type' }, h('option', { value: '' }, 'All types'), ...['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'pron', 'conj', 'part', 'q', 'num'].map(t => h('option', { value: t }, TYPE_LABEL[t] + 's')));
-  const fStr = h('select', { 'aria-label': 'Filter by strength' }, h('option', { value: '' }, 'Any strength'), h('option', { value: 'weak' }, 'Weak (2+ lapses)'), h('option', { value: 'new' }, 'New (< 4 days)'), h('option', { value: 'strong' }, 'Strong (≥ 14 days)'));
+  const fStr = h('select', { 'aria-label': 'Filter by strength' }, h('option', { value: '' }, 'Any strength'), h('option', { value: 'weak' }, 'Weak (missed 2+ times)'), h('option', { value: 'new' }, 'New (< 4 days)'), h('option', { value: 'strong' }, 'Strong (≥ 14 days)'));
   const grid = h('div', { class: 'bank' }); const detail = h('div', { class: 'stack' });
   const entries = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, cd]) => cd.learned && !cd.sent);
   const groupKey = cd => cd.lesson ? 'L' + cd.lesson : (cd.v1 ? 'V' + cd.v1 : 'imp');
@@ -727,7 +727,7 @@ function grammarUnit(v, u) {
 function openMore(fn) { route = 'profile'; lastLayout = applyLayout(); renderTabs(); document.getElementById('rail') && (document.getElementById('rail').innerHTML = ''); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); fn(newView()); PANE.scrollTo({ top: 0 }); }
 function renderMore(v) {
   v.append(h('h1', {}, 'More'));
-  const items = [['Sounds (Lesson 0)', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, import & export', renderSettings]];
+  const items = [['Sounds (Lesson 0)', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, layout, import & export', renderSettings]];
   items.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: () => openMore(fn) }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted' }, '›'))));
 }
 function backMore() { return h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { NAV = 'back'; route = 'profile'; render(); } }, '‹ Profile')); }
@@ -763,7 +763,7 @@ function voiceCard(s) {
     i.addEventListener('change', () => { s[key] = +i.value; save('settings'); });
     return h('label', { class: 'f' }, label, i, h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, lo), h('span', {}, hi))); };
   card.append(sel, slider('voiceDepth', 'Depth', 0, 1, .05, 'lighter', 'deeper'), slider('voiceRate', 'Pace', .8, 1.05, .01, 'slower', 'faster'),
-    h('button', { class: 'btn ghost', onclick: () => speak('Guten Tag. Ich bin Protoa. Schön, dass Sie heute da sind. Wollen wir anfangen?') }, h('span', { html: ICONS.play }), 'Hear Protoa'), note);
+    h('button', { class: 'btn ghost', onclick: () => speak('Hallo, ich bin Protoa. Schön, dass du da bist. Fangen wir an?') }, h('span', { html: ICONS.play }), 'Hear Protoa'), note);
   sel._fill();
   return card;
 }
@@ -773,14 +773,14 @@ function renderSettings(v) {
   const goal = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Goal · German'));
   const level = h('select', { id: 'goal-level' }, ...[['B1', 'B1 · 2,400 words (minimum)'], ['B2', 'B2 · 4,000 words']].map(([l, t]) => h('option', { value: l, selected: s.level === l }, t)));
   const target = h('input', { type: 'number', id: 'goal-target', value: s.target, min: 2400, step: 100 });
-  const fixedSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What stays fixed' }, h('button', { 'aria-pressed': s.fixed === 'perDay', onclick: () => { s.fixed = 'perDay'; persist(); } }, 'words per day'), h('button', { 'aria-pressed': s.fixed === 'date', onclick: () => { s.fixed = 'date'; persist(); } }, 'target date'));
+  const fixedSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What stays fixed' }, h('button', { 'aria-pressed': String(s.fixed === 'perDay'), onclick: () => { s.fixed = 'perDay'; persist(); } }, 'Words per day'), h('button', { 'aria-pressed': String(s.fixed === 'date'), onclick: () => { s.fixed = 'date'; persist(); } }, 'Target date'));
   const perDay = h('input', { type: 'number', id: 'goal-perday', value: s.perDay, min: 1, max: 200 }); const date = h('input', { type: 'date', id: 'goal-date', value: s.targetDate || '' }); const minutes = h('input', { type: 'number', id: 'goal-min', value: s.minutes, min: 5, max: 240 });
   const LEVEL_WORDS = { A1: 600, A2: 1200, B1: 2400, B2: 4000 };
   level.addEventListener('change', () => { if (LEVEL_WORDS[level.value]) target.value = LEVEL_WORDS[level.value]; persist(); });
   const persist = () => { s.level = level.value; s.target = Math.max(s.level === 'B2' ? 4000 : 2400, +target.value || 2400); target.value = s.target; s.perDay = Math.max(1, +perDay.value || 20); s.targetDate = date.value; s.minutes = +minutes.value || 20; save('settings'); calc.textContent = calcText(); fixedSeg.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', (i === 0) === (s.fixed === 'perDay'))); perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay'; };
   const calcText = () => { const g = goalInfo(); return s.fixed === 'date' ? (s.targetDate ? `That is ${g.perDay} new words a day from today.` : 'Pick a date.') : `At ${g.perDay} a day you reach ${s.target.toLocaleString()} words around ${g.date}.`; };
   const calc = h('p', { class: 'small muted' }, calcText());
-  goal.append(h('p', { class: 'faint' }, 'Every course runs to at least B1. A1 (600 words) and A2 (1,200) are milestones on the way; each ends with an exam you pass at 90 % before the line continues.'));
+  goal.append(h('p', { class: 'faint' }, 'Every course runs to at least B1. A1 (600 words) and A2 (1,200) are milestones on the way; each ends with an exam you pass at 90% before the line continues.'));
   [target, perDay, date, minutes].forEach(i => i.addEventListener('change', persist));
   goal.append(h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'Target level', level), h('label', { class: 'f' }, 'Target words', target)), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Keep fixed:'), fixedSeg), h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'New words per day', perDay), h('label', { class: 'f' }, 'Target date', date)), h('label', { class: 'f' }, 'Minutes per day', minutes), calc);
   perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay';
@@ -792,24 +792,24 @@ function renderSettings(v) {
   const pref = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Preferences'));
   const tog = (k, label) => { const i = h('input', { type: 'checkbox', id: 'pref-' + k, checked: !!s[k] }); i.addEventListener('change', () => { s[k] = i.checked; save('settings'); applyTheme(); }); return h('label', { class: 'toggle' }, h('span', {}, label), i); };
   pref.append(tog('autoWord', 'Play word audio automatically'), tog('uiSounds', 'Soft UI sounds'), tog('hideGloss', 'Hide glosses (self-test)'));
-  const theme = h('div', { class: 'seg', role: 'group', 'aria-label': 'Theme' }, ...['system', 'light', 'dark'].map(t => h('button', { 'aria-pressed': s.theme === t, onclick: () => { s.theme = t; s.themeChosen = true; save('settings'); applyTheme(); theme.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.textContent === t)); } }, t)));
-  const diff = h('div', { class: 'seg', role: 'group', 'aria-label': 'Conversation difficulty' }, ...['auto', 'easier', 'default', 'harder'].map(t => h('button', { 'aria-pressed': s.difficulty === t, onclick: () => { s.difficulty = t; save('settings'); diff.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.textContent === t)); } }, t)));
+  const theme = h('div', { class: 'seg', role: 'group', 'aria-label': 'Theme' }, ...['system', 'light', 'dark'].map(t => h('button', { 'aria-pressed': String(s.theme === t), onclick: () => { s.theme = t; s.themeChosen = true; save('settings'); applyTheme(); theme.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
+  const diff = h('div', { class: 'seg', role: 'group', 'aria-label': 'Conversation difficulty' }, ...['auto', 'easier', 'default', 'harder'].map(t => h('button', { 'aria-pressed': String(s.difficulty === t), onclick: () => { s.difficulty = t; save('settings'); diff.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t)); }, 'data-v': t }, t[0].toUpperCase() + t.slice(1))));
   pref.append(h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Theme'), theme), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Conversation difficulty (auto follows your last 40 lines)'), diff), h('p', { class: 'faint' }, SR ? '"Say it" (microphone) is available in this browser.' : '"Say it" (speaking your line) needs Chrome; it is hidden here.'));
-  const lay = h('div', { class: 'seg', role: 'group', 'aria-label': 'Layout' }, ...[['auto', 'Auto'], ['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([k, l]) => h('button', { 'aria-pressed': (s.layout || 'auto') === k, onclick: () => { s.layout = k; save('settings'); lastLayout = applyLayout(); renderTabs(); lay.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', ['auto', 'desktop', 'mobile'][i] === k)); } }, l)));
-  pref.append(h('div', { class: 'stack', style: 'gap:8px' }, h('span', { class: 'small muted' }, 'Layout (Auto picks desktop at 1024 px and wider, mobile below 640 px)'), lay));
+  const lay = h('div', { class: 'seg', role: 'group', 'aria-label': 'Layout' }, ...[['auto', 'Auto'], ['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([k, l]) => h('button', { 'aria-pressed': String((s.layout || 'auto') === k), onclick: () => { s.layout = k; save('settings'); lastLayout = applyLayout(); renderTabs(); lay.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', ['auto', 'desktop', 'mobile'][i] === k)); } }, l)));
+  pref.append(h('div', { class: 'stack', style: 'gap:8px' }, h('span', { class: 'small muted' }, 'Layout (Auto follows the screen width)'), lay));
   v.append(pref);
   v.append(voiceCard(s));
   const io = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Import progress'), h('p', { class: 'small muted' }, 'Paste a JSON export from Protoa v1 or from this app. Words are merged, never overwritten with older data; imported words count as learned and show as "already yours" in lessons.'));
   const ta = h('textarea', { id: 'import-json', placeholder: '{ "lang": "de", "words": [ … ] }' }); const ifb = h('div', {});
   io.append(ta, h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => { try { const r = importJSON(ta.value); ifb.innerHTML = ''; ifb.append(fbEl('ok', `Imported: ${r.added} new, ${r.merged} merged.`)); ta.value = ''; } catch (e) { ifb.innerHTML = ''; ifb.append(fbEl('bad', 'Could not read that: ' + esc(e.message))); } } }, 'Import'), h('button', { class: 'btn ghost', onclick: async () => { const j = exportJSON(); ta.value = j; try { await navigator.clipboard.writeText(j); toast('Export copied to clipboard'); } catch (e) { ta.select(); toast('Export is in the box: copy it'); } } }, 'Export')), ifb);
   v.append(io);
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Danger zone'), h('button', { class: 'btn ghost', onclick: () => { const b = h('button', { class: 'btn', style: 'background:var(--bad);color:#fff', onclick: () => { Object.keys(S.cards).forEach(k => { S.cards[k] = { w: {}, updatedAt: Date.now() }; save(null, k); }); S.progress = DEF_PROGRESS(); save('progress'); toast('Progress reset'); go('today'); } }, 'Yes, erase everything'); v.append(h('div', { class: 'card row' }, h('span', {}, 'Erase all German progress on this account?'), b)); } }, 'Reset progress…')));
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Danger zone'), h('button', { class: 'btn ghost', onclick: () => { const b = h('button', { class: 'btn', style: 'background:var(--bad);color:#fff', onclick: () => { Object.keys(S.cards).forEach(k => { S.cards[k] = { w: {}, updatedAt: Date.now() }; save(null, k); }); S.progress = DEF_PROGRESS(); save('progress'); toast('Progress reset'); go('today'); } }, 'Yes, erase everything'); v.append(h('div', { class: 'card row' }, h('span', {}, 'Erase all German progress in this browser?'), b)); } }, 'Reset progress…')));
 }
 
 /* ---------- Onboarding (§5) ---------- */
 function onboarding() {
   const p = S.profile; const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'About you' }); const inner = h('div', { class: 'in' });
-  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', {}, 'Guten Tag. Ich bin Protoa.'), h('p', { class: 'muted small' }, 'Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
+  inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Two minutes about you, so our conversations are about your life. Skip it if you like; it lives in Settings → About me.'))));
   const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
   const close = saveIt => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); render(); };
@@ -820,14 +820,14 @@ function onboarding() {
 /* ---------- Generate a lesson with Claude (§12) ---------- */
 async function generateLesson() {
   const gateG = examGate(); if (gateG) { openExamPreview(gateG.code); return; }
-  if (!S.ai) { toast('Claude is not available right now.'); return; }
+  if (!S.ai) { toast('Protoa’s AI is not reachable right now.'); return; }
   const n = allLessons().length + 1; const known = Object.values(S.cards).flatMap(sh => Object.keys(sh.w || {})).filter(k => !k.startsWith('s:'));
   const plan = courseOf(n);
   toast('Protoa is writing lesson ' + n + '…');
   for (let tries = 0; tries < 2; tries++) {
     try {
       const r = await AI.run('generateLesson', { n, topic: plan.topic, station: plan.station, profile: aiProfile(), known, example: LESSONS[0], art: typeof ART_MANIFEST !== 'undefined' ? ART_MANIFEST.filter(a => ['plate', 'cast', 'event', 'word'].includes(a.kind)).map(({ id, kind, tags }) => ({ id, kind, tags })) : [] });
-      const bad = validateLesson(r, n, known); if (bad.length) { console.warn('lesson rejected', bad); if (tries === 1) { toast('The lesson came back malformed: ' + bad[0]); return; } continue; }
+      const bad = validateLesson(r, n, known); if (bad.length) { console.warn('lesson rejected', bad); if (tries === 1) { toast('That lesson did not come out right, so it was not saved. Try again.'); return; } continue; }
       r.n = n; S.lessonsGen[n] = r; save('lessonsGen'); toast('Lesson ' + n + ' ready'); render(); return;
     } catch (e) { toast(AI.message(e, 'Could not write the lesson right now.')); return; }
   }
