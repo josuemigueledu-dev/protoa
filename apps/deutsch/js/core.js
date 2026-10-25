@@ -515,7 +515,8 @@ function exportJSON() {
     if (c.sent) continue; const d = wordDef(id) || {};
     words.push({ de: id, en: (d.en || []).join('; '), type: d.type || 'x', plural: d.pl || '', ipa: d.ipa || '', respelling: d.resp || '', syllables: d.syl || '', example: d.ex || '', example_en: d.exEn || '', lesson: c.lesson || c.v1 || 0, srs: { r: c.r, p: c.p } });
   }
-  return JSON.stringify({ lang: LANG, exportedAt: todayStr(), source: 'Protoa', words, lessonsDone: S.progress.lessonsDone, v1LessonsDone: S.progress.v1Lessons || [], settings: { dailyNew: S.settings.perDay }, history: { activity: S.progress.days } }, null, 1);
+  const P = S.progress, progress = { reviewStops: P.reviewStops || [], stampsSeen: P.stampsSeen || [], levelsPassed: P.levelsPassed || [], exams: P.exams || [], examCooldown: P.examCooldown || {}, talkCount: P.talkCount || 0, sounds: !!P.sounds };
+  return JSON.stringify({ lang: LANG, exportedAt: todayStr(), source: 'Protoa', words, lessonsDone: P.lessonsDone, v1LessonsDone: P.v1Lessons || [], settings: { dailyNew: S.settings.perDay }, history: { activity: P.days }, progress }, null, 1);
 }
 const V1_TYPES = { phr: 'phrase', part: 'part', q: 'q', num: 'num', n: 'n', v: 'v', adj: 'adj', adv: 'adv', pron: 'pron', conj: 'conj', prep: 'prep', interj: 'interj' };
 function importJSON(text) {
@@ -534,10 +535,16 @@ function importJSON(text) {
       if (r && (!c.r || r[3] > c.r[3] || (r[3] === c.r[3] && r[0] > c.r[0]))) c.r = r; if (p && (!c.p || p[3] > c.p[3])) c.p = p; c.learned = true; c.v1 = w.lesson || c.v1 || 0; merged++; }
     save(null, sh);
   }
-  if (Array.isArray(j.lessonsDone)) { // v1's lessons are not this app's lessons: remember them separately, never block or skip anything here
-    const v1 = j.lessonsDone.map(Number); S.progress.v1Lessons = [...new Set([...(S.progress.v1Lessons || []), ...v1.filter(n => n > 0)])].sort((a, b) => a - b); if (v1.includes(0)) S.progress.sounds = true;
+  if (Array.isArray(j.v1LessonsDone)) { // this app's own export (v1 never wrote v1LessonsDone): merge it like a second device, achievements are kept from both
+    const arr = x => Array.isArray(x) ? x : [], p = j.progress && typeof j.progress === 'object' ? j.progress : {}, days = {};
+    if (j.history && j.history.activity) for (const [d, a] of Object.entries(j.history.activity)) if (/^\d{4}-\d\d-\d\d$/.test(d) && a) days[d] = { new: +a.new || 0, reviews: +a.reviews || 0, secs: +a.secs || 0 };
+    S.progress = mergeProgress(S.progress, { lessonsDone: arr(j.lessonsDone).map(Number).filter(n => n > 0), v1Lessons: arr(j.v1LessonsDone).map(Number).filter(n => n > 0), days, reviewStops: arr(p.reviewStops), stampsSeen: arr(p.stampsSeen), levelsPassed: arr(p.levelsPassed), exams: arr(p.exams).filter(e => e && typeof e === 'object'), examCooldown: p.examCooldown && typeof p.examCooldown === 'object' ? p.examCooldown : {}, talkCount: +p.talkCount || 0, sounds: !!p.sounds, updatedAt: 0 });
+  } else {
+    if (Array.isArray(j.lessonsDone)) { // v1's lessons are not this app's lessons: remember them separately, never block or skip anything here
+      const v1 = j.lessonsDone.map(Number); S.progress.v1Lessons = [...new Set([...(S.progress.v1Lessons || []), ...v1.filter(n => n > 0)])].sort((a, b) => a - b); if (v1.includes(0)) S.progress.sounds = true;
+    }
+    if (j.history && j.history.activity) for (const [d, a] of Object.entries(j.history.activity)) { if (!S.progress.days[d]) S.progress.days[d] = { new: a.n || 0, reviews: a.r || 0 }; }
   }
-  if (j.history && j.history.activity) for (const [d, a] of Object.entries(j.history.activity)) { if (!S.progress.days[d]) S.progress.days[d] = { new: a.n || 0, reviews: a.r || 0 }; }
   save('progress');
   if (j.settings && j.settings.dailyNew && S.settings.perDay === DEF_SETTINGS().perDay) { S.settings.perDay = j.settings.dailyNew; save('settings'); }
   return { added, merged };

@@ -150,6 +150,43 @@ test('export then import moves learned words and progress to a fresh copy', () =
 
 const reset = () => exec('S.settings = DEF_SETTINGS(); S.profile = DEF_PROFILE(); S.progress = DEF_PROGRESS(); S.cards = {}; S.ready = true');
 
+test('export then import on a fresh copy keeps lessons done, activity, review stops and a passed exam', () => {
+  reset();
+  exec(`markLearned(LESSONS[0].words[0], LESSONS[0].n);
+       Object.assign(S.progress, { lessonsDone: [1, 2, 3], v1Lessons: [4], reviewStops: ['r3'], stampsSeen: [1], levelsPassed: ['A1'], talkCount: 2, sounds: true,
+         exams: [{ code: 'A1', date: '2026-10-20', score: 82, passed: true }], days: { '2026-10-20': { new: 12, reviews: 30, secs: 900 } } });`);
+  const json = vm.runInContext('exportJSON()', ctx);
+
+  // the new copy has its own lesson in progress; importing keeps it and adds what the export achieved
+  exec(`S.progress = DEF_PROGRESS(); S.progress.lessonsDone = [5]; S.progress.lessonState = { n: 6, step: 2 }; S.progress.updatedAt = Date.now(); S.cards = {}`);
+  run(`importJSON(${JSON.stringify(json)})`);
+  const p = run('S.progress');
+  assert.deepEqual(p.lessonsDone, [1, 2, 3, 5]);
+  assert.deepEqual(p.v1Lessons, [4]);
+  assert.deepEqual(p.days['2026-10-20'], { new: 12, reviews: 30, secs: 900 });
+  assert.deepEqual(p.reviewStops, ['r3']);
+  assert.deepEqual(p.levelsPassed, ['A1']);
+  assert.equal(p.exams.length, 1);
+  assert.equal(p.talkCount, 2);
+  assert.equal(p.sounds, true);
+  assert.deepEqual(p.lessonState, { n: 6, step: 2 });
+  assert.equal(run('learnedCount()'), 1);
+  // importing twice changes nothing
+  run(`importJSON(${JSON.stringify(json)})`);
+  assert.deepEqual(run('S.progress.lessonsDone'), [1, 2, 3, 5]);
+  assert.equal(run('S.progress.exams.length'), 1);
+});
+
+test('import of a v1 export keeps its lessons apart from this app\'s and reads its n/r activity', () => {
+  reset();
+  run(`importJSON(${JSON.stringify(JSON.stringify({ lang: 'de', words: [{ de: 'Hallo', en: 'hello' }], lessonsDone: [0, 1, 2], history: { activity: { '2026-01-02': { n: 5, r: 9 } } } }))})`);
+  const p = run('S.progress');
+  assert.deepEqual(p.lessonsDone, []);
+  assert.deepEqual(p.v1Lessons, [1, 2]);
+  assert.equal(p.sounds, true);
+  assert.deepEqual(p.days['2026-01-02'], { new: 5, reviews: 9 });
+});
+
 test('fixLessonArt swaps an unknown plate for the best tag match, drops unknown pictures and events, and reports unknown cast', () => {
   const manifest = [
     { kind: 'plate', id: 'plate.classroom', tags: ['kurs'] },
