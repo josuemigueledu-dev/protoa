@@ -28,8 +28,8 @@ function pace() {
 function fmtDate(d) { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: d.slice(0, 4) !== todayStr().slice(0, 4) ? 'numeric' : undefined }); } catch (e) { return d; } }
 function paceWidget() {
   const p = pace(), info = levelInfo();
-  const rows = info.map((l, i) => { const e = p.eta[i]; const status = l.passed ? h('span', { class: 'chip ok' }, 'bestanden') : l.reached ? h('span', { class: 'chip yours' }, 'exam ready') : e.days === null ? h('span', { class: 'faint' }, e.rem + ' words to go') : h('span', { class: 'faint' }, `${e.days} day${e.days === 1 ? '' : 's'} · ${fmtDate(e.date)}`);
-    return h('div', { class: 'lvrow' + (l.passed ? ' passed' : l.reached ? ' ready' : '') }, h('b', { class: 'lvcode' }, l.code), h('div', { class: 'grow' }, h('div', { class: 'bar' }, h('i', { style: `width:${Math.min(100, Math.max(0, (p.w - l.from) / (l.words - l.from) * 100))}%` })), h('div', { class: 'lvmeta' }, h('span', { class: 'faint' }, l.words.toLocaleString() + ' words'), status))); });
+  const rows = info.map((l, i) => { const e = p.eta[i]; const status = l.passed ? h('span', { class: 'chip ok' }, 'passed') : l.reached ? h('span', { class: 'chip yours' }, 'exam ready') : e.days === null ? h('span', { class: 'faint' }, e.rem + ' words to go') : h('span', { class: 'faint' }, `${e.days} day${e.days === 1 ? '' : 's'} · ${fmtDate(e.date)}`);
+    return h('div', { class: 'lvrow' + (l.passed ? ' passed' : l.reached ? ' ready' : '') }, h('b', { class: 'lvcode' }, l.code), h('div', { class: 'grow' }, h('div', { class: 'bar' }, h('i', { style: `width:${Math.min(100, Math.max(0, (p.w - l.from) / (l.words - l.from) * 100))}%` })), h('div', { class: 'lvmeta' }, h('span', { class: 'faint' }, l.words.toLocaleString('en') + ' words'), status))); });
   return h('div', { class: 'widget pacew' }, h('div', { class: 'wh' }, h('h2', {}, 'Tempo'), h('span', { class: 'faint' }, p.avg ? `${(Math.round(p.avg * 10) / 10)} words/day (3-day average)` : 'no new words in the last 3 days')),
     p.avg ? '' : h('p', { class: 'faint' }, 'Learn new words in a lesson to see when you reach each level.'), ...rows,
     p.avg ? h('p', { class: 'faint' }, `At this pace you reach ${p.eta.find(e => e.rem > 0) ? p.eta.find(e => e.rem > 0).code + ' in ' + p.eta.find(e => e.rem > 0).days + ' days' : 'B1'}. Exams come on top: each level needs its exam passed with 90%.`) : '');
@@ -37,7 +37,7 @@ function paceWidget() {
 function levelTrack() {
   const info = levelInfo(), w = learnedCount();
   return h('div', { class: 'levels', role: 'list', 'aria-label': 'Levels' }, ...info.map(l => h('div', { class: 'lv' + (l.passed ? ' passed' : l.reached ? ' ready' : ''), role: 'listitem' },
-    h('b', {}, l.code), h('span', {}, l.passed ? 'bestanden' : l.reached ? 'Exam ready' : Math.max(0, l.words - w) + ' to go'))));
+    h('b', {}, l.code), h('span', {}, l.passed ? 'passed' : l.reached ? 'Exam ready' : Math.max(0, l.words - w) + ' to go'))));
 }
 
 /* ---------- exam content (built-in texts; items from the learner's own words) ---------- */
@@ -137,7 +137,7 @@ let EXAM_RESULT = null;
 function openExamPreview(code) {
   const l = LEVELS.find(x => x.code === code), plan = EXAM_PLAN[code], cd = examCooldownLeft(code), saved = S.progress.exam && S.progress.exam.code === code ? S.progress.exam : null, hist = (S.progress.exams || []).filter(e => e.code === code);
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('exam')), h('div', { class: 'eyebrow' }, 'Level exam · ' + l.words.toLocaleString() + ' words reached'), h('h1', {}, code + ' exam'),
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('exam')), h('div', { class: 'eyebrow' }, 'Level exam · ' + l.words.toLocaleString('en') + ' words reached'), h('h1', {}, code + ' exam'),
       h('p', { class: 'muted' }, 'Modelled on the Goethe-Zertifikat: listening, reading, vocabulary, grammar, gap-fill, word order, translation' + (S.ai ? ', writing and speaking.' : '.') + ' You need 90% to pass and move on.'));
     const facts = h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'The rules'), h('ul', { class: 'rules' }, h('li', {}, 'No hints, no word glosses, no second chances inside the exam.'), h('li', {}, 'Recordings play at most twice.'), h('li', {}, 'Everything is typed. Spelling and articles count; ae/oe/ue/ss are accepted for ä/ö/ü/ß.'), h('li', {}, 'You can pause and come back; your answers are saved.'), h('li', {}, `If you score under 90%, you can retake it after ${EXAM_COOLDOWN_MIN} minutes with new questions.`)));
     p.append(facts, h('div', { class: 'facts' }, h('span', { class: 'chip' }, '≈ ' + (code === 'A1' ? 45 : code === 'A2' ? 60 : 80) + ' min'), h('span', { class: 'chip' }, 'pass mark 90%'), hist.length ? h('span', { class: 'chip' }, 'best so far ' + Math.max(...hist.map(e => e.score)) + '%') : ''));
@@ -177,7 +177,7 @@ function renderExam(v) {
   else if (it.type === 'write') { const ta = h('textarea', { id: 'exam-write', lang: 'de', rows: 6, placeholder: 'Ihr Text …', 'aria-label': 'Your text' }); ta.value = it.answer || ''; const cnt = h('span', { class: 'faint' }); const upd = () => { cnt.textContent = (ta.value.trim().split(/\s+/).filter(Boolean).length) + ' Wörter'; }; ta.addEventListener('input', upd); upd(); getAnswer = () => ta.value.trim(); card.append(h('div', { class: 'eyebrow' }, 'Schreiben'), h('p', { lang: 'de' }, it.task), ta, h('div', { class: 'row', style: 'justify-content:space-between' }, umlautRow(ta), cnt)); setTimeout(() => ta.focus(), 60); }
   else if (it.type === 'speak') { const i = deInput({ id: 'exam-input', placeholder: 'Antworten Sie in ganzen Sätzen …', 'aria-label': 'Your answer' }); if (it.answer) i.value = it.answer; getAnswer = () => i.value.trim(); card.append(h('div', { class: 'eyebrow' }, 'Sprechen'), h('p', {}, SR ? 'Answer out loud with the microphone (or type). Use a full sentence.' : 'Answer in a full sentence.'), h('div', { class: 'row' }, h('div', { class: 'examword grow', lang: 'de' }, it.q), playBtn(it.q)), h('div', { class: 'row' }, h('div', { class: 'grow' }, i), micBtn(i)), umlautRow(i)); setTimeout(() => i.focus(), 60); }
   function next() {
-    const a = getAnswer(); if (a === '' || a === null || a === undefined) { toast('Answer first, or type your best guess.'); return; }
+    const a = getAnswer(); if (a === '' || a === null || a === undefined) { toast('Answer first. A best guess is fine.'); return; }
     it.answer = a; X.idx++; save('progress'); NAV = 'fwd'; render();
   }
   actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, X.idx + 1 < X.items.length ? 'Next' : 'Submit')] });
@@ -226,10 +226,10 @@ async function gradeExam(v) {
 }
 function renderExamResult(v) {
   const R = EXAM_RESULT; document.body.classList.add('in-lesson');
-  v.append(h('div', { class: 'pagehead', style: 'margin-top:16px' }, teacherSlot(52, R.passed ? 'pleased' : 'neutral'), h('div', {}, h('h1', { lang: 'de' }, 'Prüfung ' + R.code), h('div', { class: 'faint' }, R.passed ? 'Bestanden' : 'Ergebnis'))));
+  v.append(h('div', { class: 'pagehead', style: 'margin-top:16px' }, teacherSlot(52, R.passed ? 'pleased' : 'neutral'), h('div', {}, h('h1', {}, R.code + ' exam'), h('div', { class: 'faint' }, R.passed ? 'Passed' : 'Result'))));
   const ring = h('div', { class: 'big-ring' }, ringEl(0, 160), h('div', { class: 'inner' }, h('div', { class: 'n big' }, R.score + '%')));
   if (R.passed) v.append(h('div', { style: 'height:16px' }), h('div', { class: 'ticket cert' }, h('div', { class: 'top' }, h('b', {}, 'Protoa · Zertifikat'), h('span', {}, fmtDate(todayStr()))), h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Prüfung bestanden'), h('h1', { lang: 'de' }, 'Deutsch ' + R.code), h('div', { class: 'stamp' }, sigEl('exam')), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points · ${R.minutes} min · ${R.score >= 95 ? 'sehr gut' : 'gut'}`), h('p', {}, R.code === 'B1' ? 'You have reached the goal of the course: independent, spoken B1.' : `The line continues toward ${LEVELS[LEVELS.findIndex(l => l.code === R.code) + 1].code}. New lessons are open again.`))));
-  else v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, ring, h('h1', { lang: 'de' }, 'Noch nicht bestanden'), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points. You need 90% to pass ${R.code}. ` + (R.unmarked ? 'This attempt doesn\'t count: you can retake it now, with new questions.' : `New questions in ${EXAM_COOLDOWN_MIN} minutes; until then, practise what you missed.`))));
+  else v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, ring, h('h1', {}, 'Not passed yet'), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points. You need 90% to pass ${R.code}. ` + (R.unmarked ? 'This attempt doesn\'t count: you can retake it now, with new questions.' : `New questions in ${EXAM_COOLDOWN_MIN} minutes; until then, practise what you missed.`))));
   if (R.unmarked) v.append(h('p', { class: 'fb note' }, 'Writing and speaking couldn\'t be marked just now, so they are left out of this score.'));
   setTimeout(() => { const c = ring.querySelector('.fg'); if (c) { const r = (160 - 6) / 2, circ = 2 * Math.PI * r; c.style.strokeDashoffset = circ * (1 - R.score / 100); } }, 120);
   const secs = h('div', { class: 'card stack' }, h('h2', {}, 'By module'));
@@ -241,7 +241,7 @@ function renderExamResult(v) {
       h('div', {}, h('span', { class: 'yours' }, 'You: ' + (typeof it.answer === 'number' ? (it.type === 'tf' ? ['richtig', 'falsch'][it.answer] : it.o[it.answer]) : (it.answer || '—')))), it.expected ? h('div', { lang: 'de' }, h('b', {}, 'Correct: '), it.expected) : '', it.note ? h('div', { class: 'faint' }, it.note) : '')));
     v.append(c); }
   const done = () => { EXAM_RESULT = null; route = R.passed ? 'learn' : 'practice'; NAV = 'fade'; render(); };
-  const btns = [h('button', { class: 'btn', onclick: done }, R.passed ? 'Weiter auf der Linie' : 'Practise my mistakes')];
+  const btns = [h('button', { class: 'btn', onclick: done }, R.passed ? 'Continue' : 'Practise my mistakes')];
   if (!R.passed && R.missed.length) btns[0].onclick = () => { EXAM_RESULT = null; const items = R.missed.map(id => ({ id, sh: cardShard(id), c: cardOf(id), kind: 'r', extra: true })).filter(x => x.c); if (items.length) startReview(items); else done(); };
   actionBar({ buttons: btns });
 }
@@ -278,7 +278,7 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
   }
   if (it.kind === 'trans') {
     const w = typeWidget({ id: 'drill-input', placeholder: 'Auf Deutsch …' }, () => check());
-    card.append(h('div', { class: 'eyebrow' }, 'Translate into German'), h('div', { class: 'examword' }, def.exEn), w.el, fb);
+    card.append(h('div', { class: 'eyebrow' }, 'Translate to German'), h('div', { class: 'examword' }, def.exEn), w.el, fb);
     const check = () => { if (done) return; const a = w.value().trim(); if (!a) return; done = true; w.disable(); const r = diagnose(a, ex, mergedLex({}), def.exG || null, []); uiSound(r.ok ? 'ok' : 'bad', r); fb.append(h('div', { class: 'row' }, glossEl(ex, def.exG || null), playBtn(ex))); showGrades(r.ok ? 2 : 0, r.ok ? 'ok' : 'bad', r.ok ? '✓ ' + (r.note || 'Richtig.') : r.hint + ' Model answer: <em lang="de">' + esc(ex) + '</em>'); if (!r.ok) fb.append(explainBtn(a, ex, def.exEn)); };
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); }; setTimeout(() => w.focus(), 50);
   }

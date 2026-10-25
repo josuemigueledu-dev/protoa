@@ -206,7 +206,7 @@ function openLessonPreview(n) {
     p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip yours' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
     const go_ = fresh_ => { close(); startLesson(n, fresh_); };
     const blk = lessonBlocked(n);
-    if (blk) { p.append(h('div', { class: 'fb note' }, `You have reached ${blk.words.toLocaleString()} words: the ${blk.code} milestone. Pass the ${blk.code} exam with 90% to continue the line.`), h('button', { class: 'btn', onclick: () => { close(); openExamPreview(blk.code); } }, 'Go to the ' + blk.code + ' exam')); inner.append(p); return; }
+    if (blk) { p.append(h('div', { class: 'fb note' }, `You have reached ${blk.words.toLocaleString('en')} words: the ${blk.code} milestone. Pass the ${blk.code} exam with 90% to continue the line.`), h('button', { class: 'btn', onclick: () => { close(); openExamPreview(blk.code); } }, 'Go to the ' + blk.code + ' exam')); inner.append(p); return; }
     if (done) p.append(h('button', { class: 'btn', onclick: () => go_(true) }, 'Review again'));
     else if (inProg) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Continue · ' + (SEG_NAMES[STEP_SEG[ls.step]] || 'where you left off')));
     else if (n === cur) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Start'));

@@ -491,7 +491,7 @@ function diagnose(answer, target, lex, glossStr, alts = []) {
     if (rel) return { ok: false, kind: 'related', hint: `Close in meaning, but here German uses <em>${esc(t)}</em>, not <em>${esc(rel)}</em>.` };
     // missing / unknown
     const en = enOf(t);
-    return { ok: false, kind: 'missing', hint: `One word is missing: it starts with <em>${esc(t[0])}</em>${en ? ` and means "${esc(en)}"` : ''}.` };
+    return { ok: false, kind: 'missing', hint: `A word is missing or wrong: it starts with <em>${esc(t[0])}</em>${en ? ` and means "${esc(en)}"` : ''}.` };
   }
   // all target words present but extra words / punctuation
   const extra = A.filter(a => !Tf.includes(fold(a)));

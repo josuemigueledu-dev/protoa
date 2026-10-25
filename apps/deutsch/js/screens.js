@@ -72,7 +72,7 @@ function forecastWidget() {
     h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, '+6 days')));
 }
 function nextStationWidget() {
-  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString() + ' words. Pass the exam with 90% to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
+  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString('en') + ' words. Pass the exam with 90% to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
   const n = currentLessonN(); if (!n) return null; const c = courseOf(n), L = lessonById(n);
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Next station')), h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('b', { lang: 'de', style: 'font-family:var(--display)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + n + ' · ' + L.title))), h('button', { class: 'btn sm', onclick: () => openOnMap(n) }, 'Go to station'));
 }
@@ -160,7 +160,7 @@ function heatmap(weeks = 16) {
 }
 
 /* ---------- Profile ---------- */
-function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90%.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', {}, e.code + ' exam · ' + fmtDate(e.date)), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + '%' + (e.passed ? ' · bestanden' : ''))))); }
+function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90%.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', {}, e.code + ' exam · ' + fmtDate(e.date)), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + '%' + (e.passed ? ' · passed' : ''))))); }
 function renderProfile(v) {
   checkStamps();
   const p = S.profile, days = S.progress.days || {}, keys = Object.keys(days).sort(), since = keys[0] || todayStr();
@@ -232,7 +232,7 @@ function renderPracticeHub(v) {
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
-  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4]))) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + ' words'); }))));
+  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4]))) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? ' word' : ' words')); }))));
   // the forecast and strength charts are empty until the first words; Your words below says how to start
   if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
   v.append(wordBank());
