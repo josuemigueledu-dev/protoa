@@ -159,3 +159,15 @@
 .gnum{width:40px;height:40px;flex:none;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-family:var(--hero);font-size:.8125rem;background:rgba(44,74,116,.14);color:var(--steel)}
 .gnum.done{background:var(--steel);color:#eef1f4}
 .listrow.soon{opacity:.7}
+
+/* ---------- Sprechen (screens/4-speaking.jpg) ---------- */
+.scen.pic{align-items:center}
+.scen .scpic{width:72px;height:72px;flex:none;border-radius:var(--r);background-size:cover;background-position:center}
+.talkband{height:150px;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));background-size:cover;background-position:center 40%;position:relative;
+  border-bottom:6px solid transparent;border-image:repeating-linear-gradient(-45deg,var(--magenta) 0 8px,#11151b 8px 16px) 6}
+.talkband::after{content:"";position:absolute;inset:auto 0 0 0;height:70px;background:linear-gradient(transparent,rgba(18,26,39,.75))}
+.talkband span{position:absolute;left:16px;bottom:12px;z-index:1;color:#eef1f4;font-family:var(--hero);letter-spacing:-.04em;font-size:1.375rem}
+.chatlog .bub.w{display:flex;gap:8px;align-items:flex-start}
+.pface{width:34px;height:34px;flex:none;border-radius:50%;background:#121a27;padding:3px;margin-top:2px}
+.pface img{width:100%;height:100%;display:block}
+.chatlog .bub.l .box{background:var(--steel);color:#eef1f4}
