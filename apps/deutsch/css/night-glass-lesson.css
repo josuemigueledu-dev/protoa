@@ -123,3 +123,7 @@
 .coach .say .row{gap:8px;align-items:center}
 
 @media (prefers-reduced-motion:reduce){ .scene .spic{animation:none} }
+
+/* sub-pages opened from Profile (Sounds, Settings, Method): their title sits on the navy stage */
+.view > .row:first-child + h1,.view > .row:first-child + .hero h1,.view > .row:first-child + .hero h2{color:var(--nink)}
+.view > .row:first-child + h1 + p,.view > .row:first-child + .hero p,.view > .row:first-child + .hero .muted{color:var(--ngrey)}
