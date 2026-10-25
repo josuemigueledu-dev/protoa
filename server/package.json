@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch --env-file-if-exists=../.env src/index.js",
+    "dev": "node --watch src/index.js",
     "test": "node --test"
   },
   "dependencies": {
