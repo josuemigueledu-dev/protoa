@@ -28,25 +28,27 @@ function clientKey(c) {
   try { return getConnInfo(c).remote.address || 'unknown'; } catch { return 'unknown'; }
 }
 
-export function createApp({ runJSON = askJSON, runLong = askLongJSON } = {}) {
+// runJSON / runLong / aiOn are swapped for stubs in tests and for the practice AI (fake-ai.js).
+export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiAvailable } = {}) {
   const app = new Hono();
 
-  app.get('/api/health', c => c.json({ ok: true, ai: aiAvailable() }));
+  app.get('/api/health', c => c.json({ ok: true, ai: aiOn() }));
 
   app.post('/api/:app/ai/:task',
     bodyLimit({ maxSize: 256 * 1024, onError: c => c.json({ error: { code: 'too_large', message: 'Request too large.' } }, 413) }),
     rateLimiter({ limit: Number(process.env.AI_RATE_LIMIT) || 60, windowMs: 10 * 60 * 1000, key: clientKey }),
     async c => {
-      const task = own(own(APPS, c.req.param('app')), c.req.param('task'));
+      const name = c.req.param('task'), task = own(own(APPS, c.req.param('app')), name);
       if (!task) return c.json({ error: { code: 'not_found', message: 'Unknown task.' } }, 404);
       let body;
       try { body = await c.req.json(); } catch { return c.json({ error: { code: 'bad_request', message: 'Body must be JSON.' } }, 400); }
       const vars = task.input.safeParse(body);
       if (!vars.success) return c.json({ error: { code: 'bad_request', message: vars.error.issues[0]?.message || 'Invalid input.' } }, 400);
-      if (!aiAvailable()) return c.json({ error: { code: 'unavailable', message: 'AI is not configured on this server.' } }, 503);
+      if (!aiOn()) return c.json({ error: { code: 'unavailable', message: 'AI is not configured on this server.' } }, 503);
       try {
         const prompt = task.prompt(vars.data);
-        const result = task.long ? await runLong({ tier: task.tier, prompt }) : await runJSON({ tier: task.tier, prompt, schema: task.output });
+        const job = { task: name, vars: vars.data, tier: task.tier, prompt };
+        const result = task.long ? await runLong(job) : await runJSON({ ...job, schema: task.output });
         return c.json({ result });
       } catch (e) {
         const err = e instanceof AIError ? e : new AIError('upstream', 'Something went wrong.');
