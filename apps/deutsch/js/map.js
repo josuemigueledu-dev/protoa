@@ -246,7 +246,7 @@ function lessonWords(v, L, ls) {
     }
     setStep('check', { checkQ: null }, 'fwd'); return;
   }
-  v.append(lessonTop(L, ls, ls.wi / ids.length), h('div', { class: 'eyebrow' }, `New word ${ls.wi + 1} of ${ids.length}`));
+  v.append(lessonTop(L, ls, ls.wi / ids.length), h('div', { class: 'eyebrow' }, `New ${w.type === 'phrase' ? 'phrase' : 'word'} ${ls.wi + 1} of ${ids.length}`));
   v.append(wordCard(w));
   if (ls.wi === 0) v.append(yoursRow());
   const next = () => setStep('words', { wi: ls.wi + 1 }, 'fwd'), prev = () => ls.wi > 0 ? setStep('words', { wi: ls.wi - 1 }, 'back') : setStep('notice', {}, 'back');
