@@ -13,7 +13,7 @@ body{background:var(--bg);color:var(--ink)}
 <div id="pl-splash" role="status"><div class="o" aria-hidden="true"></div><span id="pl-msg">Waking Protoa…</span></div>
 <script>
 (() => {
-  const FALLBACK = { id: '3005c3d', date: 'Oct 25' }; // the build this page was published with
+  const FALLBACK = { id: '4fa445f', date: 'Oct 25' }; // the build this page was published with
   const PREFIX = 'weg:';
   const msg = t => { const m = document.getElementById('pl-msg'); if (m) m.textContent = t; };
   let db = null, uid = null, latest = FALLBACK, current = null;
@@ -109,10 +109,8 @@ body{background:var(--bg);color:var(--ink)}
       if (db && uid) {
         msg('Loading your progress…');
         const st = (await db.doc(statePath()).get()).data();
-        if (st && st.build) {
-          const b = (await db.doc('builds/' + st.build).get()).data();
-          current = b && b.id ? b : { id: st.build };
-        } else await db.doc(statePath()).set({ build: current.id, at: Date.now() });
+        // Arthur, Oct 25: he wants the newest version to vet, so the copy always opens the latest build
+        if (!st || st.build !== current.id) await db.doc(statePath()).set({ build: current.id, at: Date.now() });
         await restore();
         watch();
       } else if (!db) msg('Opening without your account: progress stays in this browser only.');

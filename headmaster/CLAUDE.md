@@ -68,9 +68,9 @@ Arthur's private page: https://claude.ai/artifact/4fzCsBJQoEbeJfgnDVuZ6N (source
 Arthur learns German with his own copy: https://claude.ai/artifact/CZwThbASVU74G5MXoQsrN4 (source `learn/`). `learn/index.html` is a loader (capabilities `db` + `user`): it reads the build Arthur chose from his private `data/users/<id>/state` doc, restores his progress from `data/users/<id>/state/ls/<localStorage key>` into localStorage, mirrors every `weg:` key back there, then loads `b/<build>/` (the app's body, CSS and scripts). Settings gets an "App version" card with **Update now**, which switches him to `builds/latest`. His progress never touches the dev app or the repo.
 
 Ship a new build after a review hour that merged app changes (not for test-only or docs-only merges):
-1. `git pull --ff-only`, then `sh learn/build.sh` (prints the build id, writes `learn/b/<id>/`, which is gitignored).
-2. Publish `learn/index.html` with `root` = `learn` and `files` = every file under `b/<id>/` (older builds stay published; never remove them, Arthur may still be on one).
-3. ArtifactData batch: set `builds/<id>` and `builds/latest` to `{id, date, notes: [plain one-line notes on what changed for him]}`.
+1. `git pull --ff-only`, then `sh learn/build.sh` (prints the commit id; always writes the one reused slot `learn/b/4fa445f/`: one `app.css`, one `app.js`, three `.txt` files and `body.html`; pictures and fonts go to `learn/art/` and `learn/fonts/` at the root).
+2. Publish `learn/index.html` with `root` = `learn` and `files` = the 6 files under `b/4fa445f/` (plus `art/...` or `fonts/...` files only when they changed). The artifact holds at most 512 files and old builds can't be deleted (blocked), so never add a new build folder.
+3. ArtifactData: update `builds/4fa445f` and `builds/latest` (`{id: '4fa445f', date, notes: [plain one-line notes]}`). Since Oct 25 the loader always opens `latest` (Arthur wants the newest version to vet); AI runs through `learn/ai-bridge.js` (the page's `sample` capability).
 Never change his `state` or `state/ls` docs.
 
 ## Image generation (on this PC)
