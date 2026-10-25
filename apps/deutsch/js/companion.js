@@ -50,8 +50,16 @@ const Companion = (() => {
     return [L, R];
   }
   function rest() {
-    const s = size(), b = document.body.classList, bottom = b.contains('in-lesson') ? 156 : b.contains('lay-mobile') ? 118 : 48;
-    return [innerWidth - s / 2 - 20, innerHeight - bottom - s / 2];
+    const s = size(), b = document.body.classList, bottom = b.contains('in-lesson') ? 156 : b.contains('lay-mobile') ? 118 : 48, y = innerHeight - bottom - s / 2;
+    /* wider screens: wait in the gutter beside the page (right, else left), not in the window's corner, which is the
+       context rail's list of stations from 1241px and the page's own corner below that */
+    const v = !phone() && document.getElementById('view'), g = v && v.getBoundingClientRect();
+    if (g && g.width) {
+      const [L, R] = limits(), rg = R - g.right, lg = g.left - L, gap = 22;
+      if (rg >= s * .95) return [g.right + Math.min(rg / 2, gap + s / 2), y];
+      if (lg >= s * .95) return [g.left - Math.min(lg / 2, gap + s / 2), y];
+    }
+    return [innerWidth - s / 2 - 20, y];
   }
   /* Where it may sit, in order of preference: the gutter beside the block (right, else left), then a corner of the block
      (phones have no gutter). It takes the first spot with no text, picture or control under it, else the least covered,
