@@ -202,7 +202,13 @@ function renderPracticeHub(v) {
   const due = dueCards(), learnedAll = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, c]) => c.learned && !c.sent);
   const est = Math.max(1, Math.round(due.length * 0.15));
   v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('div', {}, h('h1', {}, 'Practice'), h('div', { class: 'faint' }, 'Every word you know, kept strong.'))));
-  v.append(h('div', { class: 'card stack primary' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('div', {}, h('span', { class: 'big' }, due.length), h('span', { class: 'muted' }, due.length === 1 ? ' card due' : ' cards due')), h('div', { class: 'faint' }, due.length ? summarize(due) + ' About ' + est + ' min.' : 'Nothing due right now. New cards come back on schedule.'))),
+  // first run: no word learned yet, so the hero says where the first ones come from instead of "0 cards due"
+  const fresh = !learnedAll.length && !due.length, nextN = fresh ? currentLessonN() : null, nextL = nextN != null && lessonById(nextN);
+  if (fresh && nextL) {
+    const ls = S.progress.lessonState, resume = ls && ls.n === nextN;
+    v.append(h('div', { class: 'card stack primary hubfresh' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('h2', {}, 'No words yet'), h('div', { class: 'faint' }, `Lesson ${nextN}, ${nextL.title}, brings your first ${nextL.words.length} words. After it they come back here, a few at a time, so they stay.`))),
+      h('button', { class: 'btn wide', onclick: () => startLesson(nextN) }, (resume ? 'Continue lesson ' : 'Start lesson ') + nextN)));
+  } else v.append(h('div', { class: 'card stack primary' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('div', {}, h('span', { class: 'big' }, due.length), h('span', { class: 'muted' }, due.length === 1 ? ' card due' : ' cards due')), h('div', { class: 'faint' }, due.length ? summarize(due) + ' About ' + est + ' min.' : 'Nothing due right now. New cards come back on schedule.'))),
     due.length ? h('button', { class: 'btn wide', onclick: () => startReview(due.slice(0, 40)) }, due.length > 40 ? 'Review 40 now' : 'Start review') : ''));
   const pick = (arr, n) => shuffle(arr).slice(0, n);
   const weak = learnedAll.filter(([id, c]) => c.r && c.r[4] >= 2), conv = Object.entries((S.cards.sent || { w: {} }).w);
@@ -214,19 +220,21 @@ function renderPracticeHub(v) {
     ['pencil', 'Translate to German', 'English sentence → German, typed', learnedAll.length, () => drillSession('trans', 10)],
     ['sound', 'Listening', 'Hear a word or sentence, type it', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c], i) => mk(id, c, i % 2 ? 'li' : 'ls')))],
     ['ticket', 'Say it in German', SR ? 'Meaning → German word, by voice or typing' : 'Meaning → German word, typed', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c]) => mk(id, c, 'p')))],
-    ['people', 'Conversation lines', conv.length + ' lines from lessons and Sprechen', conv.length, () => startReview(pick(conv, 10).map(([id, c]) => ({ id, sh: 'sent', c, kind: 'sent', extra: true })))],
-    ['plaster', 'Weak words', weak.length + (weak.length === 1 ? ' word' : ' words') + ' you missed twice or more', weak.length, () => startReview(weak.map(([id, c], i) => mk(id, c, ['r', 'gap', 'p', 'mc'][i % 4])))],
+    ['people', 'Conversation lines', conv.length ? conv.length + (conv.length === 1 ? ' line' : ' lines') + ' from lessons and Sprechen' : 'Lines you save from a lesson or Sprechen come here', conv.length, () => startReview(pick(conv, 10).map(([id, c]) => ({ id, sh: 'sent', c, kind: 'sent', extra: true })))],
+    ['plaster', 'Weak words', weak.length ? weak.length + (weak.length === 1 ? ' word' : ' words') + ' you missed twice or more' : 'Words you miss twice come here for extra practice', weak.length, () => startReview(weak.map(([id, c], i) => mk(id, c, ['r', 'gap', 'p', 'mc'][i % 4])))],
     ['review', 'Mixed workout', 'Every exercise type in one session', learnedAll.length, () => { const p = drillPool(16, false); startReview(p.map((x, i) => mk(x.id, x.c, ['mc', 'gap', 'order', 'trans', 'li', 'p', 'r', 'ls'][i % 8]))); }],
     ['frame', 'Grammar', 'Reference units with drills', 1, () => go('grammar')],
   ];
-  v.append(h('div', { class: 'modes' }, ...modes.map(([icon, t, d, n, fn]) => h('button', { class: 'mode', disabled: !n, onclick: fn }, sigEl(icon), h('b', {}, t), h('span', {}, d)))));
+  // a mode with nothing to practise yet stays readable and says so with a lock, rather than fading out
+  v.append(h('div', { class: 'modes' }, ...modes.map(([icon, t, d, n, fn]) => h('button', { class: 'mode', disabled: !n, onclick: fn }, sigEl(icon), h('b', {}, t), h('span', {}, d), n ? '' : h('i', { class: 'mlock', role: 'img', 'aria-label': fresh ? 'Opens after your first lesson' : 'Nothing here yet', html: LOCK_SVG })))));
   const gate = examGate(); if (gate) v.append(h('button', { class: 'card listrow', onclick: () => openExamPreview(gate.code) }, sigEl('exam'), h('div', { class: 'grow' }, h('b', {}, 'The ' + gate.code + ' exam is ready'), h('div', { class: 'faint' }, 'New lessons wait until you pass it with 90%. Practise here first.')), h('span', { class: 'muted' }, '›')));
-  const g = goalInfo(); if (!gate && g.today < g.perDay && currentLessonN()) v.append(h('button', { class: 'card listrow', onclick: () => openOnMap(currentLessonN()) }, sigEl(courseOf(currentLessonN()).icon, ''), h('div', { class: 'grow' }, h('b', {}, 'New words'), h('div', { class: 'faint' }, `${g.perDay - g.today} more today toward your goal · next station ${courseOf(currentLessonN()).station}`)), h('span', { class: 'muted' }, '›')));
+  const g = goalInfo(); if (!gate && !fresh && g.today < g.perDay && currentLessonN()) v.append(h('button', { class: 'card listrow', onclick: () => openOnMap(currentLessonN()) }, sigEl(courseOf(currentLessonN()).icon, ''), h('div', { class: 'grow' }, h('b', {}, 'New words'), h('div', { class: 'faint' }, `${g.perDay - g.today} more today toward your goal · next station ${courseOf(currentLessonN()).station}`)), h('span', { class: 'muted' }, '›')));
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
   if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4]))) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + ' words'); }))));
-  if (!document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
+  // the forecast and strength charts are empty until the first words; Your words below says how to start
+  if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
   v.append(wordBank());
 }
 function renderReviewSummary(v) {

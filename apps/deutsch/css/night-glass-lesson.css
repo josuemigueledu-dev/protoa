@@ -199,6 +199,8 @@
 :is(.btn.ok,.actionbar.ok .in .btn:not(.ghost)):not(#_){--edge:var(--green-deep)}
 :is(.btn.bad,.actionbar.bad .in .btn:not(.ghost)):not(#_){--edge:var(--red-deep)}
 .btn:is([disabled],:disabled):not(#_){--dz0:0px}
+/* a locked practice mode sits low on the ground: nothing to press yet */
+.mode:disabled:not(#_){--dz0:1px}
 /* dark slabs: a darker band; by day they are pale steel and so is their band */
 :is(.today-hero,.talkhero,.chapter,.card.stopline,.card.tnext,.gfeat,.khead):not(#_){--edge:var(--slab-edge-dark);--face:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
 .gfeat:not(#_){--face:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}
