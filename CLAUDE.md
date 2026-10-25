@@ -25,6 +25,7 @@ server/              one Node server for all apps: static files + /api
 - `npm run setup` once, then `npm run dev` → http://localhost:8787/deutsch/
 - `npm test` runs the server tests.
 - AI features need `ANTHROPIC_API_KEY` in `.env` (copy `.env.example`). Without it, or when `index.html` is opened directly as a file, the app runs with the AI features turned off.
+- `npm run dev:fake-ai` runs the server with the practice AI (`server/src/fake-ai.js`): canned replies for every AI task, no key and no cost, so Sprechen, "Why? Explain it" and exam marking can be played and screenshotted. Development only.
 
 ## Front end (`apps/deutsch`)
 
