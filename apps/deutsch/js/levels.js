@@ -25,7 +25,7 @@ function pace() {
   const eta = LEVELS.map(l => { const rem = Math.max(0, l.words - w); return { code: l.code, rem, days: rem === 0 ? 0 : avg > 0 ? Math.ceil(rem / avg) : null, date: rem === 0 || !avg ? null : addDays(todayStr(), Math.ceil(rem / avg)) }; });
   return { avg, eta, w };
 }
-function fmtDate(d) { try { return new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d.slice(0, 4) !== todayStr().slice(0, 4) ? 'numeric' : undefined }); } catch (e) { return d; } }
+function fmtDate(d) { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: d.slice(0, 4) !== todayStr().slice(0, 4) ? 'numeric' : undefined }); } catch (e) { return d; } }
 function paceWidget() {
   const p = pace(), info = levelInfo();
   const rows = info.map((l, i) => { const e = p.eta[i]; const status = l.passed ? h('span', { class: 'chip ok' }, 'bestanden') : l.reached ? h('span', { class: 'chip yours' }, 'exam ready') : e.days === null ? h('span', { class: 'faint' }, e.rem + ' words to go') : h('span', { class: 'faint' }, `${e.days} day${e.days === 1 ? '' : 's'} · ${fmtDate(e.date)}`);
@@ -137,7 +137,7 @@ let EXAM_RESULT = null;
 function openExamPreview(code) {
   const l = LEVELS.find(x => x.code === code), plan = EXAM_PLAN[code], cd = examCooldownLeft(code), saved = S.progress.exam && S.progress.exam.code === code ? S.progress.exam : null, hist = (S.progress.exams || []).filter(e => e.code === code);
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('exam')), h('div', { class: 'eyebrow' }, 'Level exam · ' + l.words.toLocaleString() + ' words reached'), h('h1', { lang: 'de' }, 'Prüfung ' + code),
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('exam')), h('div', { class: 'eyebrow' }, 'Level exam · ' + l.words.toLocaleString() + ' words reached'), h('h1', {}, code + ' exam'),
       h('p', { class: 'muted' }, 'Modelled on the Goethe-Zertifikat: listening, reading, vocabulary, grammar, gap-fill, word order, translation' + (S.ai ? ', writing and speaking.' : '.') + ' You need 90 % to pass and move on.'));
     const facts = h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'The rules'), h('ul', { class: 'rules' }, h('li', {}, 'No hints, no word glosses, no second chances inside the exam.'), h('li', {}, 'Recordings play at most twice.'), h('li', {}, 'Everything is typed. Spelling and articles count; ae/oe/ue/ss are accepted for ä/ö/ü/ß.'), h('li', {}, 'You can pause and come back; your answers are saved.'), h('li', {}, `If you score under 90 %, you can retake it after ${EXAM_COOLDOWN_MIN} minutes with new questions.`)));
     p.append(facts, h('div', { class: 'facts' }, h('span', { class: 'chip' }, '≈ ' + (code === 'A1' ? 45 : code === 'A2' ? 60 : 80) + ' min'), h('span', { class: 'chip' }, 'pass mark 90 %'), hist.length ? h('span', { class: 'chip' }, 'best so far ' + Math.max(...hist.map(e => e.score)) + ' %') : ''));
@@ -180,7 +180,7 @@ function renderExam(v) {
     const a = getAnswer(); if (a === '' || a === null || a === undefined) { toast('Answer first, or type your best guess.'); return; }
     it.answer = a; X.idx++; save('progress'); NAV = 'fwd'; render();
   }
-  actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, X.idx + 1 < X.items.length ? 'Weiter' : 'Abgeben · submit')] });
+  actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, X.idx + 1 < X.items.length ? 'Next' : 'Submit')] });
   if (!['tf', 'mc'].includes(it.type) || it.sec === 'gram') KEYS = e => { if (e.key === 'Enter' && document.activeElement && document.activeElement.tagName !== 'TEXTAREA') next(); };
 }
 async function gradeExam(v) {

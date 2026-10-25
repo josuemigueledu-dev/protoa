@@ -66,7 +66,7 @@ function renderCrash(v, err) {
   console.error('Protoa render error', err);
   document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); renderTabs();
   v.innerHTML = '';
-  v.append(h('div', { class: 'card crash' }, h('h1', {}, 'Das hat nicht geklappt.'), h('p', {}, "Something went wrong drawing this screen. Your progress is saved."), h('p', { class: 'faint' }, String(err && err.message || err)),
+  v.append(h('div', { class: 'card crash' }, h('h1', {}, "This screen didn't load."), h('p', {}, 'Your progress is saved.'), h('p', { class: 'faint' }, String(err && err.message || err)),
     h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => { if (S.progress.lessonState) { S.progress.lessonState.paused = true; save('progress'); } PR = null; route = 'learn'; NAV = 'fade'; render(); } }, 'Back to the map'),
       S.progress.lessonState ? h('button', { class: 'btn ghost', onclick: () => { S.progress.lessonState = null; save('progress'); route = 'learn'; render(); } }, 'Restart this lesson') : '')));
 }
@@ -134,7 +134,7 @@ function progressHeader() {
   return h('div', { class: 'card prog' },
     h('div', { class: 'nums' }, h('div', {}, h('span', { class: 'big' }, g.learned.toLocaleString()), h('span', { class: 'muted' }, ' of ' + s.target.toLocaleString() + ' words'), h('span', { class: 'chip', style: 'margin-left:10px;vertical-align:middle' }, s.level)), h('div', { class: 'muted small', style: 'font-variant-numeric:tabular-nums' }, g.pct + '%')),
     h('div', { class: 'bar' }, h('i', { style: `width:${g.pct}%` })),
-    h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, `today: ${g.today} of your ${g.perDay} new words`), g.date ? h('span', {}, 'plan: ' + s.level + ' by ' + fmtDate(g.date)) : ''));
+    h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, g.today >= g.perDay ? `today: ${g.today} new words, goal of ${g.perDay} met` : `today: ${g.today} of your ${g.perDay} new words`), g.date ? h('span', {}, 'plan: ' + s.level + ' by ' + fmtDate(g.date)) : ''));
 }
 // .fb is a flex row: the html goes in one span, or each text run and <em> would become its own column
 function fbEl(kind, html) { return h('div', { class: 'fb ' + kind, role: 'status' }, h('span', { html })); }
@@ -171,7 +171,7 @@ function renderToday(v) {
   const resume = !!(L && ls && ls.n === L.n);
   v.append(h('div', { class: 'today-hero' }, teacherSlot(64, 'pleased'), h('div', { class: 'grow' }, h('h1', {}, greet + (name ? ', ' + name : '') + '.'), protoaLine(L, resume, due.length)),
     h('div', { class: 'goal', role: 'img', 'aria-label': `${g0.today} of ${g0.perDay} new words today` }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner', 'aria-hidden': 'true' }, h('span', {}, g0.today), h('small', {}, 'of ' + g0.perDay)))));
-  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { lang: 'de', style: 'font-size:var(--t-title)' }, 'Prüfung ' + gateT.code), h('div', { class: 'faint' }, 'Pass with 90 % to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
+  if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString() + ' words reached'), h('h2', { style: 'font-size:var(--t-title)' }, gateT.code + ' exam'), h('div', { class: 'faint' }, 'Pass with 90% to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
   if (L) v.append(todayLessonCard(L, resume));
   else if (!gateT) v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map')));
   v.append(todayLine(due.length));
@@ -205,7 +205,7 @@ function protoaLine(L, resume, due) {
 }
 function todayLessonCard(L, resume) {
   const c = courseOf(L.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id], who = newcomer(L) || leadOf(L);
-  const ph = h('div', { class: 'pic' + (pic ? '' : ' none') }, h('span', { class: 'tag', lang: 'de' }, 'Lektion ' + L.n), who && typeof bustEl === 'function' ? bustEl(who, 'neutral', 52) : '');
+  const ph = h('div', { class: 'pic' + (pic ? '' : ' none') }, h('span', { class: 'tag' }, 'Lesson ' + L.n), who && typeof bustEl === 'function' ? bustEl(who, 'neutral', 52) : '');
   if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('article', { class: 'card primary tlesson', 'aria-label': 'Lesson ' + L.n + ': ' + L.title }, ph,
     h('div', { class: 'in' }, h('div', { class: 'k' }, c.station + ' · ' + L.words.length + ' words'), h('h2', {}, L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
@@ -236,9 +236,9 @@ function todayLine(due) {
     const face = L && (newcomer(L) || (i === ci ? leadOf(L) : null));
     let num = '', lab = '', box = '', aria = '';
     if (it.kind === 'lesson') { num = it.n; lab = L ? L.title : courseOf(it.n).topic; aria = `Lesson ${it.n}, ${lab}`; }
-    else if (it.kind === 'review') { num = 'R'; lab = 'Wdh.'; aria = `Review of lessons ${it.from} to ${it.to}`; }
-    else { box = it.code; lab = 'Prüfung'; aria = 'Exam ' + it.code; }
-    if (end && it.kind === 'review') { box = 'K' + (chI + 1); num = it.to; lab = 'Ziel'; aria = `End of chapter ${chI + 1}: review of lessons ${it.from} to ${it.to}`; }
+    else if (it.kind === 'review') { num = 'R'; lab = 'Review'; aria = `Review of lessons ${it.from} to ${it.to}`; }
+    else { box = it.code; lab = 'Exam'; aria = 'Exam ' + it.code; }
+    if (end && it.kind === 'review') { box = 'K' + (chI + 1); num = it.to; lab = 'Test'; aria = `End of chapter ${chI + 1}: review of lessons ${it.from} to ${it.to}`; }
     const st = h('div', { class: `lstop ${it.kind === 'review' ? 'rv' : it.kind} ${it.state}${box ? ' box' : ''}${i === ci ? ' now' : ''}`, style: `left:${X(i)}%`, role: 'listitem',
       'aria-label': aria + ', ' + (i === ci ? 'your stop' : { done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon', now: 'your stop' }[it.state] || it.state) },
       h('i', { 'aria-hidden': 'true' }, box), num !== '' ? h('em', { 'aria-hidden': 'true' }, String(num)) : '', h('span', { 'aria-hidden': 'true', lang: it.kind === 'lesson' ? 'en' : 'de' }, i === ci ? h('b', {}, lab) : lab));
@@ -258,11 +258,11 @@ function todayLine(due) {
     else { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(rideNow, 1100); } }, { threshold: .9 }); io.observe(trk); }
   }
   const nextRv = stops.slice(cur).find(it => it.kind === 'review' && it.state !== 'done');
-  return h('section', { class: 'card slab-dark stopline', 'aria-label': 'Your line: ' + ch.de },
-    h('div', { class: 'lh' }, h('div', {}, h('b', { lang: 'de' }, ch.de), h('span', {}, 'Your line to the end of the chapter')), h('span', { class: 'cnt', 'aria-label': `${lessonsIn.filter(i => i.state === 'done').length} of ${lessonsIn.length} lessons done` }, String(lessonsIn.filter(i => i.state === 'done').length), h('small', {}, '/' + lessonsIn.length))),
+  return h('section', { class: 'card slab-dark stopline', 'aria-label': 'Your line: chapter ' + (chI + 1) + ', ' + ch.de.split(' · ').pop() },
+    h('div', { class: 'lh' }, h('div', {}, h('b', {}, 'Chapter ' + (chI + 1) + ' · ', h('bdi', { lang: 'de', style: 'font-size:inherit' }, ch.de.split(' · ').pop())), h('span', {}, 'Your line to the end of the chapter')), h('span', { class: 'cnt', 'aria-label': `${lessonsIn.filter(i => i.state === 'done').length} of ${lessonsIn.length} lessons done` }, String(lessonsIn.filter(i => i.state === 'done').length), h('small', {}, '/' + lessonsIn.length))),
     trk,
     h('div', { class: 'ttags' }, due ? h('button', { class: 't1', onclick: () => startReview(dueCards()) }, h('b', {}, String(due)), due === 1 ? ' card due' : ' cards due') : '',
-      nextRv ? h('span', {}, 'Review after lesson ' + nextRv.to) : '', h('button', { onclick: () => go('learn') }, 'Course map ›')));
+      nextRv ? h('span', {}, 'Review after lesson ' + nextRv.to) : '', h('button', { onclick: () => go('learn') }, 'All lessons ›')));
 }
 /* words due, with their genders, and the scene after this lesson */
 function todayDuo(due, L) {
@@ -272,7 +272,7 @@ function todayDuo(due, L) {
     g.m + g.f + g.n ? h('span', { class: 'gchips', lang: 'de' }, ...[['m', 'der'], ['f', 'die'], ['n', 'das']].filter(([k]) => g[k]).map(([k, a]) => h('span', { class: 'g-' + k }, g[k] + ' ' + a))) : '');
   const N = L && lessonById(L.n + 1), pic = N && typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[N.scene.plate || 'plate.' + N.scene.id];
   if (!pic) return h('div', { class: 'tduo one' }, left);
-  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lektion ' + N.n, h('b', { lang: 'de' }, N.scene.cap || courseOf(N.n).station)));
+  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lesson ' + N.n, h('b', { lang: 'de' }, N.scene.cap || courseOf(N.n).station)));
   right.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('div', { class: 'tduo' }, left, right);
 }
@@ -527,7 +527,7 @@ function countUp(el, n) { if (reduced() || n === 0) { el.textContent = n; return
 
 /* ---------- PRACTICE: reviews + word bank ---------- */
 let PR = null; // review session
-function reviewTitle() { const q = PR.queue, k = q[0] && q[0].kind; const T = { mc: 'Word meanings', gap: 'Fill the gaps', order: 'Build sentences', trans: 'Translate to German', li: 'Listening', ls: 'Say it in German', sent: 'Conversation lines' }; return PR.stop ? 'Wiederholung' : (k && q.every(x => x.extra && x.kind === k) && T[k]) || 'Wiederholung'; }
+function reviewTitle() { const q = PR.queue, k = q[0] && q[0].kind; const T = { mc: 'Word meanings', gap: 'Fill the gaps', order: 'Build sentences', trans: 'Translate to German', li: 'Listening', ls: 'Say it in German', sent: 'Conversation lines' }; return PR.stop ? 'Wiederholung' : (k && q.every(x => x.extra && x.kind === k) && T[k]) || 'Daily review'; }
 function renderPractice(v) {
   if (PR && PR.queue.length) { renderReview(v); return; }
   renderPracticeHub(v);
@@ -566,9 +566,9 @@ function renderReview(v) {
     h('div', { class: 'rv-say' }, teacherSlot(44, 'neutral'), h('div', {}, h('b', { lang: 'de' }, say[0]), h('span', {}, say[1])))));
   card.classList.add('rv-card'); v.append(card);
   const deck = it.kind === 'p' ? it.c.p : it.c.r, box = rvBox(deck);
-  const meta = () => h('div', { class: 'rv-meta' }, h('span', { lang: 'de' }, def && def.lesson ? 'Lektion ' + def.lesson + ' · ' + courseOf(def.lesson).station : it.c.sent ? 'Gespräch' : 'Deine Wörter'), h('span', { lang: 'de' }, 'Fach ' + box));
-  v.append(h('div', { class: 'rv-boxes', role: 'img', 'aria-label': `Box ${box} of 5. You know ${learnedCount()} words.` }, h('span', { lang: 'de' }, 'Fach 1–5'),
-    h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', { lang: 'de' }, learnedCount() + ' Wörter')));
+  const meta = () => h('div', { class: 'rv-meta' }, h('span', {}, def && def.lesson ? 'Lesson ' + def.lesson + ' · ' + courseOf(def.lesson).station : it.c.sent ? 'Conversation' : 'Your words'), h('span', {}, 'Box ' + box));
+  v.append(h('div', { class: 'rv-boxes', role: 'img', 'aria-label': `Box ${box} of 5. You know ${learnedCount()} words.` }, h('span', {}, 'Boxes 1–5'),
+    h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null;
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
   const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
@@ -644,7 +644,7 @@ function wordBank() {
     items.forEach(([id, cd]) => { const d = wordDef(id) || { en: ['?'] }; const k = groupKey(cd); if (k !== last) { last = k; grid.append(h('div', { class: 'grp' }, sigEl(groupIcon(k)), h('span', { class: 'eyebrow' }, groupLabel(k)))); }
       const t = h('button', { class: 'btile', onclick: () => showDetail(id, cd, d) }); if (d.pic && PICS[d.pic]) { const i = h('div', { class: 'illus sm' }); i.innerHTML = PICS[d.pic]; t.append(i); } t.append(h('div', { class: 'de', lang: 'de' }, artEl(id)), h('div', { class: 'en' }, d.en.join(', ')), ringEl(strengthOf(cd.r), 22)); grid.append(t); });
   };
-  const showDetail = (id, cd, d) => { detail.innerHTML = ''; const full = wordDef(id); detail.append(full && full.ex ? wordCard(full) : h('div', { class: 'card' }, h('b', {}, id), ' — ', d.en.join(', '))); const hist = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since || '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? cd.r[0] + ' (every ' + cd.r[1] + ' d)' : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · lapses ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'Production'), h('span', {}, cd.p ? 'unlocked, next ' + cd.p[0] : 'unlocks when recognition ≥ 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${dt} ${({ r: 'meaning', p: 'word', li: 'listening', ls: 'sentence', sent: 'line' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); detail.append(hist); detail.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); };
+  const showDetail = (id, cd, d) => { detail.innerHTML = ''; const full = wordDef(id); detail.append(full && full.ex ? wordCard(full) : h('div', { class: 'card' }, h('b', {}, id), ' — ', d.en.join(', '))); const hist = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since ? fmtDate(cd.since) : '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? fmtDate(cd.r[0]) + ' (every ' + cd.r[1] + (cd.r[1] === 1 ? ' day)' : ' days)') : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · lapses ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'Production'), h('span', {}, cd.p ? 'unlocked, next ' + cd.p[0] : 'unlocks when recognition ≥ 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${dt} ${({ r: 'meaning', p: 'word', li: 'listening', ls: 'sentence', sent: 'line' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); detail.append(hist); detail.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); };
   [search, fLesson, fType, fStr].forEach(e => e.addEventListener('input', draw)); draw();
   c.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, search), fLesson, fType, fStr), grid); return h('div', { class: 'stack' }, c, detail);
 }
