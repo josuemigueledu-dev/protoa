@@ -201,23 +201,27 @@ async function gradeExam(v) {
     else if (it.type === 'trans') { const r = diagnose(a, it.de, lex, it.g, []); it.ok = r.ok; it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; if (!it.ok && X.claude) pending.push(it); }
     else if (it.type === 'write' || it.type === 'speak') { it.max = it.type === 'write' ? it.pts : 1; it.pts = 0; it.expected = ''; pending.push(it); }
   }
-  if (pending.length && S.ai) {
-    const list = pending.map((it, i) => ({ i, kind: it.type, task: String((it.type === 'write' ? it.task : it.type === 'speak' ? it.q : it.en) || ''), model: it.de || '', answer: String(it.answer || ''), max: it.max }));
-    try {
+  if (pending.length) {
+    let marked = false;
+    if (S.ai) try {
+      const list = pending.map((it, i) => ({ i, kind: it.type, task: String((it.type === 'write' ? it.task : it.type === 'speak' ? it.q : it.en) || ''), model: it.de || '', answer: String(it.answer || ''), max: it.max }));
       const r = await AI.run('gradeExam', { code: X.code, items: list });
       (r.marks || []).forEach(m => { const it = pending[m.i]; if (!it) return; it.pts = Math.max(0, Math.min(it.max, Math.round(Number(m.points) || 0))); it.ok = it.pts === it.max; it.note = m.note || ''; });
-    } catch (e) { pending.filter(it => it.type === 'write' || it.type === 'speak').forEach(it => { it.ungraded = true; }); }
+      marked = true;
+    } catch (e) { }
+    if (!marked) pending.filter(it => it.type === 'write' || it.type === 'speak').forEach(it => { it.ungraded = true; });
   }
-  // ungradeable free tasks (Claude failed) are left out of the total rather than counted as zero
-  const graded = X.items.filter(it => !it.ungraded), pts = graded.reduce((a, it) => a + it.pts, 0), max = graded.reduce((a, it) => a + it.max, 0);
+  // free tasks Claude couldn't mark (the call failed, or AI went away mid-exam) are left out of the total rather than counted as zero;
+  // a failed attempt with unmarked tasks doesn't count: no cooldown and no entry in the history, so the learner can retake it at once
+  const graded = X.items.filter(it => !it.ungraded), unmarked = X.items.length - graded.length, pts = graded.reduce((a, it) => a + it.pts, 0), max = graded.reduce((a, it) => a + it.max, 0);
   const score = max ? Math.floor(100 * pts / max) : 0, passed = score >= PASS_MARK * 100;
   const bySec = {}; graded.forEach(it => { const s = bySec[it.sec] = bySec[it.sec] || { pts: 0, max: 0 }; s.pts += it.pts; s.max += it.max; });
-  S.progress.exams = (S.progress.exams || []).concat([{ code: X.code, date: todayStr(), score, passed, afterLesson: Math.max(0, ...S.progress.lessonsDone) }]);
+  if (passed || !unmarked) S.progress.exams = (S.progress.exams || []).concat([{ code: X.code, date: todayStr(), score, passed, afterLesson: Math.max(0, ...S.progress.lessonsDone) }]);
   if (passed) S.progress.levelsPassed = [...new Set([...levelsPassed(), X.code])];
-  else { S.progress.examCooldown = Object.assign({}, S.progress.examCooldown, { [X.code]: Date.now() + EXAM_COOLDOWN_MIN * 60000 }); }
+  else if (!unmarked) { S.progress.examCooldown = Object.assign({}, S.progress.examCooldown, { [X.code]: Date.now() + EXAM_COOLDOWN_MIN * 60000 }); }
   const missedWords = X.items.filter(it => !it.ok && (it.type === 'in' || it.type === 'out')).map(it => it.de);
   missedWords.forEach(id => { const c = cardOf(id); if (c && c.r) { c.r[0] = todayStr(); c.r[4] = (c.r[4] || 0) + 1; } }); Object.keys(S.cards).forEach(k => save(null, k));
-  EXAM_RESULT = { code: X.code, score, passed, pts, max, bySec, items: X.items, missed: missedWords, minutes: Math.max(1, Math.round((Date.now() - X.startedAt) / 60000)) };
+  EXAM_RESULT = { code: X.code, score, passed, pts, max, bySec, unmarked, items: X.items, missed: missedWords, minutes: Math.max(1, Math.round((Date.now() - X.startedAt) / 60000)) };
   S.progress.exam = null; save('progress'); NAV = 'fade'; render(); if (passed) Voice.proud(3200); if (passed && !reduced()) confetti(); checkStamps();
 }
 function renderExamResult(v) {
@@ -225,7 +229,8 @@ function renderExamResult(v) {
   v.append(h('div', { class: 'pagehead', style: 'margin-top:16px' }, teacherSlot(52, R.passed ? 'pleased' : 'neutral'), h('div', {}, h('h1', { lang: 'de' }, 'Prüfung ' + R.code), h('div', { class: 'faint' }, R.passed ? 'Bestanden' : 'Ergebnis'))));
   const ring = h('div', { class: 'big-ring' }, ringEl(0, 160), h('div', { class: 'inner' }, h('div', { class: 'n big' }, R.score + '%')));
   if (R.passed) v.append(h('div', { style: 'height:16px' }), h('div', { class: 'ticket cert' }, h('div', { class: 'top' }, h('b', {}, 'Protoa · Zertifikat'), h('span', {}, fmtDate(todayStr()))), h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Prüfung bestanden'), h('h1', { lang: 'de' }, 'Deutsch ' + R.code), h('div', { class: 'stamp' }, sigEl('exam')), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points · ${R.minutes} min · ${R.score >= 95 ? 'sehr gut' : 'gut'}`), h('p', {}, R.code === 'B1' ? 'You have reached the goal of the course: independent, spoken B1.' : `The line continues toward ${LEVELS[LEVELS.findIndex(l => l.code === R.code) + 1].code}. New lessons are open again.`))));
-  else v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, ring, h('h1', { lang: 'de' }, 'Noch nicht bestanden'), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points. You need 90 % to pass ${R.code}. New questions in ${EXAM_COOLDOWN_MIN} minutes; until then, practise what you missed.`)));
+  else v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, ring, h('h1', { lang: 'de' }, 'Noch nicht bestanden'), h('p', { class: 'muted' }, `${R.pts} of ${R.max} points. You need 90 % to pass ${R.code}. ` + (R.unmarked ? 'This attempt doesn\'t count: you can retake it now, with new questions.' : `New questions in ${EXAM_COOLDOWN_MIN} minutes; until then, practise what you missed.`))));
+  if (R.unmarked) v.append(h('p', { class: 'fb note' }, 'Writing and speaking couldn\'t be marked just now, so they are left out of this score.'));
   setTimeout(() => { const c = ring.querySelector('.fg'); if (c) { const r = (160 - 6) / 2, circ = 2 * Math.PI * r; c.style.strokeDashoffset = circ * (1 - R.score / 100); } }, 120);
   const secs = h('div', { class: 'card stack' }, h('h2', {}, 'By module'));
   Object.entries(R.bySec).forEach(([s, x]) => { const pct = Math.round(100 * x.pts / Math.max(1, x.max)); secs.append(h('div', { class: 'secrow' }, h('span', { lang: 'de' }, SECTION_NAMES[s]), h('div', { class: 'bar' }, h('i', { style: `width:${pct}%;background:${pct >= 90 ? 'var(--green)' : 'var(--yellow)'}` })), h('b', {}, `${x.pts}/${x.max}`))); });
