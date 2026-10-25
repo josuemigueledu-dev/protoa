@@ -214,6 +214,8 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 .bub.l .box .gl .w:not(.speaking){color:inherit}
 :root:root:root .bub.l.done .box,:root:root:root .bub.l.done .box .gl .w:not(.speaking){color:var(--on-status)}
 :root:root:root .bub.l.done .box .gl .e,:root:root:root .bub.l.done .box .en-after,:root:root:root .bub.l.done .box .faint{color:color-mix(in srgb,var(--on-status) 86%,transparent)}
+/* the partner's reply under a right answer is their line, not a caption: full status ink, set off by a hairline */
+:root:root:root .bub.l.done .box .reaction{color:var(--on-status);border-top:1px solid color-mix(in srgb,var(--on-status) 30%,transparent);padding-top:6px;margin-top:8px}
 .conv.has-band .log{padding-top:20px}
 /* anything scrolled or focused into view lands below the header and the shrunken band, never under them */
 .conv.has-band .log>*,.conv.has-band .turnbox{scroll-margin-top:calc(var(--lt-h,96px) + 132px)}
