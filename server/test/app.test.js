@@ -43,6 +43,14 @@ test('the conversation prompt keeps the original transcript format', () => {
   assert.match(p, /your student Alex \(lives in Orlando, studies\/works in unknown, interests: unknown\)/);
 });
 
+test('the lesson prompt climbs the difficulty ladder of lesson-experience.md', () => {
+  const at = n => tasks.generateLesson.prompt(tasks.generateLesson.input.parse({ ...SAMPLE.generateLesson, n }));
+  assert.match(at(2), /No typing at all/);
+  assert.match(at(7), /one typed word/); assert.match(at(7), /No "translate" or "free" turns/);
+  assert.match(at(14), /exactly ONE "free" turn/);
+  assert.match(at(14), /Nothing religious or political/);
+});
+
 test('health reports whether AI is configured', async () => {
   const old = process.env.ANTHROPIC_API_KEY; delete process.env.ANTHROPIC_API_KEY;
   assert.deepEqual(await (await createApp().request('/api/health')).json(), { ok: true, ai: false });

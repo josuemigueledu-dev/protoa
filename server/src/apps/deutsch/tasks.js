@@ -21,7 +21,7 @@ export const tasks = {
     tier: 'quick',
     input: z.object({ sentence: str(500) }),
     output: z.object({ corrected: z.string(), error: z.string(), extend: z.string() }),
-    prompt: ({ sentence }) => `A beginner learner of German wrote this sentence: "${sentence}"\nReply with only JSON: {"corrected": "the sentence corrected (unchanged if already correct)", "error": "the main error named in one plain English sentence, or 'No errors.'", "extend": "one short way to extend the sentence, in German, with an English gloss in parentheses"}`,
+    prompt: ({ sentence }) => `A beginner learner of German wrote this sentence: "${sentence}"\nReply with only JSON: {"corrected": "the sentence corrected (unchanged if already correct)", "error": "the main error named in one plain English sentence, or 'No errors.'", "extend": "one short way to extend the sentence, in German with simple A1 words, with an English gloss in parentheses"}`,
   },
 
   // "Why? Explain it" after a wrong translation.
@@ -51,8 +51,8 @@ export const tasks = {
       return `You are Protoa, a warm, precise German conversation partner in Berlin with a dry sense of humour (you are a voice without a body; if asked your name, you are Protoa), in a spoken conversation with your student ${p.name || ''} (lives in ${p.city || 'the US'}, studies/works in ${p.field || 'unknown'}, interests: ${p.interests || 'unknown'}).
 Scenario: ${brief}
 The student is a beginner (A1, aiming for spoken B1). Words the student knows: ${known}.
-Rules for your line ("de"): German only, use Sie, 1–2 short sentences (each at most 12 words), mostly the student's known words, react to what the student said, and end with one simple question that keeps the scenario going.
-Judge the student's LAST message: "ok": true if it is understandable and acceptable for A1 (tiny slips are fine); otherwise "corrected" = the natural corrected German version of what they meant and "note" = one plain-English sentence naming the main error (mention a Spanish parallel only if it truly helps). If ok, "note" may be a 2–5 word compliment in German.
+Rules for your line ("de"): German only, use Sie, 1–2 short sentences (each at most 12 words), mostly the student's known words, react to what the student said, and end with one simple question that keeps the scenario going. No emoji, no exclamation marks for effect. Keep to everyday life in Berlin (cafés, work, family, sport, transport, food, weather): never bring up religion or politics, and if the student does, steer back to the scenario in one friendly sentence.
+Judge the student's LAST message: "ok": true if it is understandable and acceptable for A1 (tiny slips are fine); otherwise "corrected" = the natural corrected German version of what they meant and "note" = one plain-English sentence naming the main error (mention a Spanish parallel only if it truly helps). If ok, "note" is empty, or one plain-English sentence with something specific worth knowing (a more natural way to say it, or a word they could add); never generic praise.
 "gloss": every German token of "de" with its meaning in context, format "word=meaning | word=meaning", fixed phrases as one span, punctuation attached to the German word.
 Set "done": true once the scenario has naturally concluded or after about 10 student lines; then "de" is a friendly goodbye.
 Reply with only JSON: {"de": "...", "en": "...", "gloss": "...", "correction": {"ok": true, "corrected": "", "note": ""}, "done": false}
@@ -95,6 +95,27 @@ ${hist}`;
       art: z.array(z.object({ id: str(60), kind: str(20), tags: z.array(str(30)).max(12) })).max(400).default([]),
       example: z.record(z.string(), z.unknown()).refine(v => JSON.stringify(v).length <= 60000, 'example lesson too large'),
     }),
-    prompt: ({ n, topic, station, profile, known, art, example }) => `Write lesson ${n} of a German course for an English speaker (fluent in Spanish) aiming for spoken B1, with ONE conversation partner, Herr Weber (teacher in Berlin, uses Sie). Theme: ${topic}. The lesson is set at or near the Berlin U-Bahn station ${station}.\nLearner profile: ${JSON.stringify(profile)}. Already-known words (do not teach again, may reuse): ${known.join(', ')}.\nReply with ONLY a JSON object with exactly the shape and conventions of this example lesson (same keys, same gloss format "de=en | de=en" where glosses are meaning in context and fixed phrases get one span, every German token glossed, conversation of 8–12 turns alternating Herr Weber {w,g,mood} and learner turns {l:true,de,en,g,type,gaps,extra,alts,react} with a mix of tiles/gap/translate and ONE free turn, lexicon with every verb's forms and every noun's gender, no "pic" field, 10–12 new words with ipa, resp (stressed syllable CAPS), syl with ·, example with the word in [brackets], exEn, exG). Art: choose scene.plate, every scene.cast id, twist.event and every words[].pic ONLY from this list of {id, kind, tags} (plate.* for plates, cast.* for cast, event.* for events, word.* for pictures; omit pic when no picture fits): ${JSON.stringify(art)}. Example:\n${JSON.stringify(example)}`,
+    prompt: ({ n, topic, station, profile, known, art, example }) => {
+      // the difficulty ladder in docs/specs/lesson-experience.md §3
+      const ladder = n <= 3
+        ? 'No typing at all: every build item is "tiles", every learner turn is "tiles", no "gap", "translate" or "free" turns.'
+        : n <= 10
+          ? 'Tiles are the default. A "gap" item or turn may ask for one typed word that the learner has already used earlier in this lesson. No "translate" or "free" turns.'
+          : 'Tiles are the default; "gap" and "translate" turns may ask the learner to type a short sentence, and the conversation has exactly ONE "free" turn near the end.';
+      return `Write lesson ${n} of a German course for an English speaker (fluent in Spanish) aiming for spoken B1. Theme: ${topic}. The lesson is set at or near the Berlin U-Bahn station ${station}.
+Learner profile: ${JSON.stringify(profile)}. Already-known words (do not teach again, may reuse): ${known.join(', ')}.
+People: the course's recurring cast in an everyday Berlin. Herr Weber (teacher at the Volkshochschule am Hermannplatz, room 2.04, from Berlin, mid-50s, short precise sentences, dry humour, says "So." before he changes topic, uses Sie); Ana (from Mexico City, lives in Neukölln, fast, corrects herself: "Nein, warte"); Lena (from Rome, guitarist, drinks three coffees a day, says "Ach so" and "Na gut"); Murat (barista at the café next to the school, calm and formal). Students use du with each other and Sie with Herr Weber and Murat. Every partner turn has who: one of the scene.cast ids (default cast.weber). Nothing religious or political anywhere: keep to cafés, work, family, sport, transport, food and weather.
+Teaching rules:
+- 10–14 new items. An item is a word (one word) or a phrase (a fixed combination such as "Guten Tag"); a phrase has type "phrase" and "parts": "guten (good) + Tag (day)".
+- Never test what wasn't taught: every German word the learner must choose or produce (build items and their extra tiles, the learner's own conversation lines and their extra tiles) is one of this lesson's new items or a known word. Extra tiles (distractors, at most two per item) are known words of the same kind.
+- Partner lines may contain at most two words that are neither new nor known, always glossed, and the learner never has to use them.
+- ${ladder}
+- The build step uses one or two exercise types in a set order; the conversation is the finale and has a reason to care (a small twist).
+- notice: one short grammar rule in plain English; add a Spanish contrast only where it truly helps (e.g. "like usted").
+- warmup: 3–5 known headwords to review at the start.
+- Feedback and reactions ("react") are specific: they confirm the exact form or say what it means. No hollow praise, no emoji, no exclamation marks for effect. German that Germans really say.
+Reply with ONLY a JSON object with exactly the shape and conventions of this example lesson (same keys, plus warmup; gloss format "de=en | de=en" where glosses are meaning in context, fixed phrases get one span, and every German token is glossed; conversation of 8–12 turns alternating partner turns {who,w,g,mood} and learner turns {l:true,de,en,g,type,gaps,extra,alts,react}; lexicon with every verb's forms and every noun's gender; every new item with ipa, resp (stressed syllable CAPS), syl with ·, example with the item in [brackets], exEn, exG). Art: choose scene.plate, every scene.cast id, twist.event and every words[].pic ONLY from this list of {id, kind, tags} (plate.* for plates, cast.* for cast, event.* for events, word.* for pictures; omit pic when no picture fits): ${JSON.stringify(art)}. Example:
+${JSON.stringify(example)}`;
+    },
   },
 };

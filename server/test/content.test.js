@@ -195,7 +195,7 @@ test('each lesson file holds the lesson its name says', () => {
 // learner's own conversation lines) was introduced in this lesson or an earlier one.
 // Lessons on this list still break the rule and wait for the story agent's rework;
 // remove a number when its lesson is fixed (a stale entry fails the test).
-const NOT_YET_REWORKED = new Set([2, 3, 4, 5, 6, 7, 8, 9]);
+const NOT_YET_REWORKED = new Set([3, 4, 5, 6, 7, 8, 9]);
 const NAMES = new Set(['herr', 'frau', 'weber', 'ana', 'lena', 'murat', 'alex', 'name', 'city', 'field',
   'berlin', 'madrid', 'paris', 'mexiko', 'rom', 'neukölln']); // people and places, not vocabulary
 const tokens = s => String(s).toLowerCase().replace(/\{(\w+)\}/g, '$1').split(/[^\p{L}]+/u).filter(Boolean);
@@ -227,3 +227,18 @@ for (const L of lessons) {
     assert.equal(bad.length, 0, `untaught words in lesson ${L.n}: ${bad.join(', ')}`);
   });
 }
+
+// Owner's rule: nothing religious or political anywhere in the lessons (text, scenes, examples, exam).
+// Everyday words stay allowed: wählen / Wahl (to dial or choose, a choice) are not listed.
+// Known gap: christ\w* also matches the name Christian and Christstollen; reword or adjust if one appears.
+const BANNED = /\b(kirche|kirchen|church|gott|god|jesus|christ\w*|weihnacht\w*|christmas|ostern|easter|ramadan|moschee|mosque|synagoge|synagogue|gebet|prayer|pray|religio\w*|bibel|bible|papst|pope|politi\w*|partei\w*|party leader|wahlen|election|vote|voting|protest\w*|demonstration|regierung|government|kanzler\w*|chancellor|präsident\w*|president|minister\w*|bundestag|afd|cdu|spd|fdp|trump|merkel|putin)\b/i;
+
+test('no lesson text is religious or political', () => {
+  const hits = [];
+  for (const L of lessons) {
+    const text = JSON.stringify(L).replace(/"[\w$]+":/g, ' ');
+    const m = text.match(BANNED);
+    if (m) hits.push(`lesson ${L.n}: "${m[0]}"`);
+  }
+  assert.deepEqual(hits, [], 'remove religious or political content (owner rule); if this is a false positive, adjust BANNED');
+});
