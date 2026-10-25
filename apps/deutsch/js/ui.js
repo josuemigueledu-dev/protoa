@@ -316,7 +316,7 @@ function lessonConv(v, L, ls) {
   advance();
   function bubble(m) {
     const b = h('div', { class: 'bub ' + m.who + (m.done ? ' done' : '') });
-    if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && ART[speaker(m)]) b.append(bustEl(speaker(m), m.mood, 40)); }
+    if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && (NIGHT_CAST[speaker(m)] || ART[speaker(m)])) b.append(bustEl(speaker(m), m.mood, 40)); }
     const box = h('div', { class: 'box' });
     const ul = glossEl(m.de, m.g); box.append(h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } })));
     if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'show English')); }
