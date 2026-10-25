@@ -124,15 +124,6 @@ const Companion = (() => {
     if ((tgt - cur > 0) === (out > tgt)) { out = tgt; nv = 0; }
     return [out, nv];
   }
-  /* what is under the shadow decides how it falls */
-  const SH = { h: 1, o: .24, dark: 0, kind: '', at: 0 };
-  function surface(x, y) {
-    const el = document.elementFromPoint(Math.max(0, Math.min(innerWidth - 1, x)), Math.max(0, Math.min(innerHeight - 1, y)));
-    if (!el) return 'ground';
-    if (el.closest('.today-hero,.talkhero,.chapter,.toast,.ticket .top,.st.done .mk,.badge') || (el.closest('.btn') && !el.closest('.btn.ghost,.btn.quiet'))) return 'dark';
-    if (el.closest('.card,.widget,.kpi,.lv,.mode,.scen,.btile,.goalmini,#sidebar,.tabs,.sheet .in,.actionbar,.lesson-top,.choice,.tile,input,textarea,.st .mk,.ticket')) return 'panel';
-    return 'ground';
-  }
   function frame(now) {
     P.raf = 0; if (!TEACHER.isConnected) return;
     const dt = Math.min(.05, (now - (P.last || now)) / 1000) || .016; P.last = now;
@@ -158,20 +149,6 @@ const Companion = (() => {
     P.sq += (st - P.sq) * Math.min(1, dt * 7); if (sp > 30) P.ang = Math.atan2(P.vy + ay * 0, P.vx);
     const fl = TEACHER.querySelector('.float');
     if (fl) fl.style.transform = `${P.sq > .002 ? `rotate(${P.ang.toFixed(3)}rad) scale(${(1 + P.sq).toFixed(4)},${(1 - P.sq * .7).toFixed(4)}) rotate(${(-P.ang).toFixed(3)}rad) ` : ''}scale(${(1 + .045 * P.lift).toFixed(4)})`;
-    /* adaptive shadow: sample the surface under where the shadow lands, then ease toward its look */
-    if (now - SH.at > 110) { SH.at = now; SH.kind = surface(X + s * .12, Y + s * .7); }
-    const darkTheme = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    const baseH = SH.kind === 'ground' ? 1 : .5, h = baseH + P.lift * .6;
-    const op = (SH.kind === 'dark' ? .6 : SH.kind === 'panel' ? .44 : .36) * (1.2 - .38 * h) * (darkTheme ? 1.35 : 1);
-    const kk = 1 - Math.exp(-dt / .22); SH.h += (h - SH.h) * kk; SH.o += (op - SH.o) * kk; SH.dark += (((SH.kind === 'dark' || darkTheme) ? 1 : 0) - SH.dark) * kk;
-    const T = TEACHER.style;
-    T.setProperty('--sh-x', (s * .10 * SH.h).toFixed(2) + 'px');
-    T.setProperty('--sh-y', (s * (.10 + .20 * SH.h)).toFixed(2) + 'px');
-    T.setProperty('--sh-b', (s * (.02 + .085 * SH.h)).toFixed(2) + 'px');
-    T.setProperty('--sh-w', (.58 + .26 * SH.h).toFixed(3));
-    T.setProperty('--sh-o', Math.max(0, SH.o).toFixed(3));
-    T.setProperty('--sh-pool', ((SH.kind === 'dark' ? .9 : .55) * (1.15 - .3 * SH.h)).toFixed(3));
-    const c0 = [8, 28, 72], c1 = [0, 0, 0]; T.setProperty('--sh-c', c0.map((v, i) => Math.round(v + (c1[i] - v) * SH.dark)).join(','));
     P.raf = requestAnimationFrame(frame);
   }
   addEventListener('resize', () => { if (TEACHER.isConnected) TEACHER.style.setProperty('--s', size() + 'px'); });

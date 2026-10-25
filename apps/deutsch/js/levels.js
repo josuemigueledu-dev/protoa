@@ -218,7 +218,7 @@ async function gradeExam(v) {
   const missedWords = X.items.filter(it => !it.ok && (it.type === 'in' || it.type === 'out')).map(it => it.de);
   missedWords.forEach(id => { const c = cardOf(id); if (c && c.r) { c.r[0] = todayStr(); c.r[4] = (c.r[4] || 0) + 1; } }); Object.keys(S.cards).forEach(k => save(null, k));
   EXAM_RESULT = { code: X.code, score, passed, pts, max, bySec, items: X.items, missed: missedWords, minutes: Math.max(1, Math.round((Date.now() - X.startedAt) / 60000)) };
-  S.progress.exam = null; save('progress'); NAV = 'fade'; render(); if (passed && !reduced()) confetti(); checkStamps();
+  S.progress.exam = null; save('progress'); NAV = 'fade'; render(); if (passed) Voice.proud(3200); if (passed && !reduced()) confetti(); checkStamps();
 }
 function renderExamResult(v) {
   const R = EXAM_RESULT; document.body.classList.add('in-lesson');

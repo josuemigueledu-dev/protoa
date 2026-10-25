@@ -384,10 +384,12 @@ function uiSound(kind, r) {
 const Voice = {
   all() { return typeof TEACHER !== 'undefined' && TEACHER.isConnected ? [TEACHER] : []; },
   talk(on) { this.all().forEach(s => s.classList.toggle('talking', !!on)); },
-  nod() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.flash(); this.all().forEach(s => { s.classList.remove('nod'); void s.offsetWidth; s.classList.add('nod'); setTimeout(() => s.classList.remove('nod'), 700); }); },
+  nod() { this.proud(); this.all().forEach(s => { s.classList.remove('nod'); void s.offsetWidth; s.classList.add('nod'); setTimeout(() => s.classList.remove('nod'), 700); }); },
+  /* proud: the core turns magenta for a moment (a right answer, the end of a lesson) */
+  proud(ms = 2200) { if (typeof TEACHER === 'undefined') return; clearTimeout(this.proudT); TEACHER.classList.add('proud'); this.proudT = setTimeout(() => TEACHER.classList.remove('proud'), ms); },
   busy(on) { if (typeof TEACHER !== 'undefined') TEACHER.classList.toggle('busy', !!on); },
-  almost() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.almost(); this.all().forEach(s => { s.classList.remove('tilt'); void s.offsetWidth; s.classList.add('tilt'); setTimeout(() => s.classList.remove('tilt'), 900); }); },
-  tilt() { if (typeof GLOrb !== 'undefined' && GLOrb.ok) GLOrb.shiver(); this.all().forEach(s => { s.classList.remove('tilt'); void s.offsetWidth; s.classList.add('tilt'); setTimeout(() => s.classList.remove('tilt'), 900); }); },
+  almost() { this.all().forEach(s => { s.classList.remove('tilt'); void s.offsetWidth; s.classList.add('tilt'); setTimeout(() => s.classList.remove('tilt'), 900); }); },
+  tilt() { clearTimeout(this.proudT); this.all().forEach(s => { s.classList.remove('proud', 'shake'); void s.offsetWidth; s.classList.add('shake'); setTimeout(() => s.classList.remove('shake'), 600); }); },
   mood(m) { if (typeof TEACHER === 'undefined') return; TEACHER.classList.remove('neutral', 'pleased', 'thinking'); TEACHER.classList.add(m || 'neutral'); },
 };
 
