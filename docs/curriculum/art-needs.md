@@ -17,6 +17,12 @@ Abstract words (*Sprache, Frage, Idee, Zahl* …) stay without one. Night Glass 
 | `word.tee` | der Tee | 11 | a glass of tea with the bag's tag over the rim |
 | `word.kuchen` | der Kuchen | 11 | one slice of a plain cake (Rührkuchen or Apfelkuchen) |
 | `word.test` | der Test | 12 | one A4 sheet with ten numbered lines and a pen; no grade on it |
+| `word.milch` | die Milch | 13 | a small café milk jug, white milk, plain steel or white china |
+| `word.zucker` | der Zucker | 13 | a few white sugar cubes, or a café sugar shaker |
+| `word.saft` | der Saft | 13 | a glass of orange juice, natural muted orange, no logo |
+| `word.cola` | die Cola | 13 | a glass bottle of dark cola with a plain red label, no brand or lettering |
+| `word.bier` | das Bier | 13 | a glass of pale beer with a thin head (Berlin bar glass, no brand) |
+| `word.glas` | das Glas | 13 | an empty plain water glass, so it reads as "glass" and not as water (`das Wasser` already has a picture) |
 
 ## Cast
 
@@ -32,5 +38,5 @@ carry `who: 'cast.ana'` / `'cast.lena'`, and a learner turn's reaction carries `
 
 | id | what | first used | notes |
 |---|---|---|---|
-| `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Later callbacks: lesson 13 (he knows the learner's order) |
+| `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Lesson 13 uses it too (a cup set down for the learner, *Kaffee mit Milch, ohne Zucker*): until it is drawn lesson 13 has no `twist`; add `twist: { at: 12, event: 'event.order', mood: 'surprised' }` when the file lands |
 | `event.test` | Herr Weber's hand putting a test sheet face down on a desk | lesson 12 | the twist of lesson 12 (*Das war nicht schlecht*, conv line 14). Until it is drawn lesson 12 has no `twist`; add `twist: { at: 14, event: 'event.test', mood: 'surprised' }` when the file lands |
