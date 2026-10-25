@@ -2,8 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
 import { createApp } from '../src/app.js';
-import { fakeAI, TALK_SCRIPT } from '../src/fake-ai.js';
+import { askJSON, setClientForTests } from '../src/claude.js';
+import { fakeAI, TALK_SCRIPT, FAILURES } from '../src/fake-ai.js';
 import { tasks } from '../src/apps/deutsch/tasks.js';
 import { lessonFiles } from '../support/lessons.js';
 
@@ -85,4 +88,54 @@ test('practice AI: the scripted lines are glossed token by token, as the app che
   // the same comparison renderTalkChat makes before it shows a gloss
   const glossOk = vm.runInContext('(de, g) => deTokens(de).map(fold).join(" ") === parseGloss(g).flatMap(([d]) => deTokens(d)).map(fold).join(" ")', ctx);
   for (const l of TALK_SCRIPT) assert.ok(glossOk(l.de, l.gloss), l.de);
+});
+
+test('practice AI failures: every task fails with the chosen code, status and message', noKey(async () => {
+  for (const [code, [status, message]] of Object.entries(FAILURES)) {
+    const app = createApp(fakeAI({ fail: code }));
+    for (const name of Object.keys(tasks)) {
+      const res = await post(app, name, INPUT[name]);
+      assert.equal(res.status, status, `${code} ${name}`);
+      assert.deepEqual((await res.json()).error, { code, message }, `${code} ${name}`);
+    }
+  }
+}));
+
+test('practice AI failures: bad input is still a 400, and an unknown code stops the server from starting', noKey(async () => {
+  const res = await post(createApp(fakeAI({ fail: 'timeout' })), 'correctSentence', { sentence: 'x'.repeat(501) });
+  assert.equal(res.status, 400);
+  assert.throws(() => fakeAI({ fail: 'slow' }), /PROTOA_FAKE_AI_FAIL must be one of: timeout, rate_limited/);
+}));
+
+test('practice AI failures match what claude.js sends for the real failure', async () => {
+  const keep = process.env.ANTHROPIC_API_KEY;
+  process.env.ANTHROPIC_API_KEY = 'test-key';
+  const apiErr = (Cls, status) => new Cls(status, { error: { message: 'x' } }, 'x', new Headers());
+  const throws = err => async () => { throw err; };
+  // never answers until the deadline aborts it (the interval keeps the process alive meanwhile, as a server would)
+  const hangs = async (_p, o) => {
+    const alive = setInterval(() => {}, 1000);
+    await new Promise(resolve => o.signal.addEventListener('abort', resolve, { once: true }));
+    clearInterval(alive);
+    throw new Anthropic.APIUserAbortError();
+  };
+  const real = {
+    timeout: hangs,
+    rate_limited: throws(apiErr(Anthropic.RateLimitError, 429)),
+    refused: async () => ({ stop_reason: 'refusal' }),
+    bad_output: async () => ({ stop_reason: 'end_turn', parsed_output: null }),
+    upstream: throws(new TypeError('socket hang up')),
+    unavailable: throws(apiErr(Anthropic.AuthenticationError, 401)),
+  };
+  try {
+    assert.deepEqual(Object.keys(real).sort(), Object.keys(FAILURES).sort());
+    for (const [code, parse] of Object.entries(real)) {
+      setClientForTests({ beta: { messages: { parse } } });
+      const e = await askJSON({ tier: 'quick', prompt: 'x', schema: z.object({ ok: z.boolean() }), timeoutMs: 20 }).then(() => null, e => e);
+      assert.deepEqual([e?.code, e?.status, e?.message], [code, ...FAILURES[code]], code);
+    }
+  } finally {
+    setClientForTests();
+    if (keep === undefined) delete process.env.ANTHROPIC_API_KEY; else process.env.ANTHROPIC_API_KEY = keep;
+  }
 });

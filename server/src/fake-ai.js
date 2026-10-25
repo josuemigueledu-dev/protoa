@@ -2,6 +2,8 @@
 // "Write your own", exam marking) can be opened, played and screenshotted without an API key
 // and without cost. Turned on by `npm run dev:fake-ai` (or PROTOA_FAKE_AI=1); never in production.
 // The replies say they come from the practice AI, so nobody mistakes them for real feedback.
+// PROTOA_FAKE_AI_FAIL=<code> makes every task fail the way the real server does (FAILURES), so each
+// screen's error state can be played too.
 import { AIError } from './claude.js';
 
 const NOTE = 'Practice AI (no Claude)';
@@ -33,19 +35,31 @@ const replies = {
   gradeExam: ({ items }) => ({ marks: items.map(it => ({ i: it.i, points: it.answer.trim() ? it.max : 0, note: `${NOTE}: full marks for any answer.` })) }),
 };
 
+// The errors the real server sends for a failed Claude call (mapError and checkStop in claude.js): same code, status and text.
+export const FAILURES = {
+  timeout: [504, 'Claude took too long to answer. Try again.'],
+  rate_limited: [429, 'Too many requests. Try again in a moment.'],
+  refused: [422, 'Claude declined this request.'],
+  bad_output: [502, 'The reply did not match the expected shape.'],
+  upstream: [502, 'Could not reach Claude.'],
+  unavailable: [503, 'The server API key was rejected.'],
+};
+
 // The runners createApp takes in place of askJSON / askLongJSON, plus aiOn so health reports AI as on.
-export function fakeAI({ delayMs = 0 } = {}) {
+export function fakeAI({ delayMs = 0, fail = '' } = {}) {
+  if (fail && !Object.hasOwn(FAILURES, fail)) throw new Error(`PROTOA_FAKE_AI_FAIL must be one of: ${Object.keys(FAILURES).join(', ')}.`);
   const wait = () => new Promise(r => setTimeout(r, delayMs));
+  const failNow = () => { if (fail) throw new AIError(fail, FAILURES[fail][1], FAILURES[fail][0]); };
   return {
     aiOn: () => true,
     async runJSON({ task, vars }) {
-      await wait();
+      await wait(); failNow();
       if (!Object.hasOwn(replies, task)) throw new AIError('unavailable', `${NOTE} has no reply for ${task}.`, 503);
       return replies[task](vars);
     },
     // Writing a whole lesson can't be faked usefully: say so instead of returning a broken lesson.
     async runLong() {
-      await wait();
+      await wait(); failNow();
       throw new AIError('unavailable', 'The practice AI cannot write lessons. Set ANTHROPIC_API_KEY for that.', 503);
     },
   };
