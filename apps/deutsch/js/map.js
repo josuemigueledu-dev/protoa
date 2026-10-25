@@ -105,10 +105,10 @@ function renderMap(v) {
   if (S.progress.trainAt !== (cur || lastDone)) { S.progress.trainAt = cur || lastDone; save('progress'); }
   // scroll just far enough that your stop clears the tab bar (the head stays in view when it can); a pill brings it back
   const floor = () => window.innerHeight - (document.body.classList.contains('lay-mobile') ? 128 : 40);   // phones: clear the tab bar
-  const focusY = () => { const b = nowEl.getBoundingClientRect(); return Math.min(b.top + window.scrollY - 96, b.bottom + window.scrollY - floor()); };
-  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) window.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); });
+  const focusY = () => { const b = nowEl.getBoundingClientRect(), y = PANE.scrollTop - PANE.getBoundingClientRect().top; return Math.min(b.top + y - 96, b.bottom + y - floor()); };
+  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) PANE.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); });
   if (nowEl && 'IntersectionObserver' in window) {
-    const pill = h('button', { class: 'weiter', hidden: true, onclick: () => window.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
+    const pill = h('button', { class: 'weiter', hidden: true, onclick: () => PANE.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
     document.body.append(pill);
     const io = new IntersectionObserver(([e]) => { pill.hidden = e.isIntersecting; pill.firstChild.textContent = e.boundingClientRect.top < 0 ? '↑' : '↓'; }, { threshold: .1 });
     io.observe(nowEl.querySelector('.kmk') || nowEl); pill._io = io;

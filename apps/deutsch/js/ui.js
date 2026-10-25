@@ -1,5 +1,6 @@
 /* ===================== UI ===================== */
 const view = $('#view'), tabsEl = $('#tabs'), overlay = $('#overlay');
+const PANE = $('#app');   // the one scroller (night-glass.css, "the app shell"): the document itself never scrolls
 let route = 'today', KEYS = null, toastT = null;
 const ICONS = {
   today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
@@ -28,7 +29,7 @@ function render() {
   document.body.classList.toggle('in-lesson', !!inLesson);
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);
   const v = newView();
-  window.scrollTo({ top: 0 });
+  PANE.scrollTo({ top: 0 });
   try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
@@ -400,8 +401,8 @@ function lessonConv(v, L, ls) {
     C.log.forEach(track); drawBand();
     // the band sticks under the lesson header and shrinks once the learner scrolls
     requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) conv.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
-    const shrink = () => { if (!band.isConnected) return removeEventListener('scroll', shrink); band.classList.toggle('small', scrollY > 80); };
-    addEventListener('scroll', shrink, { passive: true });
+    const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); band.classList.toggle('small', PANE.scrollTop > 80); };
+    PANE.addEventListener('scroll', shrink, { passive: true });
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
   const log = h('div', { class: 'log', role: 'log' }); conv.append(log);
   const modeLabel = { easier: 'shorter, more tiles', default: 'default mix', harder: 'longer, more typing' }[C.mode];
@@ -649,7 +650,7 @@ function grammarUnit(v, u) {
 }
 
 /* ---------- MORE: Sounds, Method, Settings ---------- */
-function openMore(fn) { route = 'profile'; lastLayout = applyLayout(); renderTabs(); document.getElementById('rail') && (document.getElementById('rail').innerHTML = ''); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); fn(newView()); window.scrollTo({ top: 0 }); }
+function openMore(fn) { route = 'profile'; lastLayout = applyLayout(); renderTabs(); document.getElementById('rail') && (document.getElementById('rail').innerHTML = ''); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); fn(newView()); PANE.scrollTo({ top: 0 }); }
 function renderMore(v) {
   v.append(h('h1', {}, 'More'));
   const items = [['Sounds (Lesson 0)', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, import & export', renderSettings]];
