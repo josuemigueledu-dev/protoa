@@ -35,6 +35,19 @@ The owner picked this direction after a day of mock-up rounds with the headmaste
 --green:#23804f   correct answer
 ```
 
+**Light and dark (owner, Oct 25: "make sure to implement a light and dark feature").** Night Glass above is the dark theme. **Day Glass** is the light theme: the same world in daylight, built from the same token names so every component works in both. It follows the phone's setting until the learner picks one (the app's existing `data-theme` override and its Settings toggle). The prototype has both and a toggle (moon button, top right). Day Glass values:
+
+```
+--night:#dfe6ee  --night2:#cdd6e1  --nink:#11151b  --ngrey:#4d5867   (the stage becomes pale steel; text dark)
+--ground:#c4cdd8
+--glass:rgba(252,251,248,.66)  --glass-dark:rgba(240,244,248,.74)
+--cyan:#1f86c9  --pale:#5f86b8   (darker so they read on light)
+steel, magenta, green and the article colours stay the same
+the orb gets a soft shadow under it in light (rgba(44,74,116,.28)); its glass image works on both
+```
+
+Never hard-code a colour in a component; take every colour from these tokens, so both themes stay correct. Check every screen in both themes in each PR.
+
 Type: **Krona One** (display: greetings, titles, big numbers; letter-spacing -0.04em) and **Atkinson Hyperlegible** (everything else). Both from Google Fonts; self-host them for offline.
 
 ## Material and shapes
