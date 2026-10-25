@@ -161,9 +161,15 @@ function renderProfile(v) {
   const p = S.profile, days = S.progress.days || {}, keys = Object.keys(days).sort(), since = keys[0] || todayStr();
   const activeDays = Object.values(days).filter(d => (d.new || 0) + (d.reviews || 0) > 0 || (d.secs || 0) >= 60).length;
   const mins = Math.round(Object.values(days).reduce((a, d) => a + (d.secs || 0), 0) / 60), words = learnedCount();
-  v.append(h('div', { class: 'prof' }, h('div', { class: 'avatar', 'aria-hidden': 'true' }, (p.name || 'Du').slice(0, 1).toUpperCase()), h('div', { class: 'grow' }, h('h1', {}, p.name || 'Your profile'), h('div', { class: 'faint' }, (p.city ? p.city + ' · ' : '') + 'learning German since ' + since)), h('button', { class: 'btn ghost sm', onclick: () => openMore(renderSettings) }, 'Settings')));
+  // Night Glass: Protoa in a navy badge, the goal and how far along it you are, then the numbers and your class
+  const g = goalInfo(), fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  v.append(h('div', { class: 'prof' }, h('div', { class: 'avatar orbbadge', 'aria-hidden': 'true' }, h('img', { src: 'art/night/orb.png', alt: '' })), h('div', { class: 'grow' }, h('h1', {}, p.name || 'Your profile'), h('div', { class: 'faint' }, (p.city ? p.city + ' · ' : '') + 'learning German since ' + since)), h('button', { class: 'btn ghost sm', onclick: () => openMore(renderSettings) }, 'Settings')));
+  v.append(h('div', { class: 'goalline' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Goal: spoken ' + (S.settings.level || 'B1')), h('span', { class: 'faint' }, g.date ? 'by ' + fmtDate(g.date) : '')), h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(g.pct) }, h('i', { style: `width:${Math.max(2, g.pct)}%` })), h('div', { class: 'row faint', style: 'justify-content:space-between' }, h('span', {}, g.learned.toLocaleString('en') + ' of ' + (S.settings.target || 2400).toLocaleString('en') + ' words'), h('span', {}, g.pct + ' %'))));
   const kpi = (n, l) => h('div', { class: 'kpi' }, h('div', { class: 'n' }, n), h('div', { class: 'l' }, l));
   v.append(h('div', { class: 'kpis' }, kpi(words, 'words yours'), kpi(S.progress.lessonsDone.length + '/' + COURSE.length, 'stations'), kpi(activeDays, 'days practised'), kpi(mins, 'minutes')));
+  const cls = [['weber', 'Herr Weber', 'teacher'], ['ana', 'Ana', 'from Mexico City'], ['lena', 'Lena', 'from Rome'], ['murat', 'The barista', 'café next door']];
+  v.append(h('div', { class: 'card stack classcard' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Your class'), h('span', { class: 'faint' }, 'Room 2.04 · Tue and Thu')),
+    h('div', { class: 'classrow' }, ...cls.map(([id, name, sub]) => h('div', { class: 'mate' }, h('span', { class: 'face', style: `background-image:url(art/night/ava-${id}.jpg)`, role: 'img', 'aria-label': name }), h('b', {}, name), h('span', { class: 'faint' }, sub))))));
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Levels'), h('span', { class: 'faint' }, 'goal: ' + (S.settings.level || 'B1'))), levelTrack(), examHistory()));
   v.append(paceWidget());
   // words per day (30)
