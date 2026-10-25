@@ -1,0 +1,168 @@
+/* =====================================================================
+   ORBITAL GLASS: the room Protoa lives in. Loaded last, so it wins.
+   · Dark first: a near-black room lit by the orb; light is ice-white with the same azure.
+   · Light behaves like light: it runs along the room's curves and the orbits, it pulses where
+     something is waiting (the next station, the next milestone), it sweeps across the main button.
+   · Protoa (the companion orb) has a home on Today: a dock with nothing drawn over it. Milestones
+     ride an outer orbit that never touches the shell.
+   · Tracked monospace readouts carry numbers and labels; Sora light carries German and greetings.
+   Every animation here stops under prefers-reduced-motion (end of file).
+   ===================================================================== */
+
+/* ---------- tokens ---------- */
+:root{
+  --bg:#eef2f7; --bg-deep:#e3e9f1; --card:rgba(255,255,255,.62); --ink:#0b1220; --muted:#465266;
+  --act-1:#3b7ff0; --act-2:#1650c4; --act-ink:#ffffff; --act-glow:rgba(31,103,222,.45);
+  --accent-ink:#1a5bc8; --cast:rgba(79,142,245,.24); --room-curve:rgba(31,103,222,.14); --room-flow:#1f67de; --mote:#1a48a6;
+  --orbit-line:rgba(40,70,120,.16); --sat-st:#1f67de; --sat-w:#5b95ef; --sat-etc:#1a48a6; --sat-lv:#0b1220; --sat-next:rgba(31,103,222,.65);
+  --bar:rgba(255,255,255,.74); --almost:#8a6200;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#03050a; --bg-deep:#010205; --card:rgba(255,255,255,.055); --ink:#eef3fa; --muted:#9aa7ba;
+  --act-1:#d6eaff; --act-2:#5fa9ff; --act-ink:#031024; --act-glow:rgba(95,169,255,.55);
+  --accent-ink:#8cc4ff; --cast:rgba(52,102,214,.30); --room-curve:rgba(110,160,240,.14); --room-flow:#9fd0ff; --mote:#cfe6ff;
+  --orbit-line:rgba(140,180,240,.18); --sat-st:#8cc4ff; --sat-w:#cfe6ff; --sat-etc:#5fa9ff; --sat-lv:#ffffff; --sat-next:rgba(190,215,255,.6);
+  --bar:rgba(14,20,34,.72); --almost:#ffcf3d;
+}}
+:root[data-theme="dark"]{
+  --bg:#03050a; --bg-deep:#010205; --card:rgba(255,255,255,.055); --ink:#eef3fa; --muted:#9aa7ba;
+  --act-1:#d6eaff; --act-2:#5fa9ff; --act-ink:#031024; --act-glow:rgba(95,169,255,.55);
+  --accent-ink:#8cc4ff; --cast:rgba(52,102,214,.30); --room-curve:rgba(110,160,240,.14); --room-flow:#9fd0ff; --mote:#cfe6ff;
+  --orbit-line:rgba(140,180,240,.18); --sat-st:#8cc4ff; --sat-w:#cfe6ff; --sat-etc:#5fa9ff; --sat-lv:#ffffff; --sat-next:rgba(190,215,255,.6);
+  --bar:rgba(14,20,34,.72); --almost:#ffcf3d;
+}
+
+/* ---------- the room: the orb's light from above, sweeping curves with light running along them ---------- */
+.aurora{background:radial-gradient(max(70%,560px) max(48%,420px) at 50% 16%,var(--cast),transparent 72%),var(--bg)}
+/* the sticky bar frosts what scrolls under it but fades out at its lower edge, so it never draws a line across the room's light */
+.topbar::before{-webkit-mask-image:linear-gradient(#000 50%,transparent);mask-image:linear-gradient(#000 50%,transparent)}
+.aurora i,.aurora::before,.aurora::after{display:none}
+.room{position:absolute;inset:0;width:100%;height:100%}
+.room .curve{fill:none;stroke:var(--room-curve);stroke-width:1;vector-effect:non-scaling-stroke}
+.room .curve.faint{opacity:.6}
+.room .flow{stroke:var(--room-flow);stroke-width:1.3;stroke-linecap:round;stroke-dasharray:40 960;opacity:.45;animation:flow 7s linear infinite}
+.room .flow.slow{opacity:.35;animation-duration:11s;animation-direction:reverse}
+.room .mote{fill:var(--mote);opacity:.2;animation:twinkle 4.2s ease-in-out infinite}
+.room .m2{animation-duration:5.3s;animation-delay:-2s} .room .m3{animation-duration:3.6s;animation-delay:-1s} .room .m4{animation-duration:6.1s;animation-delay:-3s}
+@keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.85}}
+
+/* ---------- type: Sora light for what Protoa says, tracked mono for readouts ---------- */
+h1{font-weight:500;letter-spacing:-.03em}
+.readout{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.readout [lang]{font-size:inherit}
+.readout .hi{color:var(--accent-ink)} .readout .ok{color:var(--green)}
+.wave{display:inline-flex;align-items:center;gap:2.6px;height:16px;flex:none}
+.wave i{width:2.4px;height:14px;border-radius:2px;background:currentColor;transform:scaleY(.3);animation:wave 1.1s ease-in-out infinite}
+.wave i:nth-child(2){animation-duration:.9s;animation-delay:-.3s} .wave i:nth-child(3){animation-duration:1.3s;animation-delay:-.6s} .wave i:nth-child(4){animation-duration:1s;animation-delay:-.2s} .wave i:nth-child(5){animation-duration:1.2s;animation-delay:-.8s}
+@keyframes wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+
+/* ---------- buttons: pills; the main one carries a travelling sheen ---------- */
+.btn,.btn.sm{border-radius:999px}
+.btn.sheen::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%);transform:translateX(-120%);animation:sheen 3.6s ease-in-out infinite}
+@keyframes sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+
+/* ---------- Today: Protoa's home ---------- */
+.home-hero{--d:200px;display:flex;flex-direction:column;gap:8px}
+body.lay-mobile .home-hero{--d:168px}
+.home-stage{position:relative;height:calc(var(--d) * 1.5);margin-top:-8px}
+.home-stage .orbit{position:absolute;left:50%;top:50%;width:calc(var(--d) * 2);height:calc(var(--d) * 1.5);transform:translate(-50%,-50%);pointer-events:auto}
+.home-stage .orbit svg{display:block;width:100%;height:100%;overflow:visible}
+.orb-dock{position:absolute;left:50%;top:50%;width:var(--d);height:var(--d);margin:calc(var(--d) / -2) 0 0 calc(var(--d) / -2);border-radius:50%;pointer-events:none}
+.orbit .track{fill:none;stroke:var(--orbit-line);stroke-width:1;vector-effect:non-scaling-stroke}
+.orbit .flow{fill:none;stroke:var(--room-flow);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:60 940;opacity:.7;vector-effect:non-scaling-stroke;animation:flow 9s linear infinite}
+.orbit .sat{filter:drop-shadow(0 0 4px var(--glow))}
+.orbit .sat.st{fill:var(--sat-st)} .orbit .sat.w{fill:var(--sat-w)} .orbit .sat.etc{fill:var(--sat-etc)} .orbit .sat.lv{fill:var(--sat-lv)}
+.orbit .sat.next{fill:none;stroke:var(--sat-next);stroke-width:1.2;stroke-dasharray:2 2.6;vector-effect:non-scaling-stroke;filter:none;animation:twinkle 2.4s ease-in-out infinite}
+.home-miles{margin:-6px 0 0;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.home-say{margin-top:12px}
+.home-say .speaker{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+.home-say h1{margin-top:8px;font-weight:300;font-size:clamp(30px,8.4vw,40px);line-height:1.08;letter-spacing:-.035em}
+.home-say p{margin-top:8px;color:var(--muted);font-size:var(--t-body)}
+
+/* ---------- the next station as a stretch of the line ---------- */
+.linecard .readout{margin-bottom:2px}
+.stretch{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.stretch li{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:var(--t-cap);font-weight:600;color:var(--muted);text-align:center}
+.stretch li span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.stretch li i{position:relative;z-index:1;width:12px;height:12px;margin-top:2px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px var(--line-2)}
+.stretch li::before{content:"";position:absolute;top:6.5px;left:-50%;right:50%;height:3px;margin-top:-1.5px;background:radial-gradient(circle,var(--line-2) 1px,transparent 1.6px) 0 50%/8px 3px repeat-x}
+.stretch li:first-child::before{display:none}
+.stretch li.done i{background:var(--yellow);box-shadow:none}
+.stretch li.now::before{background:var(--yellow);border-radius:2px;box-shadow:0 0 8px var(--glow)}
+.stretch li.now i{width:16px;height:16px;margin-top:0;background:#fff;box-shadow:inset 0 0 0 3px var(--yellow),0 0 12px var(--glow)}
+.stretch li.now i::after{content:"";position:absolute;inset:-3px;border-radius:50%;box-shadow:0 0 0 1px var(--yellow);animation:ping 2s ease-out infinite}
+.stretch li.now span{color:var(--accent-ink)}
+.stretch li.now + li::after{content:"";position:absolute;z-index:2;top:4px;left:-50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px var(--glow);animation:travel 3.2s linear infinite}
+@keyframes ping{from{transform:scale(1);opacity:.8}to{transform:scale(2.2);opacity:0}}
+@keyframes travel{0%{left:-50%;opacity:0}15%,80%{opacity:1}100%{left:50%;opacity:0}}
+.linecard .station{margin-top:6px;font-family:var(--display);font-weight:400;font-size:30px;line-height:1.05;letter-spacing:-.025em}
+
+/* ---------- Schnellcheck ---------- */
+.quickcheck .qc-word{margin-top:6px;font-family:var(--display);font-weight:300;font-size:34px;line-height:1.08;letter-spacing:-.03em}
+.quickcheck .qc-slot{display:inline-block;min-width:2.4ch;color:var(--muted)}
+.qc-arts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.qc-arts .choice{justify-content:center;min-height:52px;padding:8px;font-family:var(--display);font-weight:500;font-size:20px;text-align:center}
+.qc-arts .choice:disabled{cursor:default;transform:none}
+.qc-arts .choice:disabled:not(.ok):not(.bad){opacity:.45}
+.qc-after{align-items:center;gap:12px} .qc-after p{margin:0;font-size:var(--t-cap);line-height:1.45}
+.qc-ok{color:var(--green)} .qc-near{color:var(--almost)} .qc-after p span{color:var(--muted)}
+
+/* ---------- phone tab bar: a floating capsule, Sprechen at its centre as the Protoa mark ---------- */
+body.lay-mobile .tabs{border-radius:33px;padding:6px;background:var(--bar);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+body.lay-mobile .tab{position:relative}
+body.lay-mobile .tab[aria-current="page"] svg{background:none;box-shadow:none;padding:0;width:26px;height:26px;color:var(--ink)}
+body.lay-mobile .tab[aria-current="page"]:not(.orbtab)::after{content:"";position:absolute;bottom:0;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px var(--glow)}
+.orbtab .mark{position:relative;display:grid;place-items:center;width:60px;height:60px;margin-top:-30px;border-radius:50%;background:var(--bg);box-shadow:0 0 0 5px var(--bg),inset 0 0 0 1px var(--line-2),0 0 26px var(--glow)}
+.orbtab .mark::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1px var(--yellow);animation:ping 2.4s ease-out infinite}
+body.lay-mobile .tab.orbtab .mark svg,body.lay-mobile .tab.orbtab[aria-current="page"] .mark svg{width:44px;height:44px;background:none;padding:0;box-shadow:none}
+.orbtab .mk-shell{fill:var(--mk-shell)} .orbtab .mk-mid{fill:var(--mk-mid)} .orbtab .mk-nuc{fill:#fff}
+.orbtab .mk-gap,.orbtab .mk-ring{fill:none;stroke-linecap:round} .orbtab .mk-gap{stroke:var(--mk-shell);stroke-width:18} .orbtab .mk-ring{stroke:var(--mk-ring);stroke-width:8.5}
+.orbtab[aria-current="page"] .mark{box-shadow:0 0 0 5px var(--bg),inset 0 0 0 1.5px var(--yellow),0 0 30px var(--glow)}
+
+/* ---------- first run: Protoa introduces itself, then asks one thing at a time ---------- */
+.firstrun{--dock:180px;--stage:46vh;position:fixed;inset:0;z-index:21;display:flex;flex-direction:column;overflow:auto;background:radial-gradient(80% 50% at 50% 22%,var(--cast),transparent 72%),var(--bg);color:var(--ink);animation:frIn .5s var(--ease)}
+body:not(.lay-mobile) .firstrun{--dock:220px}
+.firstrun:focus{outline:none}
+.firstrun[data-step="ask"]{--dock:104px;--stage:220px}
+.firstrun[data-step="done"]{--dock:150px;--stage:280px}
+.fr-stage{position:relative;flex:none;height:var(--stage);transition:height .8s var(--ease)}
+.fr-stage .orb-dock{width:var(--dock);height:var(--dock);margin:calc(var(--dock) / -2) 0 0 calc(var(--dock) / -2);top:calc(50% + 12px)}
+.fr-body{flex:1;display:flex;flex-direction:column;width:min(560px,100% - 48px);margin:0 auto;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.fr-head{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fr-head .icon-btn{width:48px;height:48px;background:none;box-shadow:none;color:var(--muted)}
+.fr-head .icon-btn svg{width:22px;height:22px}
+.fr-head .btn.quiet{background:none;box-shadow:none;color:var(--muted)}
+.fr-progress{display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.fr-progress .dots{display:flex;gap:6px}
+.fr-progress .dots i{width:8px;height:3px;border-radius:2px;background:var(--line-2);transition:width .4s var(--ease),background .4s}
+.fr-progress .dots i.on{background:var(--yellow)} .fr-progress .dots i.cur{width:18px;box-shadow:0 0 8px var(--glow)}
+.fr-copy{animation:frIn .55s var(--ease) both}
+.fr-copy h1{margin-top:12px;font-weight:300;font-size:clamp(36px,10.5vw,52px);line-height:1.04;letter-spacing:-.035em}
+.fr-copy h1 b{font-weight:600;color:var(--accent-ink)}
+.fr-copy > p.muted{margin-top:14px;line-height:1.5}
+.fr-echo{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-family:var(--display);font-size:15px;color:var(--accent-ink)}
+.fr-q{align-items:flex-start;gap:12px}
+.fr-q label{font-family:var(--display);font-weight:300;font-size:clamp(30px,8.6vw,42px);line-height:1.08;letter-spacing:-.035em}
+.fr-copy .fr-q + p.muted{margin-top:8px}
+.firstrun .fr-input{display:block;width:100%;height:60px;margin-top:28px;padding:0 2px;border:0;border-bottom:1px solid var(--line-2);border-radius:0;background:transparent;box-shadow:none;color:var(--ink);caret-color:var(--yellow);font-family:var(--display);font-weight:300;font-size:28px;letter-spacing:-.02em}
+.firstrun .fr-input.sm{height:46px;margin-top:16px;font-family:var(--text);font-weight:500;font-size:16px;letter-spacing:0}
+.firstrun .fr-input:focus-visible{outline:none;border-bottom-color:var(--yellow);box-shadow:0 1px 0 var(--yellow),0 14px 24px -18px var(--glow)}
+.fr-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.fr-chip{display:inline-flex;align-items:baseline;gap:7px;min-height:46px;padding:0 16px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line-2);font-family:var(--display);font-size:15px;transition:background .2s,box-shadow .2s}
+.fr-chip small{font-family:var(--text);font-size:12px;font-weight:600;color:var(--muted)}
+.fr-chip[aria-pressed="true"]{background:var(--yellow-soft);box-shadow:inset 0 0 0 1.5px var(--yellow),0 0 18px -6px var(--glow)}
+.fr-chip[aria-pressed="true"] small{color:var(--accent-ink)}
+.fr-about{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;padding:0}
+.fr-about li{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;background:var(--yellow-soft);box-shadow:inset 0 0 0 1px var(--yellow);font-family:var(--display);font-size:14px;color:var(--accent-ink)}
+.fr-actions{display:flex;flex-direction:column;gap:6px;margin-top:auto;padding-top:28px}
+.fr-actions .btn{min-height:56px}
+.fr-actions .btn.quiet{background:none;box-shadow:none;color:var(--muted)}
+@keyframes frIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- reduced motion: the room and the readouts hold still ---------- */
+@media (prefers-reduced-motion: reduce){
+  .room .flow,.room .mote,.orbit .flow,.orbit .sat.next,.wave i,.btn.sheen::after,.stretch li.now i::after,.stretch li.now + li::after,.orbtab .mark::after,.firstrun,.fr-copy{animation:none!important}
+  .btn.sheen::after,.stretch li.now + li::after{display:none}
+  .fr-stage{transition:none}
+}
