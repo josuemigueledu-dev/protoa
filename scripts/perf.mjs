@@ -1,6 +1,8 @@
 // Frame budget test (owner, Oct 25: "at least 60 fps on every animation"): a learner a week in (lessons 1–8 done)
 // at phone size in Chromium with the CPU slowed 4×, as on a mid-range phone. It changes screens through the tab
-// bar (Today → Lessons → Practice → Sprechen → Profile and back) and records every frame from the tap until the new
+// bar (Today → Lessons → Practice → Sprechen → Profile and back), then plays the two changes the tester's list (#146)
+// flags as slow outside the tab bar: the end of a lesson (finishing lesson 9 → Done → Continue to the map) and a
+// Practice session (Word meanings → close it back to the hub). It records every frame from the tap until the new
 // screen has settled. A screen change fails when more than BUDGET of its frames take longer than SLOW_MS.
 // Each change is played ROUNDS times and judged by its best round, so one hiccup of the machine is not a failure.
 // Prints every change's frames so a fix can be compared before and after.
@@ -86,17 +88,33 @@ async function main() {
   const tabs = await page.evaluate(() => TABS.map(([id, label]) => [id, label]));
   const trip = [...tabs.slice(1), ...tabs.slice(0, -1).reverse()]; // Today → … → Profile → … → Today
   const results = new Map();
+  const measure = async (key, act, wait = SETTLE_MS) => { const f = await frames(page, act, wait); (results.get(key) || results.set(key, []).get(key)).push(f); await page.waitForTimeout(400); };
+  const at = async (key, want) => { const shown = await page.evaluate(() => [route, !!S.progress.lessonState, !!PR, !!REVIEW_SUMMARY].join(' ')); if (!shown.startsWith(want)) fail(`${key}: expected "${want}", the app is at "${shown}"`); };
   for (let round = 0; round < ROUNDS; round++) {
     let from = 'Today';
     for (const [id, label] of trip) {
-      const f = await frames(page, () => page.click(`#tabs .tab:nth-child(${tabs.findIndex(t => t[0] === id) + 1})`), SETTLE_MS);
-      const shown = await page.evaluate(() => route);
-      if (shown !== id) fail(`${from} → ${label}: the ${label} tab opened "${shown}"`);
       const key = `${from} → ${label}`;
-      (results.get(key) || results.set(key, []).get(key)).push(f);
+      await measure(key, () => page.click(`#tabs .tab:nth-child(${tabs.findIndex(t => t[0] === id) + 1})`));
+      await at(key, id);
       from = label;
-      await page.waitForTimeout(400);
     }
+  }
+  for (let round = 0; round < ROUNDS; round++) {
+    // the end of a lesson: lesson 9's conversation, its last line answered (finishLesson is what the last tap runs),
+    // then Continue on the Done ticket back to the course map
+    await page.evaluate(() => { const L = lessonById(9); S.progress.lessonsDone = S.progress.lessonsDone.filter(n => n !== 9); S.progress.lessonState = { n: 9, step: 'conv', wi: 0, checkQ: null, bi: 0, battempts: 0, conv: null, newWords: L.words.map(w => w.de), paused: false }; save('progress'); route = 'learn'; render(); });
+    await page.waitForTimeout(SETTLE_MS);
+    await measure('Lesson 9 conversation → Done', () => page.evaluate(() => finishLesson(lessonById(9), S.progress.lessonState)), 1600); // the count-up and confetti run past the slide
+    await at('Lesson 9 conversation → Done', 'learn true');
+    await measure('Done → Continue (map)', () => page.locator('.actionbar .btn', { hasText: 'Continue' }).click());
+    await at('Done → Continue (map)', 'learn false');
+    // a Practice session: open Word meanings from the hub, then close it with ✕
+    await page.evaluate(() => { PR = null; REVIEW_SUMMARY = null; go('practice'); });
+    await page.waitForTimeout(SETTLE_MS);
+    await measure('Practice → Word meanings', () => page.locator('.modes .mode', { hasText: 'Word meanings' }).click());
+    await at('Practice → Word meanings', 'practice false true');
+    await measure('Word meanings ✕ → Practice', () => page.click('.rv-top .close'));
+    await at('Word meanings ✕ → Practice', 'practice false false false');
   }
 
   for (const [key, rounds] of results) {
