@@ -47,7 +47,9 @@ function renderCrash(v, err) {
 /* the Protoa mark at badge size (shared/brand/protoa-mark-small.svg); its colours come from depth.css so it follows the theme */
 const BRAND_MARK = '<svg viewBox="0 0 120 120"><circle class="mk-shell" cx="60" cy="60" r="46"/><circle class="mk-mid" cx="60" cy="60" r="18"/><circle class="mk-nuc" cx="60" cy="60" r="9"/><g transform="rotate(-18 60 60)"><path class="mk-gap" d="M26 60 A34 10 0 0 0 94 60"/><path class="mk-ring" d="M26 60 A34 10 0 0 0 94 60"/></g></svg>';
 /* ---------- the teacher: ONE glossy orb that lives in the first slot of each learning screen ---------- */
-const TEACHER = h('div', { class: 'orb companion neutral', 'aria-hidden': 'true' }, h('i', { class: 'shadow' }), h('div', { class: 'float' }, h('i', { class: 'ball' }, h('i', { class: 'caustic' }), h('i', { class: 'core' }), h('i', { class: 'glare' }), h('i', { class: 'spark' }))));
+/* Night Glass: a photographed clear glass sphere (art/night/orb.png, real alpha), a small mood core of light and
+   the white orbiter on a tilted ellipse; all drawn and moved in CSS (night-glass.css), so it costs no script per frame */
+const TEACHER = h('div', { class: 'orb companion neutral', 'aria-hidden': 'true' }, h('i', { class: 'shadow' }), h('div', { class: 'float' }, h('i', { class: 'aura' }), h('i', { class: 'sphere' }, h('i', { class: 'glass' }), h('i', { class: 'core' }), h('i', { class: 'orbit' }, h('i', { class: 'ox' }, h('i', { class: 'oy' }, h('i', { class: 'moon' })))))));
 function teacherSlot(size = 56, mood = 'neutral') { return h('div', { class: 'tslot', 'data-size': size, 'data-mood': mood, style: `width:${size}px;height:${size}px` }); }
 function mountTeacher() {
   const slots = [...document.querySelectorAll('#view .tslot')];
@@ -55,7 +57,6 @@ function mountTeacher() {
   const t = slots[0]; if (!t) { TEACHER.remove(); return; }
   if (!TEACHER.isConnected) document.body.append(TEACHER);
   if (typeof Companion !== 'undefined') Companion.arrive();
-  if (typeof GLOrb !== 'undefined') GLOrb.attach();
   if (!TEACHER.classList.contains('talking') && !TEACHER.classList.contains('busy')) Voice.mood(t.dataset.mood);
 }
 let teacherQueued = false;
@@ -398,7 +399,7 @@ function finishLesson(L, ls) {
   L.conv.forEach((t, i) => { if (!t.l) return; const prev = L.conv[i - 1] && L.conv[i - 1].w ? { de: fill(L.conv[i - 1].w), g: fill(L.conv[i - 1].g) } : null; addSentenceCard(t, L.n, { due: missed.has(i) ? todayStr() : addDays(todayStr(), 3), prompt: prev }); });
   if (!S.progress.lessonsDone.includes(L.n)) S.progress.lessonsDone.push(L.n);
   ls.step = 'done'; ls.summary = { missed: missed.size, first: C.firstTry.filter(x => x).length, total: C.firstTry.length, added: (ls.newWords || L.words).length };
-  save('progress'); NAV = 'fwd'; render(); uiSound('done'); if (!reduced()) confetti();
+  save('progress'); NAV = 'fwd'; render(); uiSound('done'); Voice.proud(3200); if (!reduced()) confetti();
 }
 function countUp(el, n) { if (reduced() || n === 0) { el.textContent = n; return; } const t0 = performance.now(), d = 700; const f = t => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }
 
