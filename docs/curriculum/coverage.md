@@ -86,7 +86,7 @@ Tick when the lesson is merged. One complete lesson per run.
 - [x] 12 Not and very
 - [x] 13 Drinks
 - [x] 14 Food
-- [ ] 15 Ordering
+- [x] 15 Ordering
 - [ ] 16 Paying
 - [ ] 17 Rooms
 - [ ] 18 Furniture and es gibt

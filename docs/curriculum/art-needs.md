@@ -30,6 +30,9 @@ Abstract words (*Sprache, Frage, Idee, Zahl* …) stay without one. Night Glass 
 | `word.kaese` | der Käse | 14 | a wedge of pale yellow cheese with a few small holes |
 | `word.ei` | das Ei | 14 | one plain brown egg, lying on its side |
 | `word.gemuese` | das Gemüse | 14 | a market crate with mixed vegetables (onion, tomatoes, a leek), muted natural colours |
+| `word.suppe` | die Suppe | 15 | a deep bowl of red tomato and bean soup with a little steam, a spoon beside it |
+| `word.salat` | der Salat | 15 | a bowl of green salad with a few tomato slices, natural muted greens |
+| `word.broetchen` | das Brötchen | 15 | one crusty Berlin bread roll (Schrippe) with a split down the top, golden brown |
 
 ## Cast
 
@@ -49,3 +52,4 @@ carry `who: 'cast.ana'` / `'cast.lena'`, and a learner turn's reaction carries `
 | `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Lesson 13 uses it too (a cup set down for the learner, *Kaffee mit Milch, ohne Zucker*): until it is drawn lesson 13 has no `twist`; add `twist: { at: 13, event: 'event.order', mood: 'surprised' }` when the file lands |
 | `event.test` | Herr Weber's hand putting a test sheet face down on a desk | lesson 12 | the twist of lesson 12 (*Das war nicht schlecht*, conv line 14). Until it is drawn lesson 12 has no `twist`; add `twist: { at: 14, event: 'event.test', mood: 'surprised' }` when the file lands |
 | `event.invite` | a hand-written note on a market paper bag: *Samstag, bei mir* | lesson 14 | the twist of lesson 14 (Ana's invitation, conv line 14). Until it is drawn lesson 14 has no `twist`; add `twist: { at: 14, event: 'event.invite', mood: 'surprised' }` when the file lands |
+| `event.stampcard` | a small paper stamp card on the café counter, nine coffee-cup stamps and one empty square; a name tag beside it reading *Murat* | lesson 15 | the twist of lesson 15 (Murat shows his name and the card, conv line 13). Until it is drawn lesson 15 has no `twist`; add `twist: { at: 13, event: 'event.stampcard', mood: 'surprised' }` when the file lands. Lesson 16 can reuse it with the tenth square filled |
