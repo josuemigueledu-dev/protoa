@@ -1,5 +1,5 @@
 /* ===================== §18: course map, station preview, one-idea lesson screens, ticket ===================== */
-let NAV = 'fade'; // direction of the next screen change: 'fwd' slides in from the right, 'back' from the left
+let NAV = 'rise'; // direction of the next screen change: 'fwd' slides in from the right, 'back' from the left, 'rise' lifts the slabs in (a tab opens)
 let lastSegs = null; // progress bar state of the previous lesson screen, so the bar grows instead of jumping
 const SEG_NAMES = ['Scene', 'Words', 'Check', 'Build', 'Conversation'];
 const STEP_SEG = { scene: 0, notice: 0, words: 1, check: 2, build: 3, conv: 4, done: 5 };

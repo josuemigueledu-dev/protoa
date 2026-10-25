@@ -1,0 +1,242 @@
+/* =====================================================================
+   NIGHT GLASS (owner's pick, Oct 25 2026; spec: docs/designs/night-glass/README.md)
+   Loaded last, so it owns every look decision the earlier skins made. A navy stage
+   on top, a blue-grey city ground below, frosted grey-cream glass slabs with one
+   chamfered corner pair, steel actions, magenta specks. One look in both theme settings.
+   Smoothness first: only transform and opacity animate, the ground is a pre-blurred
+   picture (no live filter), and backdrop blur stays on the chrome that floats over
+   scrolling content (tab bar, sheets, bars), never on the slabs themselves.
+   ===================================================================== */
+
+/* ---------- type: self-hosted (shared/fonts), so the app works offline ---------- */
+@font-face{font-family:"Krona One";font-style:normal;font-weight:400;font-display:swap;src:url(../../../shared/fonts/krona-one-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Krona One";font-style:normal;font-weight:400;font-display:swap;src:url(../../../shared/fonts/krona-one-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(../../../shared/fonts/atkinson-400-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(../../../shared/fonts/atkinson-400-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(../../../shared/fonts/atkinson-700-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(../../../shared/fonts/atkinson-700-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ---------- tokens ----------
+   :root:root:root outranks the light/dark blocks of base, glass and depth, so both theme settings get Night Glass.
+   The old names stay (every component reads them); the Night Glass names are added beside them. */
+:root:root:root{
+  --night:#121a27; --night2:#1f2939; --nink:#eef1f4; --ngrey:#a3adbb;
+  --ground:#8e9bab; --ground2:#6f7d8f;
+  --glass:rgba(236,233,225,.62); --glass-dark:rgba(18,26,39,.72);
+  --steel:#2c4a74; --steel-deep:#1f3658; --magenta:#ff2e88; --cyan:#8fd3ff; --pale:#8fb4dc;
+  --cut:18px; --cut-btn:12px;
+  /* paper: the light side; kept as --bg because components use it as the ink-on-dark colour */
+  --bg:#e6e3db; --bg-deep:var(--night); --bg-2:rgba(17,21,27,.06);
+  --card:rgba(236,233,225,.7); --card-solid:#e6e3db; --chip:rgba(255,255,255,.42);
+  --glass-hi:rgba(255,255,255,.55); --glass-edge:rgba(255,255,255,.22);
+  --edge-1:rgba(255,255,255,.4); --edge-2:rgba(17,21,27,.12); --drop-1:rgba(10,16,28,.22); --drop-2:rgba(10,16,28,.2); --caustic:transparent; --curve:transparent;
+  --sheen:rgba(255,255,255,.18); --rim:rgba(255,255,255,.55); --rim-lo:rgba(255,255,255,.18); --inglow:transparent; --lift:rgba(10,16,28,.3);
+  --blur:blur(18px) saturate(1.3);
+  --ink:#11151b; --muted:#47505d; --line:rgba(17,21,27,.1); --line-2:rgba(17,21,27,.2);
+  /* the accent (old --yellow) is the steel action colour; light and progress are pale */
+  --yellow:var(--steel); --yellow-deep:var(--steel-deep); --yellow-soft:rgba(44,74,116,.12); --on-yellow:var(--nink); --on-status:#ffffff;
+  --ice:var(--pale); --glow:rgba(143,211,255,.35);
+  --act-1:var(--steel); --act-2:var(--steel); --act-ink:var(--nink); --act-glow:transparent;
+  --white:#ffffff; --scrim:rgba(10,15,24,.55); --key-1:var(--night2); --key-2:var(--night);
+  --badge-1:var(--magenta); --badge-2:var(--magenta); --paper:var(--nink); --ring:var(--magenta);
+  --pane-1:var(--night); --pane-2:var(--night2); --pane-ink:var(--nink); --pane-muted:var(--ngrey); --pane-glow:rgba(143,211,255,.16);
+  --field-1:transparent; --field-2:rgba(17,21,27,.06); --field-3:rgba(255,46,136,.08); --field-4:rgba(143,211,255,.12);
+  /* semantic: wrong is magenta, never a penalty red */
+  --red:#d81e6c; --red-deep:#a8124f; --red-soft:rgba(216,30,108,.12);
+  --blue:#2c5aa8; --blue-deep:#1f4180; --blue-soft:rgba(44,90,168,.12);
+  --green:#23804f; --green-deep:#1a613b; --green-soft:rgba(35,128,79,.13);
+  --der:#2c5aa8; --die:#d81e6c; --das:#23804f;
+  --map-ink:rgba(17,21,27,.06); --map-water:rgba(44,90,168,.12); --map-park:rgba(35,128,79,.06); --sky:var(--night2);
+  --shadow:0 1px 2px rgba(10,16,28,.08),0 14px 30px -20px rgba(10,16,28,.45);
+  --shadow-lg:0 2px 6px rgba(10,16,28,.1),0 24px 50px -26px rgba(10,16,28,.55);
+  --orbit:transparent; --orbit-hi:transparent; --gridline:transparent;
+  --seq-1:#cdd6e2; --seq-2:#8fb4dc; --seq-3:#4f77a8; --seq-4:#2c4a74;
+  --heat-0:var(--bg-2); --heat-1:#d3dfec; --heat-2:#8fb4dc; --heat-3:#4f77a8; --heat-4:#2c4a74;
+  --mk-shell:var(--night); --mk-mid:#2c5aa8; --mk-ring:var(--nink);
+  /* type */
+  --hero:"Krona One","Arial Black",sans-serif; --display:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif; --text:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  /* shape and the one spring */
+  --r:3px; --r-sm:3px; --r-xs:2px;
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+}
+/* dark surfaces flip the reading colours for everything inside them */
+.today-hero,.talkhero,.chapter,.lesson-top,.actionbar,body.lay-desktop .sidebar,.topbar,.pagehead,.prof,.slab-dark{
+  --ink:var(--nink); --muted:var(--ngrey); --line:rgba(238,241,244,.1); --line-2:rgba(238,241,244,.2);
+  --bg-2:rgba(238,241,244,.08); --chip:rgba(238,241,244,.1); --card:rgba(238,241,244,.08);
+  --glass-hi:rgba(255,255,255,.12); --glass-edge:rgba(255,255,255,.07); --rim:rgba(255,255,255,.14);
+  --yellow-soft:rgba(143,180,220,.16); --blue:#8fb4dc; --green:#5fd39a; --red:#ff5c9e;
+  color:var(--ink);
+}
+/* an intro line right under a page title still sits on the navy stage */
+.pagehead+p,.lesson-top+.eyebrow{color:var(--ngrey)}
+/* the phone's tab bar lives inside the top bar but is cream glass: it reads light again */
+body.lay-mobile .tabs{--ink:#11151b; --muted:#47505d; --line:rgba(17,21,27,.1); --chip:rgba(255,255,255,.42)}
+
+/* ---------- page and the living ground ---------- */
+body,body::before{background:var(--night)}
+body{font-family:var(--text);font-weight:400;letter-spacing:0;color:var(--ink)}
+b,strong{font-weight:700}
+.aurora{background:var(--ground)}
+.orrery,.aurora::before{display:none}
+/* 1: the lesson's scene, pre-blurred (art/night/ground.jpg, 5 KB) so the phone never blurs it live; it drifts slowly */
+.aurora i:nth-child(1){left:-20%;right:-20%;top:200px;width:auto;height:min(720px,90vh);border-radius:0;filter:none;opacity:.55;
+  background:url(../art/night/ground.jpg) center/cover;animation:ng-drift 40s ease-in-out infinite alternate;will-change:transform}
+/* 2: the soft cyan light Protoa casts, breathing; 3: a faint magenta glow lower left */
+.aurora i:nth-child(2){width:420px;height:420px;right:auto;left:50%;top:60px;margin-left:-60px;border-radius:50%;filter:none;opacity:1;
+  background:radial-gradient(closest-side,rgba(143,211,255,.3),rgba(143,211,255,.1) 55%,transparent);animation:ng-breathe 7s ease-in-out infinite;will-change:transform,opacity}
+.aurora i:nth-child(3){width:300px;height:300px;left:-90px;right:auto;top:auto;bottom:8vh;border-radius:50%;filter:none;
+  background:radial-gradient(closest-side,rgba(255,46,136,.18),transparent);animation:ng-breathe 11s ease-in-out infinite;will-change:transform,opacity}
+/* the navy stage: drawn at the top of the page (not the screen), so it scrolls with the content. Whatever sits at
+   the top of a screen (titles, the lesson header) is always on navy and anything further down always on the ground;
+   loose text never scrolls from one onto the other. The top bars carry their own navy. */
+#app::before{content:"";position:absolute;left:0;right:0;top:0;height:440px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,var(--night) 0,var(--night) 210px,rgba(18,26,39,.55) 330px,rgba(18,26,39,0) 440px)}
+/* a faint U-Bahn line drawn into the ground near the bottom */
+.aurora::after{content:"";display:block;position:absolute;left:0;right:0;bottom:56px;height:140px;z-index:1;opacity:.3;-webkit-mask-image:none;mask-image:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 430 140' fill='none' stroke='%2311151b' stroke-width='2'%3E%3Cpath d='M0 110H120Q140 110 150 95L180 50Q190 35 210 35H430'/%3E%3Cg fill='%238e9bab'%3E%3Ccircle cx='60' cy='110' r='5'/%3E%3Ccircle cx='165' cy='72' r='5'/%3E%3Ccircle cx='280' cy='35' r='5'/%3E%3Ccircle cx='380' cy='35' r='5'/%3E%3C/g%3E%3Cpath d='M0 130H430' stroke-dasharray='6 6' opacity='.6'/%3E%3C/svg%3E") left bottom/max(430px,100%) 140px no-repeat}
+@keyframes ng-drift{to{transform:translateX(-6%) scale(1.05)}}
+@keyframes ng-breathe{50%{transform:scale(1.12);opacity:.75}}
+
+/* ---------- type ---------- */
+h1,h2,.big,.stat .n,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
+h1,h2{line-height:1.08;overflow-wrap:break-word;hyphens:auto}
+h2{font-size:1.375rem}
+.nextcard h2{font-size:1.25rem!important}
+.widget h2,.widget h3{font-size:1.0625rem}
+h3{font-family:var(--text);font-weight:700;letter-spacing:0}
+.today-hero h1{font-family:var(--hero);font-weight:400}
+.eyebrow,.lesson-top .steplbl{font-family:var(--text);font-weight:700;letter-spacing:0}
+.lesson-top .who b,.actionbar .msg .ttl{font-family:var(--hero);font-weight:400;letter-spacing:-.03em}
+.gl .w,.tile,.wtile b,.gapline,.gapline input,.btile .de,.jumble span{font-weight:700}
+
+/* ---------- slabs: frosted grey-cream glass, one chamfered corner pair ---------- */
+.card,.widget,.kpi,.goalmini,.lv,.ticket,.examcard,.conv,.today-hero,.talkhero,.mode,.scen,.btile{
+  border-radius:var(--r);clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
+.card,.widget,.kpi,.goalmini,.lv,.notice-line,.coach .say,.bub.w .box,.card.primary,.examcard,.ticket,.card.summary,.view > .lesson-top ~ .card,.view > .lesson-top ~ .conv,.mode,.scen,.btile{
+  background:var(--card);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
+.card.primary,.examcard,.ticket,.card.summary,.view > .lesson-top ~ .card,.view > .lesson-top ~ .conv{background:var(--glass);background:rgba(236,233,225,.78)}
+.card.soft{background:rgba(236,233,225,.5);box-shadow:inset 0 0 0 1px var(--glass-edge);clip-path:none}
+.card.flat{background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);clip-path:none}
+.lv.ready,.examcard{box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 2px var(--magenta)}
+.lv.passed{box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 2px var(--green)}
+.card.ok-edge{box-shadow:inset 0 0 0 2px var(--green)} .card.bad-edge{box-shadow:inset 0 0 0 2px var(--red)}
+/* dark slabs: the hero panes and the map's chapter label */
+.today-hero,.talkhero,.chapter{background:var(--glass-dark);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}
+.today-hero::after,.talkhero::after{display:none}
+.today-hero h1,.today-hero p,.talkhero h1,.talkhero p{color:var(--ink)}
+.today-hero p,.talkhero p{color:var(--muted);opacity:1}
+.chapter .num{background:var(--magenta);color:#fff;border-radius:var(--r-xs);font-family:var(--hero);font-weight:400}
+/* a slow light sheen crosses the main slab of a screen every 9 s (one per screen keeps it cheap) */
+.card.primary,.ticket{isolation:isolate}
+.card.primary::after,.today-hero::before,.ticket::after{content:"";display:block;position:absolute;inset:0;pointer-events:none;border-radius:0;opacity:1;z-index:-1;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.2) 45%,transparent 60%);transform:translateX(-120%);animation:ng-sheen 9s ease-in-out infinite}
+.today-hero::before{background:linear-gradient(115deg,transparent 30%,rgba(143,211,255,.09) 45%,transparent 60%)}
+@keyframes ng-sheen{0%,70%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+/* no 3D tilt or floating shadows on glass: the slabs sit flat on the light */
+.card,.widget,.kpi,.lv,.mode,.scen,.btile,.goalmini,.today-hero,.talkhero,.ticket,.card.primary,.examcard{transform:none!important}
+.tilting::after{display:none!important}
+
+/* inner controls on glass: clear chips, a hairline, a short press */
+.choice,.tile,.icon-btn,.umlauts button,.btn.ghost,.btn.quiet,.seg,.rule .ex button{background:var(--chip);border-radius:var(--r);
+  box-shadow:inset 0 0 0 1px var(--line),inset 0 1px 0 var(--glass-hi);transition:transform .15s var(--ease),background .25s,color .25s,box-shadow .25s,opacity .3s}
+.choice:hover,.tile:hover,.mode:hover,.scen:hover,.btile:hover{transform:none;box-shadow:inset 0 0 0 1.5px var(--steel),inset 0 1px 0 var(--glass-hi)}
+.icon-btn:hover,.umlauts button:hover{box-shadow:inset 0 0 0 1.5px var(--steel)}
+.choice:active,.tile:active,.mode:active,.scen:active,.btile:active,.icon-btn:active,.umlauts button:active{transform:scale(.96);box-shadow:inset 0 0 0 1px var(--line-2)}
+.choice.ok{background:var(--green);color:#fff;box-shadow:none}
+.choice.bad{background:rgba(216,30,108,.88);color:#fff;box-shadow:none;animation:ng-shake .4s var(--ease)}
+.choice.picked{background:var(--yellow-soft);box-shadow:inset 0 0 0 2px var(--steel)}
+@keyframes ng-shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.chip{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r-xs)}
+.chip.yours{background:var(--magenta);color:#fff;box-shadow:none}
+.readtext,.preview .can,details,.kbd,.jumble span,.lvrow .lvcode{background:var(--chip)}
+.nextcard .sig,.listrow>.sig,.scen .sig,.preview .bigicon,.illus,.examcard .sig,.map-head .sig,.wcard .illus,.wcard .illus.m,.wcard .illus.f,.wcard .illus.n{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
+.hubhero .sig,.avatar{background:var(--night2);color:var(--nink);box-shadow:none}
+.badge{background:var(--magenta);color:#fff;box-shadow:0 0 0 2px var(--card-solid)}
+
+/* course map: station names sit on the ground, which runs from navy to grey, so each gets a small glass plate */
+.st .lab{background:var(--card);padding:6px 10px;border-radius:var(--r);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
+
+/* ---------- buttons: steel, chamfered at 12px, flat, a 150 ms press ---------- */
+.btn{border-radius:var(--r-xs);font-family:var(--text);font-weight:700;letter-spacing:0;background:var(--steel);color:var(--nink);box-shadow:none;filter:none;
+  clip-path:polygon(0 0,calc(100% - var(--cut-btn)) 0,100% var(--cut-btn),100% 100%,var(--cut-btn) 100%,0 calc(100% - var(--cut-btn)));
+  transition:transform .15s var(--ease),filter .2s,background .25s,color .25s}
+.btn::before{display:none}
+.btn:hover{filter:brightness(1.12);transform:none;box-shadow:none}
+.btn:active{transform:scale(.98);filter:none}
+.btn.ghost,.btn.quiet{background:var(--chip);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn.ghost:hover,.btn.quiet:hover{filter:none;box-shadow:inset 0 0 0 1.5px var(--steel)}
+.btn.ink{background:var(--night);color:var(--nink)}
+.btn.ok,.actionbar.ok .in .btn:not(.ghost){background:var(--green);color:#fff;box-shadow:none}
+.btn.bad,.actionbar.bad .in .btn:not(.ghost){background:var(--red);color:#fff;box-shadow:none}
+.btn[disabled]{opacity:.4;filter:saturate(.4);box-shadow:none}
+/* the chamfer clips outlines drawn outside the box, so focus sits just inside */
+.btn:focus-visible,.card:focus-visible,.mode:focus-visible,.scen:focus-visible,.btile:focus-visible,.lv:focus-visible{outline-offset:-4px}
+:focus-visible{outline-color:var(--die)!important}
+.slab-dark :focus-visible,.today-hero :focus-visible,.actionbar :focus-visible,.lesson-top :focus-visible,body.lay-desktop .sidebar :focus-visible{outline-color:var(--magenta)!important}
+/* opt-in: a square arrow chip on the right of a primary button, as in the prototype */
+.btn.go{justify-content:space-between;padding-right:7px}
+.btn.go::after{content:"→";width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:var(--r-xs);background:var(--nink);color:var(--steel);font-size:18px}
+
+/* ---------- inputs ---------- */
+input[type=text],input[type=number],input[type=date],select,textarea{background:rgba(255,255,255,.5);border:1px solid var(--line-2);border-radius:var(--r);box-shadow:none;font-family:var(--text);font-weight:400}
+input:focus,select:focus,textarea:focus{border-color:var(--steel);box-shadow:0 0 0 3px var(--yellow-soft)}
+.toggle input:checked{background:var(--steel);box-shadow:none}
+.seg button[aria-pressed="true"]{background:var(--steel);color:var(--nink);box-shadow:none}
+
+/* ---------- progress is pale light ---------- */
+.bar,.lesson-top .segs i,.strength{background:var(--bg-2);box-shadow:none;border-radius:4px}
+.bar i,.lesson-top .segs i b{background:var(--pale);box-shadow:none;border-radius:4px}
+.card .bar i,.widget .bar i{background:var(--steel)}
+.minibars i{background:var(--steel)}
+.ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--ring);filter:none}
+.today-hero .goal .ring circle.bg{stroke:rgba(238,241,244,.14)}
+
+/* ---------- frame: navy top bar, cream glass tab bar with a magenta line ---------- */
+.topbar{background:transparent;box-shadow:none}
+.topbar::before{background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
+.brand{font-size:1.125rem;letter-spacing:-.03em;color:var(--nink)}
+body.lay-mobile .tabs{left:0;right:0;bottom:0;border-radius:0;padding:10px max(6px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
+  background:rgba(236,233,225,.78);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 2px 0 var(--magenta);clip-path:none}
+body.lay-mobile .tab{font-weight:400;color:var(--muted);font-size:.6875rem}
+body.lay-mobile .tab[aria-current="page"]{color:var(--ink);font-weight:700;background:none;box-shadow:none}
+body.lay-mobile .tab[aria-current="page"] svg{background:none;box-shadow:none;padding:0;color:var(--magenta)}
+.tab[aria-current="page"]{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
+body.lay-mobile main{padding-bottom:112px}
+body.lay-desktop .sidebar{background:var(--glass-dark);-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--r);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07);clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
+.nav{border-radius:var(--r-xs);font-weight:700}
+.nav[aria-current="page"]{background:var(--steel);color:var(--nink);box-shadow:inset 3px 0 0 var(--magenta)}
+.nav:hover,.stlist>button:hover,.searchres button:hover,.searchres button.sel{background:var(--bg-2)}
+/* lesson header: a navy band over the stage */
+.lesson-top{--band:var(--night);background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* the bar at the bottom of a lesson step is the prototype's feedback sheet: dark frosted glass */
+.actionbar{background:rgba(18,26,39,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.actionbar.ok,.actionbar.bad{background:rgba(18,26,39,.92);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.actionbar.ok .msg .ttl,.actionbar.ok .ico{color:#7ee2a8} .actionbar.bad .msg .ttl,.actionbar.bad .ico{color:#ff7ab2}
+/* after an answer the sheet's main button is light, as in the prototype; magenta or green stays in the title */
+.actionbar.ok .in .btn:not(.ghost),.actionbar.bad .in .btn:not(.ghost){background:var(--nink);color:#11151b}
+.choice.ok kbd,.choice.bad kbd{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.actionbar .btn.ghost{background:rgba(238,241,244,.1);color:var(--nink);box-shadow:inset 0 0 0 1px rgba(238,241,244,.2)}
+/* sheets and toasts */
+.sheet{background:var(--scrim);-webkit-backdrop-filter:none;backdrop-filter:none}
+.sheet .in{background:rgba(236,233,225,.97);box-shadow:inset 0 1px 0 var(--glass-hi);border-radius:var(--r) var(--r) 0 0}
+body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
+.toast{background:var(--night);color:var(--nink);border-radius:var(--r-xs);box-shadow:inset 0 2px 0 var(--magenta),var(--shadow)}
+.confetti i{box-shadow:none}
+
+/* ---------- motion: one spring; screens slide, slabs rise when a tab opens ---------- */
+.view.fwd{animation:ng-fwd .55s var(--ease)} .view.back{animation:ng-back .55s var(--ease)}
+@keyframes ng-fwd{from{transform:translateX(64px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes ng-back{from{transform:translateX(-64px);opacity:.3}to{transform:none;opacity:1}}
+.view.rise>*{animation:ng-rise .7s var(--ease) both}
+.view.rise>:nth-child(2){animation-delay:.1s} .view.rise>:nth-child(3){animation-delay:.2s} .view.rise>:nth-child(4){animation-delay:.3s} .view.rise>:nth-child(n+5){animation-delay:.38s}
+@keyframes ng-rise{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- reduced motion: nothing travels, content stays ---------- */
+@media (prefers-reduced-motion:reduce){
+  .aurora i,.aurora::after,.card.primary::after,.today-hero::before,.ticket::after{animation:none!important}
+  .card.primary::after,.today-hero::before,.ticket::after{display:none}
+  .view.fwd,.view.back,.view.rise>*{animation:none!important}
+  .choice.bad{animation:none}
+}
