@@ -4,7 +4,7 @@ For the owner's sign-off. Once approved, content builds lessons 25 to 29 from th
 
 Owner rule holds everywhere: nothing religious or political. Every headword below was checked against lessons 1–13 and plans 14–24, so none repeats; each lesson has 12–13 items (phrases counted).
 
-Lessons 25–29 open chapter 3, **"Die Stadt"** (the chapter banner comes before lesson 25). The chapter moves the course out of room 2.04 and into the city. Its first two lessons pay off thread 3 (Ana's reason), as `story.md` fixes: she is an architect, her degree needs B1 to be recognised, and until then she works at a bakery. Lessons 27–29 are one trip, Tuesday's plan and Thursday's journey to Zoologischer Garten and Wittenbergplatz. Lesson 28 is the **review stop** (after 4, 8, … 28): its scene samples words from lessons 25–28.
+Lessons 25–29 open chapter 3, **"Unterwegs"** (the chapter banner in the app, `CHAPTERS` in content.js; comes before lesson 25). The chapter moves the course out of room 2.04 and into the city. Its first two lessons pay off thread 3 (Ana's reason), as `story.md` fixes: she is an architect, her degree needs B1 to be recognised, and until then she works at a bakery. Lessons 27–29 are one trip, Tuesday's plan and Thursday's journey to Zoologischer Garten and Wittenbergplatz. Lesson 28 is the **review stop** (after 4, 8, … 28): its scene samples words from lessons 25–28.
 
 ---
 
