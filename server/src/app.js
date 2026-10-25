@@ -6,7 +6,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { getConnInfo } from '@hono/node-server/conninfo';
 import { aiAvailable, askJSON, askLongJSON, AIError } from './claude.js';
-import { rateLimiter } from './ratelimit.js';
+import { rateLimiter, memoryRateStore } from './ratelimit.js';
 import { staticFiles } from './static.js';
 import { tasks as deutsch } from './apps/deutsch/tasks.js';
 
@@ -29,14 +29,15 @@ function clientKey(c) {
 }
 
 // runJSON / runLong / aiOn are swapped for stubs in tests and for the practice AI (fake-ai.js).
-export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiAvailable } = {}) {
+// rateStore is where the AI rate limit counts (ratelimit.js); a shared store goes here with several instances.
+export function createApp({ runJSON = askJSON, runLong = askLongJSON, aiOn = aiAvailable, rateStore = memoryRateStore() } = {}) {
   const app = new Hono();
 
   app.get('/api/health', c => c.json({ ok: true, ai: aiOn() }));
 
   app.post('/api/:app/ai/:task',
     bodyLimit({ maxSize: 256 * 1024, onError: c => c.json({ error: { code: 'too_large', message: 'Request too large.' } }, 413) }),
-    rateLimiter({ limit: Number(process.env.AI_RATE_LIMIT) || 60, windowMs: 10 * 60 * 1000, key: clientKey }),
+    rateLimiter({ limit: Number(process.env.AI_RATE_LIMIT) || 60, windowMs: 10 * 60 * 1000, key: clientKey, store: rateStore }),
     async c => {
       const name = c.req.param('task'), task = own(own(APPS, c.req.param('app')), name);
       if (!task) return c.json({ error: { code: 'not_found', message: 'Unknown task.' } }, 404);

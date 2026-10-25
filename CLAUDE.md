@@ -49,6 +49,6 @@ Put it in `apps/<name>/`, load the orb from `../../shared/orb/glorb.js`, registe
 ## Not done yet (needed before a public launch)
 
 - **Accounts and sync.** Progress lives in `localStorage` only (one browser). The claude.ai version synced through `window.claude`; that code is gone. `mergeProgress` / `mergeShard` in core.js are kept for server sync. Needs auth plus a database, and per-user AI quotas.
-- **Abuse and cost limits.** AI calls are rate limited per IP in memory (`AI_RATE_LIMIT`, default 60 per 10 min). With several server instances or real users this needs a shared store keyed on the user.
+- **Abuse and cost limits.** AI calls are rate limited per IP (`AI_RATE_LIMIT`, default 60 per 10 min) through a `RateStore` (`server/src/ratelimit.js`, memory adapter; `createApp({ rateStore })`). With several server instances or real users this needs a shared adapter that passes the store contract in `ratelimit.test.js`, keyed on the user.
 - **Hosting.** Nothing is deployed. The server is Hono, so it can run on Node hosts or be moved to edge runtimes (e.g. Cloudflare Workers).
 - Content still ships in `content.js`; with many apps and languages it should move server-side.
