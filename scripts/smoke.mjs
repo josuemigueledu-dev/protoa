@@ -1,6 +1,7 @@
 // Browser smoke test: the app loads at phone and desktop width, in light and
 // dark, with no console errors and no sideways scrolling, and lesson 1 can be
-// clicked from its scene to its first word check.
+// clicked from its scene to its first word check. Left open overnight, it shows
+// the new day without disturbing a lesson in progress.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -54,6 +55,37 @@ async function notesReadAsText(page, label) {
   await noSidewaysScroll(page, label + ' notice');
 }
 
+// An app left open overnight (a phone asleep with it on screen) shows the new
+// day when it is looked at again, but never redraws a lesson under the learner.
+async function overnight(browser) {
+  const label = 'overnight';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, timezoneId: 'Europe/Berlin', serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('console', m => { if (m.type() === 'error') fail(`${label}: console error: ${m.text()}`); });
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.clock.install({ time: new Date('2026-10-26T22:30:00Z') }); // 23:30 in Berlin
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  // lesson 1 learned tonight, so its words are due tomorrow
+  await page.evaluate(() => { const L = lessonById(1); L.words.forEach(w => markLearned(w, 1)); S.progress.lessonsDone.push(1); for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w)) c.r[0] = addDays(todayStr(), 1); S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); go('today'); });
+  const ring = () => page.locator('.today-hero .goal').getAttribute('aria-label');
+  const sleep = async (hidden, time) => {
+    await page.evaluate(h => { for (const k of ['hidden', 'visibilityState']) Object.defineProperty(document, k, { value: k === 'hidden' ? h : h ? 'hidden' : 'visible', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); }, hidden);
+    if (time) await page.clock.fastForward(time);
+  };
+  if (!/^[1-9]\d* of/.test(await ring())) fail(`${label}: tonight's ring shows no new words (${await ring()})`);
+  await sleep(true, '08:30:00'); await sleep(false);
+  if (!/^0 of/.test(await ring())) fail(`${label}: the next morning Today still shows last night's ring (${await ring()})`);
+  if (!await page.locator('.tab .badge').count()) fail(`${label}: the next morning Practice shows no words due`);
+  // a lesson open over midnight stays on its step
+  await page.evaluate(() => startLesson(2, true));
+  await page.locator('.actionbar .btn').last().click();
+  await page.evaluate(() => { document.querySelector('#view > *').dataset.night = '1'; });
+  await sleep(true, '24:00:00'); await sleep(false); await page.clock.runFor(16000);
+  if (!await page.locator('#view > [data-night]').count()) fail(`${label}: the new day redrew the lesson under the learner`);
+  await ctx.close();
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -81,6 +113,7 @@ try {
       await ctx.close();
     }
   }
+  await overnight(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));

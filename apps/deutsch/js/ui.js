@@ -21,8 +21,9 @@ function go(r) { if (r !== route) { NAV = 'rise'; if (r === 'learn' && S.progres
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
 function newView() { view.innerHTML = ''; const v = h('div', { class: 'view stack ' + NAV, style: 'gap:16px' }); view.append(v); return v; }
+let renderedDay = null; // the day the screen on show was drawn for (screens.js redraws it when a new day starts)
 function render() {
-  stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
+  renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
   const inLesson = (route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam';
   document.body.classList.toggle('in-lesson', !!inLesson);
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);

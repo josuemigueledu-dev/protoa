@@ -28,10 +28,15 @@ function renderSidebar() {
 let lastAct = Date.now(), tickCount = 0;
 ['pointerdown', 'keydown', 'scroll'].forEach(e => window.addEventListener(e, () => { lastAct = Date.now(); }, { passive: true }));
 setInterval(() => {
+  newDayCheck();
   if (!S.progress || document.hidden || Date.now() - lastAct > 60000) return;
   const t = todayStr(); S.progress.days[t] = S.progress.days[t] || { new: 0, reviews: 0 }; S.progress.days[t].secs = (S.progress.days[t].secs || 0) + 15;
   if (++tickCount % 4 === 0) { save('progress'); if (document.body.classList.contains('lay-desktop') && !document.body.classList.contains('in-lesson')) renderSidebar(); }
 }, 15000);
+// an app left open overnight (a phone asleep, a laptop lid shut) shows the new day when it is looked at again:
+// due words, the goal ring, the week strip. Never under the learner mid-lesson, review, talk or exam, or over a sheet.
+function newDayCheck() { if (renderedDay && !document.hidden && todayStr() !== renderedDay && !document.body.classList.contains('in-lesson') && !document.querySelector('.sheet')) render(); }
+document.addEventListener('visibilitychange', newDayCheck); window.addEventListener('pageshow', newDayCheck);
 function todayInfo() { const d = (S.progress.days || {})[todayStr()] || {}; return { mins: Math.round((d.secs || 0) / 60), words: d.new || 0, reviews: d.reviews || 0 }; }
 function dayKey(offset) { return addDays(todayStr(), offset); }
 
