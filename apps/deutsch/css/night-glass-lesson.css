@@ -14,7 +14,7 @@
     --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
     --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
     --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
-    --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
+    --scrim:rgba(40,52,70,.5); --key-1:#cdd6e1; --key-2:#dfe6ee;
     --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
     --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
     --slab-edge:#c3c9d1; --slab-edge-dark:#b7c2cf; --slab-lit:#ffffff; --slab-lit-2:rgba(255,255,255,.6); --slab-sh-1:rgba(44,74,116,.16); --slab-sh-2:rgba(44,74,116,.22);
@@ -28,7 +28,7 @@
   --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
   --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
   --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
-  --scrim:rgba(40,52,70,.35); --key-1:#cdd6e1; --key-2:#dfe6ee;
+  --scrim:rgba(40,52,70,.5); --key-1:#cdd6e1; --key-2:#dfe6ee;
   --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
   --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
   --slab-edge:#c3c9d1; --slab-edge-dark:#b7c2cf; --slab-lit:#ffffff; --slab-lit-2:rgba(255,255,255,.6); --slab-sh-1:rgba(44,74,116,.16); --slab-sh-2:rgba(44,74,116,.22);
