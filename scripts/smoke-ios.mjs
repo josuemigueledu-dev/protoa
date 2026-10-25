@@ -1,7 +1,7 @@
 // iPhone scroll test: the app inside an iframe (as in the owner's claude.ai copy) at iPhone 13
 // size in WebKit, Safari's engine. It opens lesson 2's scene step, scrolls it down and back up
 // with the wheel, and records every frame: the lesson header (title, progress, orb) must stay
-// pinned to the top, the action bar to the bottom, the docked orb in its header slot, and no
+// pinned to the top, the action bar to the bottom, the orb still in Protoa's tab, and no
 // frame may take longer than FRAME_MS. Prints the numbers so a fix can be compared before and after.
 // Run: npm run smoke:ios (needs playwright with WebKit: `npm i --no-save playwright && npx playwright install --with-deps webkit`)
 import { spawn } from 'node:child_process';
@@ -15,7 +15,7 @@ const { webkit, devices } = require('playwright');
 
 const FRAME_MS = 50;   // a frame slower than this is a visible stutter
 const DRIFT_PX = 2;    // the header and the action bar may not move more than this
-const ORB_PX = 6;      // the docked orb's centre may not leave its slot's centre by more than this
+const ORB_PX = 2;      // the orb lives in Protoa's tab, fixed to the screen: its centre may not move more than this
 // IOS_FRAMES=report: slow frames are printed as a warning instead of failing (CI, until the
 // app scrolls inside the frame budget); the header, action bar and orb checks always fail
 const REPORT_FRAMES = process.env.IOS_FRAMES === 'report';
@@ -43,18 +43,18 @@ const HOST = `<!doctype html><meta name="viewport" content="width=device-width,i
 // Inside the app: sample the layout once per frame until stop() is called.
 function record() {
   const top = () => document.querySelector('#view .lesson-top'), bar = () => document.querySelector('.actionbar');
-  const orb = () => document.querySelector('.orb.companion'), slot = () => document.querySelector('#view .lesson-top .tslot');
+  const orb = () => document.querySelector('.ptab .orb.companion');
   const R = window.__scroll = { frames: [], top: [], bar: [], orb: [], scrollMax: 0, run: true };
   let last = performance.now();
   const tick = now => {
     if (!R.run) return;
     R.frames.push(now - last); last = now;
-    const t = top(), b = bar(), o = orb(), s = slot();
+    const t = top(), b = bar(), o = orb();
     if (t) R.top.push(t.getBoundingClientRect().top);
     if (b) R.bar.push(innerHeight - b.getBoundingClientRect().bottom);
-    if (o && s && s.getBoundingClientRect().width) {
-      const a = o.getBoundingClientRect(), c = s.getBoundingClientRect();
-      R.orb.push(Math.hypot(a.left + a.width / 2 - c.left - c.width / 2, a.top + a.height / 2 - c.top - c.height / 2));
+    if (o) {
+      const a = o.getBoundingClientRect(), c = [a.left + a.width / 2, a.top + a.height / 2];
+      R.orb0 = R.orb0 || c; R.orb.push(Math.hypot(c[0] - R.orb0[0], c[1] - R.orb0[1]));
     }
     R.scrollMax = Math.max(R.scrollMax, scrollY, document.scrollingElement.scrollTop, ...[...document.querySelectorAll('#app, main, #view, .wrap')].map(e => e.scrollTop));
     requestAnimationFrame(tick);
@@ -107,7 +107,7 @@ async function scrollLesson(browser, scheme) {
   await frame.waitForSelector('#view > *');
   await frame.evaluate(() => { S.settings.onboarded = true; save('settings'); document.querySelector('.sheet')?.remove(); startLesson(2, true); });
   await frame.waitForSelector('#view .lesson-top');
-  await page.waitForTimeout(1200); // the step's entrance and the orb's flight into its slot settle
+  await page.waitForTimeout(1200); // the step's entrance settles
 
   const step = await frame.evaluate(() => S.progress.lessonState.step);
   if (step !== 'scene') fail(`${label}: lesson 2 opened on "${step}", not its scene`);
@@ -116,12 +116,13 @@ async function scrollLesson(browser, scheme) {
 
   const frames = R.frames, slow = frames.filter(f => f > FRAME_MS), max = Math.max(...frames);
   const header = extent(R.top), bar = extent(R.bar), orb = extent(R.orb);
-  console.log(`${label}: ${frames.length} frames, median ${ms(pct(frames, .5))}, p95 ${ms(pct(frames, .95))}, slowest ${ms(max)}, ${slow.length} over ${FRAME_MS} ms; scrolled ${Math.round(R.scrollMax)}px; header moved ${header.toFixed(1)}px, action bar ${bar.toFixed(1)}px, orb off its slot ${orb.toFixed(1)}px`);
+  console.log(`${label}: ${frames.length} frames, median ${ms(pct(frames, .5))}, p95 ${ms(pct(frames, .95))}, slowest ${ms(max)}, ${slow.length} over ${FRAME_MS} ms; scrolled ${Math.round(R.scrollMax)}px; header moved ${header.toFixed(1)}px, action bar ${bar.toFixed(1)}px, orb moved ${orb.toFixed(1)}px`);
 
   if (R.scrollMax < 100) fail(`${label}: the wheel did not scroll the lesson (${Math.round(R.scrollMax)}px)`);
   if (header > DRIFT_PX) fail(`${label}: the lesson header moved ${header.toFixed(1)}px off the top while scrolling`);
   if (bar > DRIFT_PX) fail(`${label}: the action bar moved ${bar.toFixed(1)}px off the bottom while scrolling`);
-  if (R.orb.length && orb > ORB_PX) fail(`${label}: the docked orb left its header slot by ${orb.toFixed(1)}px while scrolling`);
+  if (!R.orb.length) fail(`${label}: no orb in Protoa's tab`);
+  else if (orb > ORB_PX) fail(`${label}: the orb moved ${orb.toFixed(1)}px out of Protoa's tab while scrolling`);
   if (slow.length) {
     const msg = `${label}: ${slow.length} of ${frames.length} frames took over ${FRAME_MS} ms while scrolling (slowest ${ms(max)})`;
     if (REPORT_FRAMES) console.warn('WARN ' + msg); else fail(msg);

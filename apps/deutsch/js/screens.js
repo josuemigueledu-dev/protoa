@@ -6,7 +6,7 @@ Object.assign(ICONS, {
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
 });
 const NAV_ITEMS = [['today', 'Today'], ['learn', 'Lessons'], ['practice', 'Practice'], ['talk', 'Sprechen'], ['grammar', 'Grammar'], ['profile', 'Profile']];
-const DAYS_DE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const DAYS_EN = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 /* ---------- layout ---------- */
 function layoutMode() { const s = S.settings.layout || 'auto'; if (s === 'desktop' || s === 'mobile') return s; const w = window.innerWidth || 1024; return w >= 1024 ? 'desktop' : w < 640 ? 'mobile' : 'tablet'; }
@@ -48,17 +48,17 @@ function weekWidget() {
     const d = addDays(t, i - dow), rec = (S.progress.days || {})[d] || {}, mins = Math.round((rec.secs || 0) / 60), frac = d > t ? 0 : Math.min(1, mins / goal);
     const active = (rec.new || 0) + (rec.reviews || 0) > 0 || mins > 0;
     const ring = ringEl(active && frac === 0 ? .08 : frac, 36); if (frac >= 1) ring.classList.add('full');
-    wk.append(h('div', { class: 'd' + (d === t ? ' today' : ''), role: 'listitem', title: `${d}: ${mins} min, ${rec.new || 0} new words, ${rec.reviews || 0} reviews` }, ring, DAYS_DE[i]));
+    wk.append(h('div', { class: 'd' + (d === t ? ' today' : ''), role: 'listitem', title: `${d}: ${mins} min, ${rec.new || 0} new words, ${rec.reviews || 0} reviews` }, ring, DAYS_EN[i]));
   }
   const ti = todayInfo();
-  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Diese Woche'), h('span', { class: 'faint' }, `today ${ti.mins} of ${S.settings.minutes} min`)), wk);
+  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'This week'), h('span', { class: 'faint' }, `today ${ti.mins} of ${S.settings.minutes} min`)), wk);
 }
 function satzDesTages() {
   const pool = Object.values(S.cards).flatMap(sh => Object.keys(sh.w || {})).filter(id => !id.startsWith('s:')).map(wordDef).filter(d => d && d.ex && d.exG);
   if (!pool.length) return null;
   let hsh = 0; for (const ch of todayStr()) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0; const w = pool[hsh % pool.length];
   const ex = w.ex.replace(/[\[\]]/g, ''), ul = glossEl(ex, w.exG);
-  return h('div', { class: 'widget satz' }, h('div', { class: 'wh' }, h('h2', { lang: 'de' }, 'Satz des Tages'), h('button', { class: 'icon-btn sm', 'aria-label': 'Play the sentence', html: ICONS.play, onclick: () => speak(ex, { el: ul }) })), ul, h('div', { class: 'faint' }, w.exEn));
+  return h('div', { class: 'widget satz' }, h('div', { class: 'wh' }, h('h2', {}, 'Sentence of the day'), h('button', { class: 'icon-btn sm', 'aria-label': 'Play the sentence', html: ICONS.play, onclick: () => speak(ex, { el: ul }) })), ul, h('div', { class: 'faint' }, w.exEn));
 }
 function forecast(days) {
   const t = todayStr(), out = Array(days).fill(0);
@@ -72,7 +72,7 @@ function forecastWidget() {
     h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, '+6 days')));
 }
 function nextStationWidget() {
-  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', { lang: 'de' }, 'Prüfung ' + g.code)), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString() + ' words. Pass the exam with 90 % to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
+  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString() + ' words. Pass the exam with 90 % to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
   const n = currentLessonN(); if (!n) return null; const c = courseOf(n), L = lessonById(n);
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Next station')), h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('b', { lang: 'de', style: 'font-family:var(--display)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + n + ' · ' + L.title))), h('button', { class: 'btn sm', onclick: () => openOnMap(n) }, 'Go to station'));
 }
@@ -80,7 +80,7 @@ function stationListWidget() {
   const { items } = mapModel(); const list = h('div', { class: 'stlist' });
   items.filter(i => i.kind === 'lesson').forEach(it => {
     const row = it.state === 'soon' ? h('div', { class: 'soonrow' }) : h('button', { onclick: () => openStation(it) });
-    row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.c.station), h('small', {}, it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'Bald' })[it.state]));
+    row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.c.station), h('small', {}, it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
     list.append(row);
   });
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All stations'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' / ' + COURSE.length)), list);
@@ -124,7 +124,7 @@ function computeStamps() {
 function checkStamps() {
   if (!S.ready) return; const seen = new Set(S.progress.stampsSeen || []), fresh = computeStamps().filter(s => s.on && !seen.has(s.id));
   if (!fresh.length) return; S.progress.stampsSeen = [...seen, ...fresh.map(s => s.id)]; save('progress');
-  toast(fresh.length === 1 ? 'Neuer Stempel: ' + fresh[0].t : fresh.length + ' neue Stempel im Stempelheft');
+  toast(fresh.length === 1 ? 'New stamp: ' + fresh[0].t : fresh.length + ' new stamps in your Stempelheft');
 }
 function stampEl(s, i) { return h('div', { class: 'stp' + (s.on ? ' on r' + (i % 3 + 1) : ''), title: s.on ? s.t + ' — earned' : s.t + ' — not yet' }, h('div', { class: 'ring2' }, sigEl(s.icon)), h('b', { lang: 'de' }, s.t), h('span', {}, s.s)); }
 
@@ -160,16 +160,16 @@ function heatmap(weeks = 16) {
 }
 
 /* ---------- Profile ---------- */
-function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90 %.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { lang: 'de' }, 'Prüfung ' + e.code + ' · ' + e.date), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + ' %' + (e.passed ? ' · bestanden' : ''))))); }
+function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90 %.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', {}, e.code + ' exam · ' + fmtDate(e.date)), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + '%' + (e.passed ? ' · bestanden' : ''))))); }
 function renderProfile(v) {
   checkStamps();
   const p = S.profile, days = S.progress.days || {}, keys = Object.keys(days).sort(), since = keys[0] || todayStr();
   const activeDays = Object.values(days).filter(d => (d.new || 0) + (d.reviews || 0) > 0 || (d.secs || 0) >= 60).length;
   const mins = Math.round(Object.values(days).reduce((a, d) => a + (d.secs || 0), 0) / 60), words = learnedCount();
   // Night Glass: Protoa in a navy badge, the goal and how far along it you are, then the numbers and your class
-  const g = goalInfo(), fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-  v.append(h('div', { class: 'prof' }, h('div', { class: 'avatar orbbadge', 'aria-hidden': 'true' }, h('img', { src: 'art/night/orb.png', alt: '' })), h('div', { class: 'grow' }, h('h1', {}, p.name || 'Your profile'), h('div', { class: 'faint' }, (p.city ? p.city + ' · ' : '') + 'learning German since ' + since)), h('button', { class: 'btn ghost sm', onclick: () => openMore(renderSettings) }, 'Settings')));
-  v.append(h('div', { class: 'goalline' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Goal: spoken ' + (S.settings.level || 'B1')), h('span', { class: 'faint' }, g.date ? 'by ' + fmtDate(g.date) : '')), h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(g.pct) }, h('i', { style: `width:${Math.max(2, g.pct)}%` })), h('div', { class: 'row faint', style: 'justify-content:space-between' }, h('span', {}, g.learned.toLocaleString('en') + ' of ' + (S.settings.target || 2400).toLocaleString('en') + ' words'), h('span', {}, g.pct + ' %'))));
+  const g = goalInfo();
+  v.append(h('div', { class: 'prof' }, h('div', { class: 'avatar orbbadge', 'aria-hidden': 'true' }, h('img', { src: 'art/night/orb.png', alt: '' })), h('div', { class: 'grow' }, h('h1', {}, p.name || 'Your profile'), h('div', { class: 'faint' }, (p.city ? p.city + ' · ' : '') + 'learning German since ' + fmtDate(since))), h('button', { class: 'btn ghost sm', onclick: () => openMore(renderSettings) }, 'Settings')));
+  v.append(h('div', { class: 'goalline' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Goal: spoken ' + (S.settings.level || 'B1')), h('span', { class: 'faint' }, g.date ? 'by ' + fmtDate(g.date) : '')), h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(g.pct) }, h('i', { style: `width:${Math.max(2, g.pct)}%` })), h('div', { class: 'row faint', style: 'justify-content:space-between' }, h('span', {}, g.learned.toLocaleString('en') + ' of ' + (S.settings.target || 2400).toLocaleString('en') + ' words'), h('span', {}, g.pct + '%'))));
   const kpi = (n, l) => h('div', { class: 'kpi' }, h('div', { class: 'n' }, n), h('div', { class: 'l' }, l));
   v.append(h('div', { class: 'kpis' }, kpi(words, 'words yours'), kpi(S.progress.lessonsDone.length + '/' + COURSE.length, 'stations'), kpi(activeDays, 'days practised'), kpi(mins, 'minutes')));
   const cls = [['weber', 'Herr Weber', 'teacher'], ['ana', 'Ana', 'from Mexico City'], ['lena', 'Lena', 'from Rome'], ['murat', 'The barista', 'café next door']];
@@ -185,7 +185,7 @@ function renderProfile(v) {
   for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) for (const [d, , g] of (c.hist || [])) if (d >= cut) { tot++; if (g >= 2) good++; }
   const f = forecast(14);
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, tot ? `recall ${Math.round(100 * good / tot)}% over ${tot} reviews (30 days)` : 'no reviews in the last 30 days')),
-    barChart(f.map((n, i) => ({ v: n, tip: `${i === 0 ? 'today (incl. overdue)' : dayKey(i)}: ${n} due` })), { label: 'Reviews due, next 14 days', h: 140, xlabels: [[0, 'today'], [13, '+13 d']] })));
+    barChart(f.map((n, i) => ({ v: n, tip: `${i === 0 ? 'today (incl. overdue)' : dayKey(i)}: ${n} due` })), { label: 'Reviews due, next 14 days', h: 140, xlabels: [[0, 'today'], [13, '+13 days']] })));
   v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Word strength'), strengthBar()));
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Activity'), h('span', { class: 'faint' }, 'last 16 weeks')), heatmap(16), h('div', { class: 'legend' }, h('span', {}, 'less'), ...[0, 1, 2, 3, 4].map(i => h('i', { style: `background:var(--heat-${i})` })), h('span', {}, 'more'))));
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
@@ -220,7 +220,7 @@ function renderPracticeHub(v) {
     ['frame', 'Grammar', 'Reference units with drills', 1, () => go('grammar')],
   ];
   v.append(h('div', { class: 'modes' }, ...modes.map(([icon, t, d, n, fn]) => h('button', { class: 'mode', disabled: !n, onclick: fn }, sigEl(icon), h('b', {}, t), h('span', {}, d)))));
-  const gate = examGate(); if (gate) v.append(h('button', { class: 'card listrow', onclick: () => openExamPreview(gate.code) }, sigEl('exam'), h('div', { class: 'grow' }, h('b', { lang: 'de' }, 'Prüfung ' + gate.code + ' is ready'), h('div', { class: 'faint' }, 'New lessons wait until you pass it with 90 %. Practise here first.')), h('span', { class: 'muted' }, '›')));
+  const gate = examGate(); if (gate) v.append(h('button', { class: 'card listrow', onclick: () => openExamPreview(gate.code) }, sigEl('exam'), h('div', { class: 'grow' }, h('b', {}, 'The ' + gate.code + ' exam is ready'), h('div', { class: 'faint' }, 'New lessons wait until you pass it with 90 %. Practise here first.')), h('span', { class: 'muted' }, '›')));
   const g = goalInfo(); if (!gate && g.today < g.perDay && currentLessonN()) v.append(h('button', { class: 'card listrow', onclick: () => openOnMap(currentLessonN()) }, sigEl(courseOf(currentLessonN()).icon, ''), h('div', { class: 'grow' }, h('b', {}, 'New words'), h('div', { class: 'faint' }, `${g.perDay - g.today} more today toward your goal · next station ${courseOf(currentLessonN()).station}`)), h('span', { class: 'muted' }, '›')));
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
@@ -233,13 +233,13 @@ function renderReviewSummary(v) {
   const s = REVIEW_SUMMARY; document.body.classList.add('in-lesson');
   const acc = s.n ? Math.round(100 * s.good / s.n) : 0, mins = Math.max(1, Math.round((Date.now() - s.t0) / 60000));
   const n1 = h('div', { class: 'n' }, '0'), n2 = h('div', { class: 'n' }, '0'), n3 = h('div', { class: 'n' }, '0');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'ticket' }, h('div', { class: 'top' }, h('b', {}, 'Wiederholung'), h('span', {}, todayStr())),
+  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'ticket' }, h('div', { class: 'top' }, h('b', s.stop ? { lang: 'de' } : {}, s.stop ? 'Wiederholung' : 'Daily review'), h('span', {}, fmtDate(todayStr()))),
     h('div', { class: 'body summary' }, teacherSlot(72, acc >= 80 ? 'pleased' : 'neutral'), h('h1', { lang: 'de' }, acc >= 90 ? 'Ausgezeichnet!' : acc >= 70 ? 'Gut gemacht!' : 'Weiter so!'), h('p', { class: 'muted' }, acc >= 70 ? 'These words are moving into longer intervals.' : 'Missed cards come back sooner. That is how they stick.')),
     h('div', { class: 'perf' }), h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, 'cards')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'recalled')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, 'minutes')))));
   if (s.missed.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Coming back soon'), h('div', { class: 'row' }, ...[...new Set(s.missed)].slice(0, 12).map(id => h('button', { class: 'chip yours', style: 'cursor:pointer;min-height:36px', onclick: () => openWordSheet(id.replace(/^(der|die|das) /, '')) }, id.startsWith('s:') ? id.slice(2) : id)))));
   setTimeout(() => { countUp(n1, s.n); countUp(n2, acc); countUp(n3, mins); }, 250);
-  const done = () => { if (s.stop) { route = 'learn'; toast('Wiederholung done'); } REVIEW_SUMMARY = null; NAV = 'fade'; checkStamps(); render(); };
-  actionBar({ buttons: [h('button', { class: 'btn', onclick: done }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') done(); };
+  const done = () => { if (s.stop) { route = 'learn'; toast('Review stop done'); } REVIEW_SUMMARY = null; NAV = 'fade'; checkStamps(); render(); };
+  actionBar({ buttons: [h('button', { class: 'btn', onclick: done }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') done(); };
 }
 
 /* ---------- Explain my mistake (Claude) ---------- */
@@ -348,7 +348,7 @@ function renderTalkSummary(v) {
     card.append(add); v.append(card);
   }
   const done = () => { TALK = null; NAV = 'fade'; checkStamps(); render(); };
-  actionBar({ buttons: [h('button', { class: 'btn', onclick: done }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') done(); };
+  actionBar({ buttons: [h('button', { class: 'btn', onclick: done }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') done(); };
 }
 
 /* ---------- desktop: search (Ctrl/Cmd+K) and shortcuts (?) ---------- */

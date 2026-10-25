@@ -224,9 +224,6 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 #app>.col{min-height:100%;overflow-x:clip}   /* clip, not hidden: no second scroller, and nothing (not even scrollIntoView) can move the page sideways */
 .topbar,.lesson-top{top:0}
 .conv-band{top:var(--lt-h,0px)}
-/* docked in a lesson header, the orb is a child of its slot (companion.js): it moves with the header by layout, never by script */
-.lesson-top .tslot{position:relative}
-.orb.companion.in-slot{position:absolute;left:0;top:0;transform:none!important;visibility:visible;animation:none}
 /* lesson header: a navy band over the stage */
 .lesson-top{--band:var(--night);background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* the bar at the bottom of a lesson step is the prototype's feedback sheet: dark frosted glass */
@@ -251,8 +248,8 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
 .view.fwd{animation:ng-fwd .55s var(--ease)} .view.back{animation:ng-back .55s var(--ease)}
 @keyframes ng-fwd{from{transform:translateX(64px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes ng-back{from{transform:translateX(-64px);opacity:.3}to{transform:none;opacity:1}}
-/* inside a lesson, review or exam the header (title, progress, the docked orb) is chrome that stays put between steps;
-   only the step under it slides, so the orb never has to chase its slot across the title */
+/* inside a lesson, review or exam the header (title, progress) is chrome that stays put between steps;
+   only the step under it slides */
 body.in-lesson .view.fwd,body.in-lesson .view.back{animation:none}
 body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} body.in-lesson .view.back>:not(.lesson-top){animation:ng-back .55s var(--ease)}
 .view.rise>*{animation:ng-rise .7s var(--ease) both}
@@ -284,7 +281,10 @@ body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} bo
 @keyframes ng-core{0%,100%{scale:1}50%{scale:1.22}}
 /* the orbiter: x and y run a quarter turn apart on the sine curve, inside a frame tilted -12deg */
 .orb .orbit,.orb .ox,.orb .oy{position:absolute;inset:0;display:block;pointer-events:none}
-.orb .orbit{transform:rotate(-12deg);transform-origin:50% 51.3%}
+.orb .orbit{transform:rotate(-18deg);transform-origin:50% 51.3%}   /* the logo's tilt (shared/brand: rotate(-18)) */
+/* the orbiter's ring, as in the logo: a hairline ellipse, its back half fainter */
+.orb .orbit::before{content:"";position:absolute;left:14%;width:72%;top:calc(51.3% - 11%);height:22%;border-radius:50%;box-sizing:border-box;
+  border:max(1px,calc(var(--s) * .018)) solid rgba(238,242,247,.42);-webkit-mask-image:linear-gradient(rgba(0,0,0,.4) 50%,#000 50%);mask-image:linear-gradient(rgba(0,0,0,.4) 50%,#000 50%)}
 .orb .ox{animation:ng-ox 3.5s cubic-bezier(.37,0,.63,1) infinite alternate}
 .orb .oy,.orb .moon{animation:ng-oy 3.5s cubic-bezier(.37,0,.63,1) -1.75s infinite alternate}
 .orb .moon{position:absolute;left:calc(50% - max(3%,2px));top:calc(51.3% - max(3%,2px));width:max(6%,4px);height:max(6%,4px);border-radius:50%;
@@ -293,6 +293,10 @@ body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} bo
 @keyframes ng-ox{from{transform:translateX(36%)}to{transform:translateX(-36%)}}
 @keyframes ng-oy{from{transform:translateY(-11%)}to{transform:translateY(11%)}}
 @keyframes ng-moon{from{transform:scale(.7);opacity:.45}to{transform:scale(1);opacity:1}}
+/* the glass turns slowly counterclockwise, so its highlights travel round (owner, Oct 25: "it has to spin
+   counterclockwise", the orbiter clockwise); turned about the sphere's centre, which sits a little low in orb.png */
+.orb .glass{transform-origin:50.5% 51.3%;animation:ng-spin 26s linear infinite;will-change:transform}
+@keyframes ng-spin{to{rotate:-360deg}}
 /* the shadow under it: a token, so each theme decides (Night has none) */
 .orb .shadow{left:18%;right:18%;top:auto;bottom:-9%;width:auto;height:9%;margin:0;translate:none;filter:none;
   background:radial-gradient(closest-side,var(--orbsh),transparent)}
@@ -398,7 +402,7 @@ body.lay-mobile .khead{clip-path:none;border-radius:0;margin:-16px calc(-1 * max
 .khead .kk{display:block;font-size:1rem;color:var(--muted)}
 .khead h2{font-size:clamp(1.75rem,9vw,2.5rem);line-height:1.02;margin:4px 0 2px;hyphens:manual}
 .khead small{font-size:.875rem;color:var(--muted)}
-.khead .seat{flex:none;width:72px;height:72px;margin-right:-4px}
+.khead .seat{display:none}   /* Protoa stays in its tab */
 .khead .klv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 .khead .lvl i{display:block;height:6px;border-radius:3px;background:var(--bg-2);overflow:hidden}
 .khead .lvl b{display:block;height:100%;background:var(--pale);transform-origin:left center;transition:transform .7s var(--ease)}
@@ -546,13 +550,43 @@ body.lay-mobile .today-hero,.today-hero{padding:22px 20px;gap:14px}
    rail's own inner padding pay for part of it. From ~1440px the column is back at its full 680px.
    Below 1241px there is no rail and the column ran to 40px from the window's edge, so the orb sat on the
    slabs' corners on every screen; the same gutter (76px to its 8px margin) is kept free there. */
+/* ---------- desktop: room for Protoa's tab ----------
+   From 1241px the context rail runs down the right edge: it starts below the tab. Below 1241px there is no rail
+   and the column keeps an 84px gutter on the right, so the tab never sits on a slab's corner. */
 @media (min-width:1241px){
-  body.lay-desktop:not(.in-lesson) main{padding-left:24px;padding-right:80px}
-  body.lay-desktop .rail{width:340px;padding-left:0}
+  body.lay-desktop:not(.in-lesson) main{padding-left:24px;padding-right:32px}
+  body.lay-desktop .rail{width:340px;padding-left:0;padding-top:calc(var(--ptab-top) + var(--ptab-h) + 16px)}
 }
 @media (max-width:1240px){
   body.lay-desktop:not(.in-lesson) main{padding-left:24px;padding-right:84px}
 }
+
+/* ---------- Protoa's tab (companion.js) ----------
+   A small glass tab on the right edge at the height of the top bar, the same place on every screen. The orb sits
+   in it and never moves: no script per frame, no blur. Its left edge carries the tab bar's magenta line and the
+   slabs' chamfer (bottom left), its top edge is lit. Everything that could sit under it keeps clear: the phone's
+   top bar, the lesson header's close button, the desktop rail and gutter. */
+/* the tab is navy in both themes, like the orb's badge (night-glass-lesson.css): clear glass needs a dark ground to read at this size */
+:root{--ptab-w:58px;--ptab-h:52px;--ptab-top:calc(env(safe-area-inset-top,0px) + 6px);--ptab-bg:#1f2939}
+body.lay-desktop{--ptab-top:16px}
+.ptab{position:fixed;z-index:15;right:0;top:var(--ptab-top);width:calc(var(--ptab-w) + env(safe-area-inset-right,0px));height:var(--ptab-h);
+  background:var(--ptab-bg);border-radius:var(--r) 0 0 var(--r);cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:inset 2px 0 0 var(--magenta),inset 0 1px 0 rgba(255,255,255,.14);
+  clip-path:polygon(0 0,100% 0,100% 100%,var(--cut-btn) 100%,0 calc(100% - var(--cut-btn)))}
+.ptab .orb.companion{position:absolute;left:11px;top:calc((var(--ptab-h) - var(--s)) / 2);z-index:auto;transform:none;will-change:auto;animation:none}
+/* stationary: no bob; the reactions still play */
+.ptab .orb .float{animation:none}
+.ptab .orb.nod .float{animation:orbnod .6s var(--spring)}
+.ptab .orb.tilt .float{animation:orbtilt .8s ease-in-out}
+.ptab .orb .aura{inset:-18%}
+body.lay-mobile .topbar-in{padding-right:calc(var(--ptab-w) - 8px)}
+body.lay-tablet .topbar-in{padding-right:calc(var(--ptab-w) - 24px)}
+body.lay-mobile .lesson-top>.close{margin-right:calc(var(--ptab-w) - 8px)}
+body.lay-tablet .lesson-top>.close{margin-right:calc(var(--ptab-w) - 24px)}
+/* review: the card count moves in from under the tab */
+body:not(.lay-desktop) .lesson-top.rv-top{grid-template-columns:44px minmax(0,1fr) auto}
+body.lay-mobile .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 8px)}
+body.lay-tablet .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 24px)}
 
 /* ---------- reduced motion: nothing travels, content stays ---------- */
 @media (prefers-reduced-motion:reduce){
@@ -561,7 +595,7 @@ body.lay-mobile .today-hero,.today-hero{padding:22px 20px;gap:14px}
   .view.fwd,.view.back,.view.rise>*,.view.fwd>*,.view.back>*{animation:none!important}
   .choice.bad{animation:none}
   /* the orbiter rests in front of the core, the core stays still */
-  .orb .ox,.orb .oy,.orb .moon,.orb .core,.orb.shake .sphere{animation:none!important}
+  .orb .ox,.orb .oy,.orb .moon,.orb .core,.orb .glass,.orb.shake .sphere,.ptab .orb .float{animation:none!important}
   .orb .ox{transform:translateX(-26%)} .orb .oy{transform:translateY(8%)}
   .lstop.now i::after,.stopline .spark,.kst.now .kmk::after{display:none}
   .kst.fresh::after,.kst.just-done .kmk,.kst.fresh.here .kcard{animation:none!important}
