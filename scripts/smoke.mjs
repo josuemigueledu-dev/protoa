@@ -105,9 +105,15 @@ const lessonStep = page => page.evaluate(() => {
   if (t) Object.assign(out, { type: ls.step === 'build' ? t.type : ls.conv.queue[ls.conv.pos].type, de: fill(t.de), gaps: t.gaps, at: ls.step === 'build' ? ls.bi : ls.conv.pos });
   return out;
 });
+// A conversation turn puts the cursor in its first box 50 ms after it appears (learnerTurn in ui.js).
+// Type only once it has (or once the turn has been tried, long after): a focus that lands while the second
+// gap is being filled moves the text into the first one ("Mitohne" and an empty gap), and the right answer is marked wrong.
+const cursorIn = (page, s) => s.step !== 'conv' || s.type === 'tiles' ? Promise.resolve(true)
+  : page.waitForFunction(() => document.activeElement?.closest('.turnbox') || S.progress.lessonState.conv.attempts > 0, null, { timeout: 3000 }).then(() => true, () => false);
 // tiles in order, each gap with the word in its place, or the whole line typed
 async function answerRight(page, s) {
   const toks = s.de.split(/\s+/);
+  if (!await cursorIn(page, s)) return 'the cursor never came to the line';
   if (s.type === 'tiles') {
     for (const t of toks) {
       const tile = page.locator('.tiles:not(.answer) > .tile').filter({ hasText: new RegExp(`^${reEsc(t)}$`) }).first();
@@ -122,6 +128,7 @@ async function answerRight(page, s) {
 }
 // one tile only (the line is incomplete), or a word that is in no lesson
 async function answerWrong(page, s) {
+  await cursorIn(page, s);
   if (s.type === 'tiles') { if (!await page.locator('.tiles.answer > .tile').count()) await page.locator('.tiles:not(.answer) > .tile').first().click(); }
   else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill('Quatsch'); }
   else await page.locator('.turnbox input, .turnbox textarea').first().fill('Quatsch Quatsch');

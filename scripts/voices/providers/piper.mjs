@@ -1,10 +1,11 @@
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { MODELS } from '../cast.mjs';
 
 const HF = 'https://huggingface.co/rhasspy/piper-voices/resolve/main';
-const WORKER = new URL('../piper_worker.py', import.meta.url).pathname;
+const WORKER = fileURLToPath(new URL('../piper_worker.py', import.meta.url));
 
 // A provider renders text to WAV files. To swap in a paid voice later, export the same three members:
 //   id           short name, part of every cache key

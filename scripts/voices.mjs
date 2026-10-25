@@ -11,12 +11,13 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { SPEAKERS, MODELS } from './voices/cast.mjs';
 import { loadLessons, collectLines, textHash } from './voices/lines.mjs';
 import { judge } from './voices/check.mjs';
 import { piperProvider } from './voices/providers/piper.mjs';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const outDir = process.env.VOICES_OUT || join(root, 'apps/deutsch/audio');
 const provider = piperProvider({ modelsDir: process.env.PIPER_MODELS || join(root, '.cache/voices/models') });
 
@@ -42,7 +43,7 @@ function checkJobs(jobs) {
   const todo = jobs.filter(j => !done[j.file] && existsSync(join(outDir, j.file)));
   console.log(`checking ${todo.length} lines with Whisper (${jobs.length - todo.length} already passed or missing)`);
   if (!todo.length) return [];
-  const r = spawnSync(process.env.WHISPER_PYTHON || process.env.PIPER_PYTHON || 'python3', [new URL('./voices/asr_worker.py', import.meta.url).pathname],
+  const r = spawnSync(process.env.WHISPER_PYTHON || process.env.PIPER_PYTHON || 'python3', [fileURLToPath(new URL('./voices/asr_worker.py', import.meta.url))],
     { input: JSON.stringify({ files: todo.map(j => join(outDir, j.file)) }), encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['pipe', 'pipe', 'inherit'] });
   if (r.status !== 0) throw new Error('asr worker failed (pip install faster-whisper)');
   const heard = JSON.parse(r.stdout), failed = [];
