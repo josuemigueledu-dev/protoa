@@ -12,6 +12,7 @@
     "test": "npm test --prefix server",
     "smoke": "node scripts/smoke.mjs",
     "smoke:ios": "node scripts/smoke-ios.mjs",
+    "perf": "node scripts/perf.mjs",
     "icons": "node scripts/icons.mjs"
   }
 }
