@@ -56,3 +56,22 @@ jobs:
       - run: npm run smoke:ios
         env:
           IOS_FRAMES: report
+
+  # Frame budget (npm run perf): tab changes at phone size with the CPU slowed 4×; a change may drop
+  # at most 2 frames over 33 ms. Only warns for now (PERF=report); drop that line once main is inside it.
+  perf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm run setup
+      - run: npm install --no-save playwright@1.49.1
+      - run: npx playwright install --with-deps chromium
+      - run: npm run perf
+        env:
+          PERF: report
