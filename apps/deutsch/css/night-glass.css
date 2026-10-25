@@ -252,7 +252,9 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
    follow in from the other side, each a beat after the one above it, starting while the old ones are still leaving */
 #view{position:relative} .view.fwd,.view.back{animation:none}
 .view.leaving{z-index:0}
-.view[class*=" in-"]>*{animation:.6s var(--ease) backwards}
+/* each moving slab is its own layer while it moves (ui.js drops the class after), so the phone slides a finished picture
+   instead of repainting glass, shadows and cut corners on every frame */
+.view[class*=" in-"]>*{animation:.55s cubic-bezier(.22,1,.36,1) backwards;will-change:translate,opacity}
 .view.in-left>*{animation-name:ng-in-left} .view.in-right>*{animation-name:ng-in-right}
 .view.in-up>*{animation-name:ng-in-up} .view.in-down>*{animation-name:ng-in-down}
 .view[class*=" in-"]>:nth-child(1){animation-delay:.2s} .view[class*=" in-"]>:nth-child(2){animation-delay:.26s}
@@ -400,7 +402,8 @@ body.in-lesson .view[class*=" in-"]>.lesson-top{animation:none}
 /* the head: the chapter you are in on the navy stage (full bleed on phones, a dark slab beside the sidebar), with your
    place in A1, the level bar and a seat for Protoa. The stage gradient is off on this screen, so the line below it
    always sits on the ground and its dark text never runs onto navy. */
-#app:has(.khead)::before,body:has(.khead) .aurora::after{display:none}   /* the map is a U-Bahn line itself: no drawn one behind it */
+#app::before,.aurora::after{transition:opacity .5s ease}
+#app:has(.view:not(.leaving) .khead)::before,body:has(.view:not(.leaving) .khead) .aurora::after{opacity:0}   /* fades, so a screen change never flips the ground */   /* the map is a U-Bahn line itself: no drawn one behind it */
 .khead{position:relative;background:var(--night);padding:20px 22px 22px;border-radius:var(--r);
   clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
 body:not(.lay-mobile) .khead{background:var(--glass-dark);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
