@@ -39,7 +39,7 @@ server/              one Node server for all apps: static files + /api
 
 - The browser calls `AI.run(task, vars)` (`js/ai.js`) → `POST /api/<app>/ai/<task>`. `S.ai` is set when the server reports AI is available; features check it and degrade when it is null.
 - The prompt text lives on the server, never in the page, so the endpoint is not a general Claude proxy and the key never reaches the browser. Each task in `server/src/apps/<app>/tasks.js` has a Zod `input` (with size caps), a `tier`, a `prompt(vars)` and either an `output` Zod schema (structured outputs) or `long: true` (free-form JSON, streamed; the app validates it, e.g. `validateLesson`).
-- Tiers: `quick` runs at low effort, `default` at medium, both on `claude-opus-5-5` unless `PROTOA_MODEL` / `PROTOA_MODEL_QUICK` say otherwise. Refusals fall back server-side (`fallbacks: "default"`).
+- Tiers: `quick` runs at low effort, `default` at medium, both on `claude-opus-5-5` unless `PROTOA_MODEL` / `PROTOA_MODEL_QUICK` say otherwise. Refusals fall back server-side (`fallbacks: "default"`). Each call has a deadline by tier (`DEADLINE_MS` in claude.js; the app gets a `timeout` error) and is cancelled when the learner disconnects.
 - Adding a task: add it to `tasks.js`, add a sample input to `SAMPLE` in `server/test/app.test.js` (the test checks every task has one), call it with `AI.run`.
 
 ## Adding another Protoa app
