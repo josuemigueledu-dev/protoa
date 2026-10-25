@@ -259,3 +259,43 @@ test('CAST_CHEERS: German and English for each cast member, no exclamation marks
     }
   }
 });
+
+// validateLesson (ui.js) gates every AI-generated lesson. ui.js needs the DOM, so run only that function.
+const uiSource = js('ui.js');
+const start = uiSource.indexOf('function validateLesson');
+vm.runInContext(uiSource.slice(start, uiSource.indexOf('\n}\n', start) + 3), ctx, { filename: 'ui.js (validateLesson)' });
+const validateLesson = get('validateLesson');
+// A copy of a built-in lesson, as the generator would return it (plain data, new words).
+const generated = () => {
+  const L = JSON.parse(JSON.stringify(lessons.find(x => x.n === 1)));
+  L.words = L.words.slice(0, 10);
+  return L;
+};
+
+test('validateLesson accepts a well-formed lesson', () => {
+  assert.deepEqual([...validateLesson(generated(), 99, [])], []);
+});
+
+test('validateLesson rejects non-objects and missing sections', () => {
+  assert.deepEqual([...validateLesson(null, 99, [])], ['not an object']);
+  const L = generated(); delete L.build; delete L.lex;
+  assert.deepEqual([...validateLesson(L, 99, [])], ['missing build', 'missing lex']);
+});
+
+test('validateLesson enforces the word count, known-word duplicates and a real conversation', () => {
+  const few = generated(); few.words = few.words.slice(0, 7);
+  assert.ok(validateLesson(few, 99, []).includes('need 8–14 words'));
+  const dup = generated();
+  assert.ok(validateLesson(dup, 99, [dup.words[0].de]).includes('duplicate known word ' + dup.words[0].de));
+  const short = generated(); short.conv = short.conv.slice(0, 3);
+  assert.ok(validateLesson(short, 99, []).includes('conversation too short'));
+  const mute = generated(); mute.conv = mute.conv.map(t => ({ w: t.w || t.de, g: t.g }));
+  assert.ok(validateLesson(mute, 99, []).includes('no learner turns'));
+});
+
+test('validateLesson reports a field missing from a word and coerces a string meaning to a list', () => {
+  const L = generated(); delete L.words[2].exG; L.words[3].en = 'tea';
+  const bad = validateLesson(L, 99, []);
+  assert.ok(bad.includes('word ' + L.words[2].de + ' missing exG'));
+  assert.deepEqual([...L.words[3].en], ['tea']);
+});
