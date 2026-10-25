@@ -41,6 +41,7 @@ test('index.html links the manifest and the Apple touch icon, and registers the 
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
   assert.equal(scripts.at(-1), 'js/pwa.js');
   assert.match(read('js/pwa.js'), /serviceWorker\.register\('sw\.js'\)/);
+  assert.match(read('js/pwa.js'), /postMessage\('warm'\)/, 'the page asks the worker to save the rest of the art');
 });
 
 test('the server serves the manifest and the service worker with the right types', async () => {
@@ -102,9 +103,9 @@ function loadSW({ fetchImpl, slow = false, caches = fakeCaches() }) {
   });
   vm.runInContext(read('sw.js'), ctx, { filename: 'sw.js' });
   const sw = { ctx, caches, fetched };
-  sw.fire = async (type, request) => {
+  sw.fire = async (type, request, data) => {
     let reply; const waits = [];
-    listeners[type]({ request, respondWith: p => { reply = p; }, waitUntil: p => waits.push(p) });
+    listeners[type]({ request, data, respondWith: p => { reply = p; }, waitUntil: p => waits.push(p) });
     sw.reply = reply;
     const out = await reply;
     await Promise.all(waits);
@@ -167,14 +168,49 @@ test('requests are sorted: /api, POST, other origins and ranges are left alone; 
   for (const p of ['art/night/orb.png', 'art/night/scenes/cafe.jpg', '/shared/fonts/krona-one-latin.woff2', 'audio/weber/abc.mp3']) assert.equal(how(p), 'cache', p);
 });
 
-test('install caches index.html, its files and the warm art, and survives one missing picture', async () => {
-  const sw = loadSW({ fetchImpl: url => (url.endsWith('scenes/bar.jpg') ? Promise.reject(new TypeError('offline')) : site(url)) });
+test('install caches index.html, its files and the first screens\' art, and survives one missing picture', async () => {
+  const sw = loadSW({ fetchImpl: url => (url.endsWith('ava-lena.jpg') ? Promise.reject(new TypeError('offline')) : site(url)) });
   await sw.fire('install');
   const cached = await sw.cache();
   assert.ok(cached.has(SCOPE));
-  assert.ok(cached.has(SCOPE + 'js/boot.js') && cached.has(SCOPE + 'art/night/scenes/cafe.jpg'));
-  assert.ok(!cached.has(SCOPE + 'art/night/scenes/bar.jpg'));
-  assert.equal(vm.runInContext('WARM.length', sw.ctx) + sw.ctx.shellUrls(files[SCOPE], SCOPE).length, cached.size);
+  assert.ok(cached.has(SCOPE + 'js/boot.js') && cached.has(SCOPE + 'art/night/scenes/classroom.jpg'));
+  assert.ok(!cached.has(SCOPE + 'art/night/ava-lena.jpg'));
+  assert.ok(!cached.has(SCOPE + 'art/night/scenes/cafe.jpg'), 'the rest of the art waits for the page');
+  assert.equal(vm.runInContext('FIRST.length', sw.ctx) + sw.ctx.shellUrls(files[SCOPE], SCOPE).length, cached.size);
+  const warm = [...vm.runInContext('WARM', sw.ctx)];
+  assert.deepEqual([...vm.runInContext('FIRST', sw.ctx)], warm.slice(0, vm.runInContext('FIRST.length', sw.ctx)), 'WARM starts with FIRST');
+});
+
+test('\'warm\' saves the rest of the art one file at a time, and only what is not cached yet', async () => {
+  let inFlight = 0, most = 0;
+  const sw = loadSW({ fetchImpl: async url => { most = Math.max(most, ++inFlight); await new Promise(r => setImmediate(r)); inFlight--; return site(url); } });
+  await sw.fire('install');
+  sw.fetched.length = 0; most = 0;
+  await sw.fire('message', undefined, 'warm');
+  const warm = [...vm.runInContext('WARM', sw.ctx)].map(p => new URL(p, SCOPE).href);
+  const first = vm.runInContext('FIRST.length', sw.ctx);
+  assert.deepEqual(sw.fetched, warm.slice(first), 'in WARM order, skipping what install saved');
+  assert.equal(most, 1);
+  for (const u of warm) assert.ok((await sw.cache()).has(u), u);
+  sw.fetched.length = 0;
+  await sw.fire('message', undefined, 'warm');
+  assert.deepEqual(sw.fetched, [], 'a second warm downloads nothing');
+  await sw.fire('message', undefined, 'other');
+  assert.deepEqual(sw.fetched, []);
+});
+
+test('\'warm\' pauses while the page waits on the network, and carries on after', async () => {
+  let release;
+  const sw = loadSW({ fetchImpl: url => (url.includes('scenes/market') ? new Promise(r => { release = () => r(site(url)); }) : site(url)) });
+  const page = sw.fire('fetch', req('art/night/scenes/market.jpg'));
+  const warming = sw.fire('message', undefined, 'warm');
+  for (let i = 0; i < 20; i++) await new Promise(r => setImmediate(r));
+  assert.deepEqual(sw.fetched, [SCOPE + 'art/night/scenes/market.jpg'], 'nothing else is fetched while the page waits');
+  release();
+  assert.equal((await page).status, 200);
+  await warming;
+  assert.ok(sw.fetched.length > 30);
+  assert.equal(sw.fetched.filter(u => u.endsWith('scenes/market.jpg')).length, 1, 'the picture the page loaded is not fetched again');
 });
 
 test('install fails when index.html cannot be fetched, so a broken copy is never installed', async () => {
