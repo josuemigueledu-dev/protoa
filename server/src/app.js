@@ -7,6 +7,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { getConnInfo } from '@hono/node-server/conninfo';
 import { aiAvailable, askJSON, askLongJSON, AIError } from './claude.js';
 import { rateLimiter } from './ratelimit.js';
+import { staticFiles } from './static.js';
 import { tasks as deutsch } from './apps/deutsch/tasks.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -54,12 +55,12 @@ export function createApp({ runJSON = askJSON, runLong = askLongJSON } = {}) {
       }
     });
 
-  app.use('/shared/*', serveStatic({ root: rel('.') }));
+  app.use('/shared/*', ...staticFiles(), serveStatic({ root: rel('.') }));
   for (const name of Object.keys(APPS)) {
     app.get(`/${name}`, c => c.redirect(`/${name}/`));
     // Pre-rendered voices (scripts/voices.mjs) are optional: without them the manifest is empty, not a 404.
     app.get(`/${name}/audio/manifest.json`, (c, next) => existsSync(path.join(ROOT, 'apps', name, 'audio/manifest.json')) ? next() : c.json({}));
-    app.use(`/${name}/*`, serveStatic({ root: rel('apps') }));
+    app.use(`/${name}/*`, ...staticFiles(), serveStatic({ root: rel('apps') }));
   }
   // Until there is a Protoa home page, the German course is the front door.
   app.get('/', c => c.redirect('/deutsch/'));
