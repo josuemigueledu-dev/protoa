@@ -4,8 +4,9 @@
    on top, a blue-grey city ground below, frosted grey-cream glass slabs with one
    chamfered corner pair, steel actions, magenta specks. One look in both theme settings.
    Smoothness first: only transform and opacity animate, the ground is a pre-blurred
-   picture (no live filter), and backdrop blur stays on the chrome that floats over
-   scrolling content (tab bar, sheets, bars), never on the slabs themselves.
+   picture (no live filter), and nothing carries a live backdrop blur: the bars over
+   scrolling content are near-opaque instead, and the endless motion holds still
+   while the learner scrolls or is off screen (Still in ui.js).
    ===================================================================== */
 
 /* ---------- type: self-hosted (shared/fonts), so the app works offline ---------- */
@@ -201,7 +202,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--steel);box-shadow:0 0
 .topbar::before{background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
 .brand{font-size:1.125rem;letter-spacing:-.03em;color:var(--nink)}
 body.lay-mobile .tabs{left:0;right:0;bottom:0;border-radius:0;padding:10px max(6px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
-  background:rgba(236,233,225,.78);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 2px 0 var(--magenta);clip-path:none}
+  background:rgba(236,233,225,.97);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 2px 0 var(--magenta);clip-path:none}
 body.lay-mobile .tab{font-weight:400;color:var(--muted);font-size:.6875rem}
 body.lay-mobile .tab[aria-current="page"]{color:var(--ink);font-weight:700;background:none;box-shadow:none}
 body.lay-mobile .tab[aria-current="page"] svg{background:none;box-shadow:none;padding:0;color:var(--magenta)}
@@ -228,8 +229,10 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 /* lesson header: a navy band over the stage */
 .lesson-top{--band:var(--night);background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* the bar at the bottom of a lesson step is the prototype's feedback sheet: dark frosted glass */
-.actionbar{background:rgba(18,26,39,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.actionbar.ok,.actionbar.bad{background:rgba(18,26,39,.92);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+/* The bars over the scroller carry no live blur: the page moves under them on every scroll frame, and WebKit re-blurs
+   all of it each frame. Near-opaque, they look the same. */
+.actionbar{background:rgba(18,26,39,.97);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.actionbar.ok,.actionbar.bad{background:rgba(18,26,39,.97);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .actionbar.ok .msg .ttl,.actionbar.ok .ico{color:#7ee2a8} .actionbar.bad .msg .ttl,.actionbar.bad .ico{color:#ff7ab2}
 /* after an answer the sheet's main button is light, as in the prototype; magenta or green stays in the title */
 .actionbar.ok .in .btn:not(.ghost),.actionbar.bad .in .btn:not(.ghost){background:var(--nink);color:#11151b}
@@ -239,6 +242,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .sheet{background:var(--scrim);-webkit-backdrop-filter:none;backdrop-filter:none}
 .sheet .in{background:rgba(236,233,225,.97);box-shadow:inset 0 1px 0 var(--glass-hi);border-radius:var(--r) var(--r) 0 0}
 body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
+.toast,.weiter{-webkit-backdrop-filter:none;backdrop-filter:none}
 .toast{background:var(--night);color:var(--nink);border-radius:var(--r-xs);box-shadow:inset 0 2px 0 var(--magenta),var(--shadow)}
 .confetti i{box-shadow:none}
 
