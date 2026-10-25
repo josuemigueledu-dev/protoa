@@ -12,6 +12,7 @@ const AI = (() => {
   async function connect() {
     if (bridge()) return api;
     if (location.protocol === 'file:' && !window.PROTOA_API) return null;
+    if (navigator.onLine === false) return null; // offline (the installed app): AI stays off without a failed request
     try { const r = await fetch(base() + '/health'); const j = await r.json(); return j.ai ? api : null; } catch (e) { return null; }
   }
   async function run(task, vars) {

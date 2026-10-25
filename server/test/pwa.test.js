@@ -115,7 +115,8 @@ function loadSW({ fetchImpl, slow = false, caches = fakeCaches() }) {
   return sw;
 }
 
-const files = { [SCOPE]: read('index.html') };
+// audio/manifest.json is not on disk until voices are rendered; the server answers {} (app.js)
+const files = { [SCOPE]: read('index.html'), [SCOPE + 'audio/manifest.json']: '{}' };
 const site = url => {
   if (url in files) return res(files[url]);
   const file = onDisk(url);
@@ -176,9 +177,38 @@ test('install caches index.html, its files and the first screens\' art, and surv
   assert.ok(cached.has(SCOPE + 'js/boot.js') && cached.has(SCOPE + 'art/night/scenes/classroom.jpg'));
   assert.ok(!cached.has(SCOPE + 'art/night/ava-lena.jpg'));
   assert.ok(!cached.has(SCOPE + 'art/night/scenes/cafe.jpg'), 'the rest of the art waits for the page');
-  assert.equal(vm.runInContext('FIRST.length', sw.ctx) + sw.ctx.shellUrls(files[SCOPE], SCOPE).length, cached.size);
+  assert.equal(vm.runInContext('DATA.length + FIRST.length', sw.ctx) + sw.ctx.shellUrls(files[SCOPE], SCOPE).length, cached.size);
   const warm = [...vm.runInContext('WARM', sw.ctx)];
   assert.deepEqual([...vm.runInContext('FIRST', sw.ctx)], warm.slice(0, vm.runInContext('FIRST.length', sw.ctx)), 'WARM starts with FIRST');
+});
+
+test('install caches the data the scripts fetch on start, so one online visit is enough for offline', async () => {
+  const sw = loadSW({ fetchImpl: site });
+  await sw.fire('install');
+  const core = read('js/core.js');
+  for (const p of vm.runInContext('DATA', sw.ctx)) {
+    assert.ok(core.includes(`fetch('${p}')`), p + ' is no longer fetched by core.js');
+    assert.ok((await sw.cache()).has(SCOPE + p), p);
+  }
+  // offline, the cached copy answers instead of a failed request
+  const offline = loadSW({ fetchImpl: () => Promise.reject(new TypeError('offline')), caches: sw.caches });
+  assert.equal(await (await offline.fire('fetch', req('audio/manifest.json'))).text(), '{}');
+});
+
+test('offline, AI.connect() turns AI off without asking the server; online it asks /api/health', async () => {
+  const load = onLine => {
+    const asked = [];
+    const ctx = vm.createContext({ navigator: { onLine }, location: { protocol: 'http:' }, fetch: async u => { asked.push(u); return { json: async () => ({ ai: true }) }; } });
+    ctx.window = ctx;
+    vm.runInContext(read('js/ai.js'), ctx, { filename: 'ai.js' });
+    return { ctx, asked };
+  };
+  const off = load(false);
+  assert.equal(await vm.runInContext('AI.connect()', off.ctx), null);
+  assert.deepEqual(off.asked, []);
+  const on = load(true);
+  assert.ok(await vm.runInContext('AI.connect()', on.ctx));
+  assert.deepEqual(on.asked, ['/api/health']);
 });
 
 test('\'warm\' saves the rest of the art one file at a time, and only what is not cached yet', async () => {

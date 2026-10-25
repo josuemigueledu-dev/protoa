@@ -1,5 +1,6 @@
 /* Protoa service worker for the German course: the installed app keeps working offline.
-   - Install: caches index.html, everything it loads (scripts, styles, fonts, icons) and the art of the first screens (FIRST).
+   - Install: caches index.html, everything it loads (scripts, styles, fonts, icons), the data files the scripts fetch
+     (DATA) and the art of the first screens (FIRST).
    - Then, when the page says 'warm' (pwa.js, once it is idle), the rest of the painted art in WARM, one file at a time
      and only while the page itself is not waiting on the network, so the download never slows the lesson in front of you.
    - Pages, code and data: network first, so an update shows on the next load; the cached copy is used
@@ -24,6 +25,10 @@ const WARM = [
   'art/night/scenes/bar.jpg', 'art/night/scenes/feld.jpg', 'art/night/scenes/flat.jpg', 'art/night/scenes/hermannplatz.jpg',
   'art/night/scenes/market.jpg', 'art/night/scenes/neukoelln.jpg', 'art/night/scenes/ubahn.jpg',
 ];
+// Files the scripts fetch on start (not listed in index.html). The first visit runs before the worker controls the
+// page, so without this they would only be cached on the second visit, and a learner offline after one visit would
+// lose them: audio/manifest.json says which lines have pre-rendered voices (the server answers {} while there are none).
+const DATA = ['audio/manifest.json'];
 const CODE = /\.(html|js|mjs|css|json|webmanifest)$/;
 
 // Same-origin files index.html loads: <script src>, <link href> (stylesheets, preloads, icons, manifest).
@@ -61,7 +66,7 @@ async function precache() {
   const index = await fetch(indexUrl(), { cache: 'no-cache' });
   if (!index.ok) throw new Error('index.html: ' + index.status);
   await put(cache, indexUrl(), index);
-  const urls = [...shellUrls(await index.text(), indexUrl()), ...FIRST.map(p => new URL(p, indexUrl()).href)];
+  const urls = [...shellUrls(await index.text(), indexUrl()), ...[...DATA, ...FIRST].map(p => new URL(p, indexUrl()).href)];
   // One missing picture must not stop the app installing.
   await Promise.all(urls.map(u => save(cache, u)));
 }
