@@ -84,7 +84,7 @@ Tick when the lesson is merged. One complete lesson per run.
 - [x] 10 Numbers 11–20
 - [x] 11 Joining words
 - [x] 12 Not and very
-- [ ] 13 Drinks
+- [x] 13 Drinks
 - [ ] 14 Food
 - [ ] 15 Ordering
 - [ ] 16 Paying
