@@ -3,7 +3,8 @@
 // clicked from its scene to its first word check. Left open overnight, it shows
 // the new day without disturbing a lesson in progress. Every built-in lesson can be
 // played to its end with its own model answers, and lesson 1 with misses and a reload.
-// A sheet over a lesson (search, a word card) keeps the keys to itself.
+// A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
+// straight on lets the old screen finish leaving.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -40,6 +41,9 @@ async function open(browser, label, viewport, colorScheme) {
   await page.waitForTimeout(500);
   return { page, ctx };
 }
+
+// a new screen is drawn two frames after the old one starts leaving (render() in ui.js): wait for it
+const drawn = page => page.waitForFunction(() => document.querySelector('#view > .view:not(.leaving)'));
 
 async function noSidewaysScroll(page, label) {
   // the document never scrolls (the app shell); #app is the scroller, so measure both
@@ -83,7 +87,8 @@ async function overnight(browser) {
   // a lesson open over midnight stays on its step
   await page.evaluate(() => startLesson(2, true));
   await page.locator('.actionbar .btn').last().click();
-  await page.evaluate(() => { document.querySelector('#view > *').dataset.night = '1'; });
+  await drawn(page);
+  await page.evaluate(() => { document.querySelector('#view > .view:not(.leaving)').dataset.night = '1'; });
   await sleep(true, '24:00:00'); await sleep(false); await page.clock.runFor(16000);
   if (!await page.locator('#view > [data-night]').count()) fail(`${label}: the new day redrew the lesson under the learner`);
   await ctx.close();
@@ -286,6 +291,7 @@ async function sheetsOwnKeys(browser) {
   await page.goto(BASE);
   await page.waitForSelector('#view > *');
   await page.evaluate(() => { S.settings.onboarded = true; save('settings'); document.querySelector('.sheet')?.remove(); startLesson(1, true); });
+  await drawn(page);
   const step = () => page.evaluate(() => S.progress.lessonState.step);
   const before = await step();
   await page.keyboard.press('Control+k');
@@ -299,6 +305,32 @@ async function sheetsOwnKeys(browser) {
   if (await page.locator('.sheet').count()) fail(`${label}: Esc did not close the word card`);
   await page.keyboard.press('Enter');
   if (await step() === before) fail(`${label}: with the sheets closed, Enter no longer moves the lesson on`);
+  await ctx.close();
+}
+
+// A step that passes straight on while it is drawn (past the last word to the check, past the last build
+// item to the conversation) still lets the old screen's slabs finish leaving, and the next step comes in on time.
+async function stepPassesOn(browser) {
+  const label = 'step passes on';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); startLesson(1, true); });
+  for (const [step, key, next] of [['words', 'wi', 'check'], ['build', 'bi', 'conv']]) {
+    await page.evaluate(() => setStep('scene', {}));
+    await drawn(page); await page.waitForTimeout(500);
+    const r = await page.evaluate(([step, key]) => new Promise(res => {
+      const L = lessonById(1); setStep(step, { [key]: (step === 'words' ? L.words : L.build).length });
+      // three frames on, the old screen is still sliding out and the next step is on screen
+      requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => res({ step: S.progress.lessonState.step, leaving: [...document.querySelectorAll('#view > .leaving')].map(e => e.children.length), shown: document.querySelector('#view > .view:not(.leaving)')?.className || '' }))));
+    }), [step, key]);
+    if (r.step !== next) fail(`${label}: past the last ${step} item the lesson went to "${r.step}", not "${next}"`);
+    if (!r.leaving.length || !r.leaving[0]) fail(`${label}: the old screen's slabs vanished instead of leaving (${step} to ${next})`);
+    if (!r.shown) fail(`${label}: the ${next} step was not drawn three frames after the ${step} step ended`);
+    else if (!r.shown.includes(' in-')) fail(`${label}: the ${next} step popped in instead of sliding in`);
+  }
   await ctx.close();
 }
 
@@ -333,6 +365,7 @@ try {
   await playEveryLesson(browser);
   await missAndRetry(browser);
   await sheetsOwnKeys(browser);
+  await stepPassesOn(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
