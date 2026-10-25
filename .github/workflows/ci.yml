@@ -36,3 +36,23 @@ jobs:
       - run: npm install --no-save playwright@1.49.1
       - run: npx playwright install --with-deps chromium
       - run: npm run smoke
+
+  # The app in an iframe at iPhone size in WebKit (Safari's engine): the lesson header, action
+  # bar and docked orb stay put while a lesson scrolls. Frame times are printed, and only
+  # warn for now (IOS_FRAMES=report); drop that line once the app scrolls inside 50 ms a frame.
+  smoke-ios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm run setup
+      - run: npm install --no-save playwright@1.49.1
+      - run: npx playwright install --with-deps webkit
+      - run: npm run smoke:ios
+        env:
+          IOS_FRAMES: report
