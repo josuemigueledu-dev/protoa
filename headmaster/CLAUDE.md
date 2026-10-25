@@ -81,6 +81,6 @@ Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\Users\j
 
 Arthur wants to understand what he approves, not just approve it. Every `decisions` card ends with a **What this means** paragraph: the plain-English why, the trade-off or risk, and any technical term explained in a few words. Write it for someone learning, never as jargon.
 
-## Station (Arthur's learning app)
+## Arthur's learning platform (planned)
 
-https://claude.ai/artifact/3Jr9puBdX6ZhUeyzJmt2cw (source `station/index.html`, capabilities `db` + `user`, progress in `data/users/<id>/station`). It's Arthur's own course: how the team works (git, PRs, CI, sign-offs), Bash, PowerShell and security fundamentals, each lesson tied to real moments from this project, with a simulated practice terminal and quizzes. Add lessons when something new happens that he should understand (a new tool, an incident, a new kind of sign-off).
+The first version, "Station" (`station/index.html`), was too shallow and Arthur deleted the artifact on Oct 25, 2026. He wants an in-depth, all-in-one platform instead: OSINT, network security, pen testing and red teaming, defence, and Python (plus maybe one more language) aimed at his own projects (security tools, ML, robotics, drones, AI agents). I restated that to him and am waiting for his confirmation before planning how to build it.
