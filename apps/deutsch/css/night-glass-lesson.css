@@ -129,3 +129,19 @@
 .view > .row:first-child + h1 + p,.view > .row:first-child + .hero p,.view > .row:first-child + .hero .muted{color:var(--ngrey)}
 /* the article colour edge also shows under painted word pictures (an inset shadow sits behind the picture) */
 .illus.photo.m{border-bottom:5px solid var(--der)} .illus.photo.f{border-bottom:5px solid var(--die)} .illus.photo.n{border-bottom:5px solid var(--das)}
+
+/* ---------- Profile (screens/6-profile.jpg) ---------- */
+.avatar.orbbadge{background:var(--night);border-radius:50%;padding:6px;overflow:hidden}
+:root[data-theme="light"] .avatar.orbbadge{background:#121a27}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .avatar.orbbadge{background:#121a27} }
+.avatar.orbbadge img{width:100%;height:100%;display:block}
+.goalline{display:grid;gap:8px;color:var(--nink);padding:4px 0 8px}
+.goalline .faint{color:var(--ngrey)}
+.goalline .bar{height:8px;background:rgba(127,140,160,.25)}
+.goalline .bar i{background:var(--pale)}
+.classrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mate{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;min-width:0}
+.mate .face{width:58px;height:58px;border-radius:50%;background-size:cover;background-position:center 30%;box-shadow:0 0 0 2px var(--card-solid),0 0 0 4px var(--line)}
+.mate:first-child .face{box-shadow:0 0 0 2px var(--card-solid),0 0 0 4px var(--magenta)}
+.mate b{font-size:.875rem}
+.mate .faint{font-size:.75rem;line-height:1.2}
