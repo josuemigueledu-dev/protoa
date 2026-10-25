@@ -133,7 +133,11 @@ const Companion = (() => {
     if (P.s !== s) { P.s = s; TEACHER.style.setProperty('--s', s + 'px'); }
     if (P.x < 0) { P.x = P.tx = rx; P.y = P.ty = ry; }
     /* docked in the lesson header: once it has arrived it is part of the header and moves with it exactly, no spring lag */
-    const dock = P.a && P.a.kind === 'dock'; if (!dock) P.held = false; else if (!P.held && Math.hypot(rx - P.x, ry - P.y) < 1.5) P.held = true;
+    const dock = P.a && P.a.kind === 'dock'; if (!dock) { P.held = false; P.hop = 0; } else if (!P.held && Math.hypot(rx - P.x, ry - P.y) < 1.5) P.held = true;
+    /* coming from far away (a lesson or review just opened) it would fly across the title and Protoa's line:
+       it fades out where it is and appears in the slot instead */
+    if (dock && !P.held && !P.hop && Math.hypot(rx - P.x, ry - P.y) > 60) { P.hop = now; P.fade = TEACHER.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, easing: 'ease-in', fill: 'forwards' }); }
+    if (P.hop && !P.held) { if (now - P.hop < 100) { P.raf = requestAnimationFrame(frame); return; } P.held = true; P.fade.cancel(); TEACHER.animate(calm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, scale: .82 }, { opacity: 1, scale: 1 }], { duration: calm ? 160 : 320, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
     if (P.held) { P.x = P.tx = rx; P.y = P.ty = ry; P.vx = P.vy = 0; P.trip = null; }
     /* ease the target itself, so switching what it attends to never jerks */
     const ke = 1 - Math.exp(-dt / (calm ? .05 : .16)); P.tx += (rx - P.tx) * ke; P.ty += (ry - P.ty) * ke;
