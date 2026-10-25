@@ -142,6 +142,7 @@ h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .card,.widget,.kpi,.lv,.mode,.scen,.btile,.goalmini,.today-hero,.talkhero,.ticket,.card.primary,.examcard{transform:none!important}
 .tilting::after{display:none!important}
 
+
 /* inner controls on glass: clear chips, a hairline, a short press */
 .choice,.tile,.icon-btn,.umlauts button,.btn.ghost,.btn.quiet,.seg,.rule .ex button{background:var(--chip);border-radius:var(--r);
   box-shadow:inset 0 0 0 1px var(--line),inset 0 1px 0 var(--glass-hi);transition:transform .15s var(--ease),background .25s,color .25s,box-shadow .25s,opacity .3s}
@@ -347,7 +348,7 @@ body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} bo
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;hyphens:auto}
 .lstop.now span{left:-36px;width:72px;font-size:.75rem;color:var(--ink)}
 .lstop .bust{position:absolute;left:-15px;top:10px;width:30px!important;height:30px!important;box-shadow:0 0 0 2px var(--night),0 0 0 3.5px var(--so)}
-.lstop.now .bust{left:12px;top:0;box-shadow:0 0 0 2px var(--night),0 0 0 4px var(--magenta)}
+.lstop.now .bust{left:-15px;top:0;box-shadow:0 0 0 2px var(--night),0 0 0 4px var(--magenta)}
 .lstop.now em{color:var(--magenta)}
 .lstop.now i{border-color:var(--magenta)}
 /* the current stop pings: a ring that grows and fades (transform and opacity only) */
@@ -523,6 +524,32 @@ body.lay-mobile .rv-card .umlauts button:nth-child(n+5){display:none}   /* phone
 /* four grade buttons on a phone: no room for the keyboard hints (there is no keyboard) */
 body.lay-mobile .actionbar .in .kbd{display:none}
 
+/* ---------- breathing room (owner, Oct 25: "the screens shouldn't look super compact") ----------
+   one rhythm on every screen, no tighter than the mock-ups: 24 px between slabs (20 in a lesson),
+   at least 20 px inside a slab, and body text that is not squeezed */
+.view.stack{gap:24px}
+body.in-lesson .view.stack{gap:20px}
+body:not(.lay-desktop) .widget{padding:22px;gap:14px}   /* the desktop rail is narrow: its widgets keep 20 px */
+.listrow{padding:20px 24px}
+.kpi{padding:18px}
+.mode,.scen{padding:18px}
+body.lay-mobile .today-hero,.today-hero{padding:22px 20px;gap:14px}
+.today-hero .say{margin-top:12px}
+.today-hero .say p{line-height:1.4}
+.card.stopline{padding:20px}
+.tduo{gap:14px}
+.tduo>.card{min-height:128px;padding:18px}
+.kcard{padding:18px}
+.card p,.widget p,.mode .faint,.scen .faint,.listrow .faint,.widget .faint{line-height:1.55}
+.classcard .classrow{gap:14px 10px}
+
+/* ---------- desktop with the context rail: a gutter for Protoa ----------
+   companion.js sits the orb in the gutter beside the block you read. Between 1241 and ~1440px the column
+   filled the space up to the rail, so the orb fell back to a corner of the block and covered slabs as you
+   scrolled. The gutter (76px to the rail's edge) fits the 72px orb; a tighter gap on the sidebar side and the
+   rail's own inner padding pay for part of it. From ~1440px the column is back at its full 680px.
+   Below 1241px there is no rail and the column ran to 40px from the window's edge, so the orb sat on the
+   slabs' corners on every screen; the same gutter (76px to its 8px margin) is kept free there. */
 /* ---------- desktop: room for Protoa's tab ----------
    From 1241px the context rail runs down the right edge: it starts below the tab. Below 1241px there is no rail
    and the column keeps an 84px gutter on the right, so the tab never sits on a slab's corner. */

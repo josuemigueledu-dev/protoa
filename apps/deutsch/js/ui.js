@@ -21,7 +21,7 @@ function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { c
 function go(r) { if (r !== route) { NAV = 'rise'; if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
-function newView() { view.innerHTML = ''; const v = h('div', { class: 'view stack ' + NAV, style: 'gap:16px' }); view.append(v); return v; }
+function newView() { view.innerHTML = ''; const v = h('div', { class: 'view stack ' + NAV }); view.append(v); return v; }
 let renderedDay = null; // the day the screen on show was drawn for (screens.js redraws it when a new day starts)
 function render() {
   renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
@@ -179,7 +179,7 @@ function renderToday(v) {
   if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0: Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
   v.append(h('button', { class: 'card listrow', onclick: () => go('talk') }, h('span', { class: 'sig talkico', html: ICONS.talk }), h('div', { class: 'grow' }, h('b', { lang: 'de' }, 'Sprechen'), h('div', { class: 'faint' }, 'Talk with Protoa at your level. Every line you write is corrected.')), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›')));
   v.append(progressHeader());
-  if (!document.body.classList.contains('lay-desktop')) { v.append(paceWidget()); v.append(weekWidget()); const sz = satzDesTages(); if (sz) v.append(sz); }
+  if (!document.body.classList.contains('lay-desktop')) { v.append(weekWidget()); /* the pace forecast lives on Profile: Today keeps to the day */ const sz = satzDesTages(); if (sz) v.append(sz); }
   v.append(writeYourOwn());
   setTimeout(checkStamps, 600);
 }
