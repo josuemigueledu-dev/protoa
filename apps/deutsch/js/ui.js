@@ -57,6 +57,7 @@ function render() {
   Perf.screen(lastRoute, route, NAV); lastRoute = route;
   const dir = DIRS[NAV], old = view.querySelector(':scope > .view:not(.leaving)'), tok = drawTok = {};
   if (dir && old && old.animate && !reduced()) {
+    Still.hold(1300, true);   // the decor holds still from the first frame of the move
     leave(old, dir, document.body.classList.contains('in-lesson') && lessonMode());
     requestAnimationFrame(() => requestAnimationFrame(() => { if (drawTok === tok) draw(); }));
     return;
@@ -73,6 +74,7 @@ function draw() {
   try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
+  document.body.classList.toggle('on-map', !!v.querySelector('.khead'));   // the map hides the navy stage (a class, not :has(), which makes WebKit recheck the page on every change)
   Still.hold(DIRS[NAV] ? 1000 : NAV === 'fade' ? 250 : 600, true);   // until the new screen has slid or risen in
   NAV = 'fade';
 }
