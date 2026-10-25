@@ -201,12 +201,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--steel);box-shadow:0 0
 .ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--ring);filter:none}
 .today-hero .goal .ring circle.bg{stroke:rgba(238,241,244,.14)}
 
-/* ---------- frame: navy top bar, cream glass tab bar with a magenta line ---------- */
+/* ---------- frame: navy top bar, cream glass tab bar with a magenta line ----------
+   The tab bar is solid: with no live blur, even 3% see-through let the dark text of the cream slabs scrolling under
+   it ghost through between the tab labels ("Listening", "Say it in" on Practice) */
 .topbar{background:transparent;box-shadow:none}
 .topbar::before{background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
 .brand{font-size:1.125rem;letter-spacing:-.03em;color:var(--nink)}
 body.lay-mobile .tabs{left:0;right:0;bottom:0;border-radius:0;padding:10px max(6px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
-  background:rgba(236,233,225,.97);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 2px 0 var(--magenta);clip-path:none}
+  background:rgb(236,233,225);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 2px 0 var(--magenta);clip-path:none}
 body.lay-mobile .tab{font-weight:400;color:var(--muted);font-size:.6875rem}
 body.lay-mobile .tab[aria-current="page"]{color:var(--ink);font-weight:700;background:none;box-shadow:none}
 body.lay-mobile .tab[aria-current="page"] svg{background:none;box-shadow:none;padding:0;color:var(--magenta)}

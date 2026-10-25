@@ -138,6 +138,8 @@
 :root[data-theme="light"] .avatar.orbbadge{background:#121a27}
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .avatar.orbbadge{background:#121a27} }
 .avatar.orbbadge img{width:100%;height:100%;display:block}
+/* Settings sits under the name, not beside it: at 390 px the name and the "since" line keep the whole width, on one line each */
+.prof .grow{min-width:0} .prof .grow>.btn{display:inline-flex;width:auto;margin-top:12px}
 .goalline{display:grid;gap:8px;color:var(--nink);padding:4px 0 8px}
 .goalline .faint{color:var(--ngrey)}
 .goalline .bar{height:8px;background:rgba(127,140,160,.25)}
