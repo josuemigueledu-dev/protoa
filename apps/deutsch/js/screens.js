@@ -119,7 +119,7 @@ function computeStamps() {
 function checkStamps() {
   if (!S.ready) return; const seen = new Set(S.progress.stampsSeen || []), fresh = computeStamps().filter(s => s.on && !seen.has(s.id));
   if (!fresh.length) return; S.progress.stampsSeen = [...seen, ...fresh.map(s => s.id)]; save('progress');
-  toast(fresh.length === 1 ? 'Neuer Stempel: ' + fresh[0].t : fresh.length + ' neue Stempel in your Stempelheft');
+  toast(fresh.length === 1 ? 'Neuer Stempel: ' + fresh[0].t : fresh.length + ' neue Stempel im Stempelheft');
 }
 function stampEl(s, i) { return h('div', { class: 'stp' + (s.on ? ' on r' + (i % 3 + 1) : ''), title: s.on ? s.t + ' — earned' : s.t + ' — not yet' }, h('div', { class: 'ring2' }, sigEl(s.icon)), h('b', { lang: 'de' }, s.t), h('span', {}, s.s)); }
 
