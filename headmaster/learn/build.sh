@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 REPO=../..
 ID=$(git -C $REPO log -1 --format=%h -- apps/deutsch shared)
-OUT=b/$ID
+OUT=b/4fa445f  # one reused slot: the artifact holds at most 512 files and old builds cannot be deleted from here
 rm -rf "$OUT" && mkdir -p "$OUT/css" "$OUT/js/lessons"
 cp $REPO/apps/deutsch/css/*.css "$OUT/css/"
 cp $REPO/shared/art/tokens.css "$OUT/css/tokens.css"

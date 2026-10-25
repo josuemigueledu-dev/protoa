@@ -65,7 +65,7 @@ Arthur's private page: https://claude.ai/artifact/4fzCsBJQoEbeJfgnDVuZ6N (source
 
 ## Arthur's own Protoa (learning copy)
 
-Arthur learns German with his own copy: https://claude.ai/artifact/CZwThbASVU74G5MXoQsrN4 (source `learn/`). `learn/index.html` is a loader (capabilities `db` + `user`): it reads the build Arthur chose from his private `data/users/<id>/state` doc, restores his progress from `data/users/<id>/state/ls/<localStorage key>` into localStorage, mirrors every `weg:` key back there, then loads `b/<build>/` (the app's body, CSS and scripts). Settings gets an "App version" card with **Update now**, which switches him to `builds/latest`. His progress never touches the dev app or the repo.
+Arthur learns German with his own copy: https://claude.ai/artifact/CZwThbASVU74G5MXoQsrN4 (source `learn/`). `learn/index.html` is a loader (capabilities `db`, `user`, `sample`): it opens `builds/latest`, restores his progress from `data/users/<id>/state/ls/<localStorage key>` into localStorage, mirrors every `weg:` key back there, then loads `b/<build>/` (the app's body, CSS and scripts). Settings gets an "App version" card with **Update now**, which switches him to `builds/latest`. His progress never touches the dev app or the repo.
 
 Ship a new build after a review hour that merged app changes (not for test-only or docs-only merges):
 1. `git pull --ff-only`, then `sh learn/build.sh` (prints the commit id; always writes the one reused slot `learn/b/4fa445f/`: one `app.css`, one `app.js`, three `.txt` files and `body.html`; pictures and fonts go to `learn/art/` and `learn/fonts/` at the root).
