@@ -33,8 +33,34 @@ function render() {
   try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
+  Still.hold(NAV === 'rise' ? 1100 : NAV === 'fade' ? 250 : 600, true);   // until the new screen has slid or risen in
   NAV = 'fade';
 }
+/* ---------- the endless decor holds still while nobody can enjoy it ----------
+   WebKit redraws every running animation on each frame, under the bars too, and on an iPhone that made scrolling
+   choppy (npm run smoke:ios). So the endless ones (the living ground, the sheen, the scene's slow zoom, the stop
+   line's spark, the orb's float and breathing) pause while the learner scrolls, while a new screen comes in, and
+   while they are off screen, and carry on from the same frame after. One-off motion is never touched. */
+const Still = (() => {
+  let holding = false, t = 0, seen = new WeakSet();
+  const off = new WeakSet();
+  const endless = () => !document.getAnimations ? [] : document.getAnimations().filter(a => a.effect && a.effect.target instanceof Element && a.effect.getTiming().iterations === Infinity);
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => { es.forEach(e => e.isIntersecting ? off.delete(e.target) : off.add(e.target)); if (!holding) wake(); }) : null;
+  function wake() {
+    endless().forEach(a => {
+      const el = a.effect.target;
+      if (io && !seen.has(el)) { seen.add(el); io.observe(el); }
+      if (off.has(el)) { if (a.playState === 'running') a.pause(); } else if (a.playState === 'paused') a.play();
+    });
+  }
+  function hold(ms, newScreen) {
+    if (newScreen && io) { io.disconnect(); seen = new WeakSet(); }   // let go of the old screen's elements
+    if (!holding) { holding = true; endless().forEach(a => { if (a.playState === 'running') a.pause(); }); }
+    clearTimeout(t); t = setTimeout(() => { holding = false; wake(); }, ms);
+  }
+  return { hold };
+})();
+PANE.addEventListener('scroll', () => Still.hold(200), { passive: true });
 // never leave a blank screen: show what broke and a way back
 function renderCrash(v, err) {
   console.error('Protoa render error', err);

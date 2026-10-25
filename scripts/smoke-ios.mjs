@@ -56,7 +56,7 @@ function record() {
       const a = o.getBoundingClientRect(), c = s.getBoundingClientRect();
       R.orb.push(Math.hypot(a.left + a.width / 2 - c.left - c.width / 2, a.top + a.height / 2 - c.top - c.height / 2));
     }
-    R.scrollMax = Math.max(R.scrollMax, scrollY, document.scrollingElement.scrollTop, ...[...document.querySelectorAll('main, #view, .wrap')].map(e => e.scrollTop));
+    R.scrollMax = Math.max(R.scrollMax, scrollY, document.scrollingElement.scrollTop, ...[...document.querySelectorAll('#app, main, #view, .wrap')].map(e => e.scrollTop));
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
