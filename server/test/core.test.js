@@ -282,8 +282,13 @@ test('goalInfo projects the finish date from words per day, or words per day fro
   exec(`S.settings.fixed = 'date'; S.settings.targetDate = addDays(todayStr(), 4)`);
   g = run('goalInfo()');
   assert.equal(g.perDay, 20); // 80 words in 4 days
+  exec(`S.settings.targetDate = todayStr()`);
+  assert.equal(run('goalInfo().perDay'), 80); // the target day itself is the last day: never divides by zero
+  // a date that has gone by (a learner back after weeks) is over: the per-day pace takes over, not every word today
   exec(`S.settings.targetDate = addDays(todayStr(), -3)`);
-  assert.equal(run('goalInfo().perDay'), 80); // a past date counts as one day, never divides by zero or goes negative
+  g = run('goalInfo()');
+  assert.deepEqual([g.perDay, g.passed, g.date], [10, true, run(`addDays(todayStr(), 8)`)]);
+  assert.equal(run(`(S.settings.targetDate = addDays(todayStr(), 4), goalInfo().passed)`), false);
   exec('S.settings.target = 10');
   g = run('goalInfo()');
   assert.deepEqual([g.remaining, g.perDay, g.pct], [0, 0, 100]);
