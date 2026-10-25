@@ -25,7 +25,7 @@ const Companion = (() => {
     const view = document.getElementById('view'); let b, el;
     if (docked() && (el = view.querySelector('.lesson-top .tslot')) && (b = el.getBoundingClientRect()).width) return { b, kind: 'dock', el };
     if (P.attend && (b = vis(P.attend))) return { b, kind: 'speak', el: P.attend };
-    el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && !(phone() && el.closest('.sheet .in')) && (b = vis(el))) return { b, kind: 'input', el };
+    el = document.activeElement; if (el && el.matches && el.matches('input[type=text],textarea') && !(phone() && el.closest('.sheet .in')) && (b = vis(el))) return { b, kind: 'input', el, box: el.closest('.sheet .in') };
     el = document.querySelector('.sheet:not(.closing) .in'); if (el && (b = vis(el))) return { b, kind: 'sheet', el };
     el = document.querySelector('.actionbar.ok .msg,.actionbar.bad .msg'); if (el && (b = vis(el))) return { b, kind: 'feedback', el };
     if (document.body.classList.contains('in-lesson')) {
@@ -48,19 +48,54 @@ const Companion = (() => {
     const s = size(), b = document.body.classList, bottom = b.contains('in-lesson') ? 156 : b.contains('lay-mobile') ? 118 : 48;
     return [innerWidth - s / 2 - 20, innerHeight - bottom - s / 2];
   }
+  /* Where it may sit, in order of preference: the gutter beside the block (right, else left), then a corner of the block
+     (phones have no gutter). It takes the first spot with no text, picture or control under it, else the least covered,
+     so it never sits on a number, a label or a button. Checked with each re-evaluation, not every frame. */
+  const INK = 'svg,img,canvas,input,textarea,select,button,[role=img],.illus', CARD = '.card,.mode,.scen';
+  function inked(roots, boxes) {
+    const hit = r => boxes.map(o => Math.max(0, Math.min(o[2], r.right) - Math.max(o[0], r.left)) * Math.max(0, Math.min(o[3], r.bottom) - Math.max(o[1], r.top)));
+    const area = boxes.map(() => 0), near = r => hit(r).some(v => v > 0), range = document.createRange();
+    const add = r => hit(r).forEach((v, i) => area[i] += v);
+    for (const root of roots) {
+      if (!root || !near(root.getBoundingClientRect())) continue;
+      const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, { acceptNode: n => {
+        if (n.nodeType === 3) return n.data.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+        if (n === TEACHER || n.matches('.orrery,.sheet')) return NodeFilter.FILTER_REJECT;
+        const r = n.getBoundingClientRect(); if (!near(r)) return NodeFilter.FILTER_REJECT;
+        if (n.matches(INK) && !n.matches(CARD)) { add(r); return NodeFilter.FILTER_REJECT; }   /* a control or picture counts whole; a card that is a button, only what is on it */
+        return NodeFilter.FILTER_SKIP; } });
+      for (let n = tw.nextNode(); n; n = tw.nextNode()) { range.selectNodeContents(n); for (const r of range.getClientRects()) add(r); }
+    }
+    return area;
+  }
   function place(a) {
-    const s = size(), gap = 22, b = a.b, [L, R] = limits(); let x, y;
+    const s = size(), gap = 22, b = a.b, [L, R] = limits();
     if (a.kind === 'dock') return [b.left + b.width / 2, b.top + b.height / 2];
     if (a.kind === 'feedback') return [Math.min(innerWidth - s * .7, b.right - s * .2), b.top - s * .8];
     if (a.kind === 'station') return [a.left ? b.left - gap - s / 2 : b.right + gap + s / 2, b.top + b.height / 2];
     if (a.kind === 'sheet') { if (b.right + gap + s <= innerWidth - 8) return [b.right + gap + s / 2, b.top + s * .8]; return [b.right - s * .55, b.top - s * .5]; }
-    const rg = R - b.right, lg = b.left - L;
-    if (rg >= s + gap * 2) x = b.right + gap + s / 2;                 /* a roomy gutter: sit a little off the block */
-    else if (rg >= s * .95) x = b.right + rg / 2;                     /* a tight gutter: centre in it */
-    else if (lg >= s * .95) x = b.left - Math.min(lg / 2, gap + s / 2);
-    else return a.kind === 'read' ? [b.right - s * .3, Math.min(b.bottom - s * .1, innerHeight - s)] : [b.right - s * .3, b.top - s * .38];   /* no gutter (phones): perch on a corner, mostly outside the block; while reading, its lower corner, which is usually empty */
-    y = a.kind === 'input' ? b.top + b.height / 2 : Math.min(Math.max(b.top + Math.min(b.height / 2, s * .85), 96), b.bottom - s * .5);
-    return [x, y];
+    const g = a.box ? a.box.getBoundingClientRect() : b, gl = a.box ? 8 : L, gr = a.box ? innerWidth - 8 : R;   /* a field in a sheet: the gutter is beside the sheet, not inside it */
+    const rg = gr - g.right, lg = g.left - gl, spots = [];
+    const y = a.kind === 'input' ? b.top + b.height / 2 : Math.min(Math.max(b.top + Math.min(b.height / 2, s * .85), 96), b.bottom - s * .5);
+    if (rg >= s + gap * 2) spots.push([g.right + gap + s / 2, y]);      /* a roomy gutter: sit a little off the block */
+    else if (rg >= s * .95) spots.push([g.right + rg / 2, y]);         /* a tight gutter: centre in it */
+    if (lg >= s * .95) spots.push([g.left - Math.min(lg / 2, gap + s / 2), y]);
+    const tabs = phone() && document.getElementById('tabs'), floor = tabs && tabs.offsetHeight ? Math.min(innerHeight, tabs.getBoundingClientRect().top) : innerHeight;   /* phones: the tab bar is at the bottom */
+    const rx = b.right - s * .3, lx = b.left + s * .3, top = b.top - s * .38, under = Math.min(b.bottom + s * .38, floor - s * .62), low = Math.min(b.bottom - s * .1, floor - s * .62);   /* top and under: mostly outside the block, in the gap; low: its lower corner, which is usually empty */
+    if (a.kind === 'read') spots.push([rx, low], [rx, top], [rx, under], [lx, low], [lx, top], [lx, under]);
+    else spots.push([rx, top], [rx, low], [rx, under], [lx, top], [lx, low], [lx, under]);
+    const key = [b.left, b.top, b.width, b.height, innerWidth, innerHeight, s].map(Math.round).join();
+    if (a.pk === undefined && P.pk && P.pk.el === a.el && P.pk.key === key) a.pk = P.pk.i;   /* nothing moved: keep the spot without measuring again */
+    if (a.pk === undefined) {
+      const m = s * .62, r = s * .4;   /* test the square inside the round glass, where target() will clamp it */
+      const boxes = spots.map(([px, py]) => { px = Math.min(innerWidth - m, Math.max(m, px)); py = Math.min(innerHeight - m, Math.max(m + 4, py)); return [px - r, py - r, px + r, py + r]; });
+      const area = inked(a.box ? [a.box] : [document.getElementById('app')], boxes);
+      const prev = P.pk && P.pk.el === a.el ? P.pk.i : -1;   /* stay put while the spot it has is still clear */
+      let best = prev >= 0 && prev < area.length && area[prev] === 0 ? prev : area.indexOf(0);
+      if (best < 0) best = area.indexOf(Math.min(...area));
+      a.pk = best; P.pk = { el: a.el, i: best, key };
+    }
+    return spots[a.pk];
   }
   function target(now, t) {
     const s = size(); let a = null;
