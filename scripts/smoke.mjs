@@ -3,6 +3,7 @@
 // clicked from its scene to its first word check. Left open overnight, it shows
 // the new day without disturbing a lesson in progress. Every built-in lesson can be
 // played to its end with its own model answers, and lesson 1 with misses and a reload.
+// A sheet over a lesson (search, a word card) keeps the keys to itself.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -275,6 +276,32 @@ async function missAndRetry(browser) {
   await ctx.close();
 }
 
+// A sheet opened over a lesson (Ctrl+K search, a word card) has the keyboard: Enter picks the
+// search result without moving the lesson on, and Esc closes the word card.
+async function sheetsOwnKeys(browser) {
+  const label = 'sheet over a lesson';
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 820 } });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { S.settings.onboarded = true; save('settings'); document.querySelector('.sheet')?.remove(); startLesson(1, true); });
+  const step = () => page.evaluate(() => S.progress.lessonState.step);
+  const before = await step();
+  await page.keyboard.press('Control+k');
+  await page.locator('#search-input').fill('kaffee');
+  await page.keyboard.press('Enter');
+  if (await step() !== before) fail(`${label}: Enter in the search moved the lesson from "${before}" to "${await step()}"`);
+  if (!await page.locator('.sheet.word').count()) fail(`${label}: Enter in the search did not open the word card`);
+  await page.keyboard.press('Enter');
+  if (await step() !== before) fail(`${label}: Enter with the word card open moved the lesson to "${await step()}"`);
+  await page.keyboard.press('Escape');
+  if (await page.locator('.sheet').count()) fail(`${label}: Esc did not close the word card`);
+  await page.keyboard.press('Enter');
+  if (await step() === before) fail(`${label}: with the sheets closed, Enter no longer moves the lesson on`);
+  await ctx.close();
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -305,6 +332,7 @@ try {
   await overnight(browser);
   await playEveryLesson(browser);
   await missAndRetry(browser);
+  await sheetsOwnKeys(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));

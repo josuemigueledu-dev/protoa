@@ -1,5 +1,6 @@
 /* ---------- boot ---------- */
-document.addEventListener('keydown', e => { if (e.target.matches('textarea')) return; if (e.target.matches('input') && e.key !== 'Enter') return; if (KEYS) KEYS(e); });
+// a sheet on top (search, a word card, shortcuts, a preview) has the keyboard: its keys never reach the lesson or review under it
+document.addEventListener('keydown', e => { if (document.querySelector('.sheet:not(.closing)')) { if (e.key === 'Escape') document.querySelector('.sheet.word')?.remove(); return; } if (e.target.matches('textarea')) return; if (e.target.matches('input') && e.key !== 'Enter') return; if (KEYS) KEYS(e); });
 (async function boot() {
   loadLocal(); applyTheme();
   const hash = (location.hash || '').replace('#', ''); if (NAV_ITEMS.some(t => t[0] === hash)) route = hash; lastLayout = applyLayout();
