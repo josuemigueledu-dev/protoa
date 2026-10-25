@@ -67,8 +67,8 @@ function mapHead(ch, chN) {
   const fill = l => l.words ? Math.max(0, Math.min(1, (w - l.words[0]) / (l.words[1] - l.words[0]))) : done.filter(n => n >= l.from && n <= l.to).length / (l.to - l.from + 1);
   const a1 = done.filter(n => n <= 60).length, at = MAP_LEVELS.findIndex(l => fill(l) < 1), [kap, name] = ch.de.split(' · ');
   return h('header', { class: 'khead slab-dark' },
-    h('div', { class: 'kt' }, h('h1', { lang: 'de' }, 'Kurs'), h('span', { class: 'kc', 'aria-label': a1 < 60 ? `A1: ${a1} of 60 lessons done` : w + ' words learned' }, a1 < 60 ? `A1 · ${a1} von 60` : `${w.toLocaleString()} Wörter`)),
-    h('div', { class: 'kch' }, h('div', { class: 'grow' }, h('span', { class: 'kk', lang: 'de' }, kap || 'Kapitel ' + chN), h('h2', { lang: 'de' }, name || ch.de), h('small', {}, ch.en)), h('i', { class: 'seat', 'aria-hidden': 'true' }), teacherSlot(72, 'neutral')),
+    h('div', { class: 'kt' }, h('h1', {}, 'Lessons'), h('span', { class: 'kc', 'aria-label': a1 < 60 ? `A1: ${a1} of 60 lessons done` : w + ' words learned' }, a1 < 60 ? `A1 · ${a1} of 60` : `${w.toLocaleString('en')} words`)),
+    h('div', { class: 'kch' }, h('div', { class: 'grow' }, h('span', { class: 'kk' }, 'Chapter ' + chN), h('h2', { lang: 'de' }, name || ch.de), h('small', {}, ch.en)), h('i', { class: 'seat', 'aria-hidden': 'true' }), teacherSlot(72, 'neutral')),
     h('div', { class: 'klv', role: 'list', 'aria-label': 'Levels' }, ...MAP_LEVELS.map((l, i) => h('div', { class: 'lvl' + (i === at ? ' at' : ''), role: 'listitem', 'aria-label': l.code + ': ' + Math.round(fill(l) * 100) + ' %' },
       h('i', { 'aria-hidden': 'true' }, h('b', { style: `transform:scaleX(${fill(l)})` })), h('span', { 'aria-hidden': 'true' }, l.code)))));
 }
@@ -122,23 +122,23 @@ function mapRow(it) {
   if (it.kind === 'chapter' || it.kind === 'fold') {
     const [kap, name] = it.ch.de.split(' · ');
     mk.textContent = it.num; li.classList.add('kchap');
-    li.append(mk, h('div', { class: 'ktx' }, h('b', { lang: 'de' }, name || it.ch.de), h('span', {}, (kap || '') + ' · ' + it.ch.en + (it.kind === 'fold' ? ` · lessons ${it.from}–${it.to}, coming soon` : ''))));
+    li.append(mk, h('div', { class: 'ktx' }, h('b', { lang: 'de' }, name || it.ch.de), h('span', {}, 'Chapter ' + it.num + ' · ' + it.ch.en + (it.kind === 'fold' ? ` · lessons ${it.from}–${it.to}, coming soon` : ''))));
     return li;
   }
   if (it.kind === 'lesson') {
-    title = L ? L.theme || L.title : c.station; sub = 'Lektion ' + it.n + ' · ' + (L ? L.title : c.topic);
+    title = L ? L.theme || L.title : c.station; sub = 'Lesson ' + it.n + ' · ' + (L ? L.title : c.topic);
     aria = `Lesson ${it.n}: ${L ? L.title : c.topic}, ${({ done: 'done', now: 'your stop', locked: 'not yet, opens after ' + prevName(it.n), soon: 'coming soon' })[st]}`;
     face = L && typeof bustEl === 'function' ? newcomer(L) || leadOf(L) : null;
     if (st === 'done') mk.innerHTML = CHECK_SVG; else if (st === 'locked') mk.innerHTML = LOCK_SVG;
   } else if (it.kind === 'review') {
-    title = it.test ? 'Kapiteltest' : 'Wiederholung'; sub = (it.test ? 'nach Lektion ' + it.to + ' · ' : '') + 'review of lessons ' + it.from + '–' + it.to;
+    title = it.test ? 'Kapiteltest' : 'Wiederholung'; sub = (it.test ? 'after lesson ' + it.to + ' · ' : '') + 'review of lessons ' + it.from + '–' + it.to;
     aria = (it.test ? `Chapter ${it.test} test, ` : 'Review stop, ') + `lessons ${it.from} to ${it.to}, ` + ({ done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon' })[st];
     if (it.test) mk.textContent = 'K' + it.test; else if (st === 'done') mk.innerHTML = CHECK_SVG; else mk.innerHTML = ICONS.practice || '';
   } else if (it.kind === 'exam') {
-    title = 'Prüfung ' + it.code; sub = st === 'done' ? 'bestanden · passed' : st === 'now' ? 'Pass with 90 % to open the next lessons' : 'after this lesson';
+    title = it.code + ' exam'; sub = st === 'done' ? 'passed' : st === 'now' ? 'Pass with 90% to open the next lessons' : 'after this lesson';
     aria = 'Level exam ' + it.code + ', ' + ({ done: 'passed', now: 'ready', open: 'after this lesson' })[st]; mk.textContent = it.code;
   } else if (it.kind === 'start') {
-    title = 'Laute'; sub = 'Lektion 0 · Sounds'; aria = 'Lesson 0, Sounds' + (st === 'done' ? ', done' : '');
+    title = 'Laute'; sub = 'Lesson 0 · Sounds'; aria = 'Lesson 0, Sounds' + (st === 'done' ? ', done' : '');
     mk.innerHTML = st === 'done' ? CHECK_SVG : ICONS.play || '';
   } else { title = 'Endstation B1'; sub = 'Spoken B1'; aria = 'Terminus: spoken B1'; }
   // your stop: a magenta ring beside a card with the scene, the place and the start button
@@ -152,12 +152,12 @@ function mapRow(it) {
     const fresh = L.words.filter(w => !isLearned(w.de)).length;
     const ph = h('button', { class: 'kpic' + (pic ? '' : ' none'), 'aria-label': `About lesson ${it.n}`, onclick: () => openLessonPreview(it.n) }); if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
     li.append(h('div', { class: 'card primary kcard', 'aria-label': aria }, ph,
-      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lektion ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)} min`),
+      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)} min`),
         h('button', { class: 'btn go', onclick: () => startLesson(it.n) }, resume ? 'Continue' : 'Start'))));
     return li;
   }
   const tx = h('div', { class: 'ktx' }, h('b', { lang: 'de' }, title), h('span', {}, sub));
-  if (st === 'soon' && it.kind !== 'term') tx.append(h('em', { class: 'soon' }, 'Bald'));
+  if (st === 'soon' && it.kind !== 'term') tx.append(h('em', { class: 'soon' }, 'Soon'));
   const body = st !== 'soon' && it.kind !== 'term' ? h('button', { class: 'kbody', 'aria-label': aria, onclick: () => openStation(it) }) : h('div', { class: 'kbody', 'aria-label': aria, role: 'group' });
   body.append(mk, tx);
   if (face) { const b = bustEl(face, 'neutral', 40); b.removeAttribute('role'); b.removeAttribute('aria-label'); b.setAttribute('aria-hidden', 'true'); body.append(b); }
@@ -189,7 +189,7 @@ function estMinutes(L, newCount) { const turns = L.conv.filter(t => t.l).length;
 function openStation(it) {
   if (it.kind === 'lesson') return openLessonPreview(it.n);
   if (it.kind === 'review') return openReviewPreview(it);
-  if (it.kind === 'exam') return it.state === 'done' ? toast('Prüfung ' + it.code + ' bestanden') : openExamPreview(it.code);
+  if (it.kind === 'exam') return it.state === 'done' ? toast(it.code + ' exam passed') : openExamPreview(it.code);
   if (it.kind === 'start') return openSheet((inner, close) => inner.append(h('div', { class: 'preview' },
     h('div', { class: 'bigicon' }, sigEl('sound')), h('div', { class: 'eyebrow' }, 'Lesson 0 · Start'), h('h1', { lang: 'de' }, 'Laute'), h('p', { class: 'muted' }, 'How German spelling maps to sound: 18 pairings, each with words to tap and hear.'),
     h('button', { class: 'btn', onclick: () => { close(); openMore(renderSounds); } }, S.progress.sounds ? 'Open again' : 'Start'))));
@@ -249,7 +249,7 @@ function lessonScene(v, L, ls) {
     v.append(h('div', { class: 'coach' }, typeof bustEl === 'function' ? bustEl(who, first.mood, 44) : '', h('div', { class: 'say' }, h('div', { class: 'row' }, line, h('button', { class: 'icon-btn sm', 'aria-label': 'Play the line', html: ICONS.play, onclick: () => speak(fill(first.w), { el: line }) })))));
   }
   const next = () => setStep('notice', {}, 'fwd');
-  actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') next(); };
+  actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') next(); };
 }
 function lessonNotice(v, L, ls) {
   v.append(lessonTop(L, ls));
@@ -270,7 +270,7 @@ function lessonWords(v, L, ls) {
   if (!w) {
     if (!ids.length) {
       v.append(lessonTop(L, ls, 1), h('div', { class: 'card stack center' }, h('h1', {}, 'You know them all'), h('p', { class: 'muted' }, 'Every word in this lesson is already yours. They still come up in Build it and the conversation.')), yoursRow());
-      const next = () => setStep('check', { checkQ: null }, 'fwd'); actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => setStep('notice', {}, 'back') }, 'Back'), h('button', { class: 'btn', onclick: next }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') next(); }; return;
+      const next = () => setStep('check', { checkQ: null }, 'fwd'); actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => setStep('notice', {}, 'back') }, 'Back'), h('button', { class: 'btn', onclick: next }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') next(); }; return;
     }
     setStep('check', { checkQ: null }, 'fwd'); return;
   }
@@ -298,7 +298,7 @@ function lessonDone(v, L, ls) {
     h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, 'words added')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'first try')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, 'lines to review')))));
   setTimeout(() => { countUp(n1, s.added ?? L.words.length); countUp(n2, acc); countUp(n3, s.missed); }, 350);
   const weiter = () => { S.progress.lessonState = null; save('progress'); lastSegs = null; NAV = 'fade'; go('learn'); };
-  actionBar({ buttons: [h('button', { class: 'btn', onclick: weiter }, 'Weiter')] }); KEYS = e => { if (e.key === 'Enter') weiter(); };
+  actionBar({ buttons: [h('button', { class: 'btn', onclick: weiter }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') weiter(); };
 }
 
 /* ---------- re-layout the map on resize ---------- */

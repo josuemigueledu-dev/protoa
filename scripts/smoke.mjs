@@ -165,7 +165,7 @@ async function playEveryLesson(browser) {
     const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount() }), n);
     if (!after.done) fail(`${label}: finished but not counted as done`);
     if (after.learned <= learned) fail(`${label}: finished with no new words in the word bank`);
-    await btn(page, 'Weiter').click();
+    await btn(page, 'Continue').click();
   }
   console.log(`played lessons ${ns.join(', ')}`);
   await ctx.close();
