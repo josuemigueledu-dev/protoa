@@ -283,7 +283,7 @@ function startLesson(n, fresh) {
 function pauseLesson() { stopAudio(); const ls = S.progress.lessonState; if (ls) { ls.paused = true; save('progress'); } go('learn'); toast('Saved. Pick it up again from the map.'); }
 function setStep(step, extra = {}, dir = 'fwd') { Object.assign(S.progress.lessonState, { step }, extra); save('progress'); NAV = dir; render(); }
 function sceneEl(L) {
-  const plate = L.scene.plate || 'plate.' + L.scene.id, art = typeof ART !== 'undefined' && ART[plate];
+  const plate = L.scene.plate || 'plate.' + L.scene.id, art = typeof ART !== 'undefined' && (ART[plate] || NIGHT_SCENE[plate]);
   const d = h('div', { class: art ? 'scene art' : 'scene' }); d.innerHTML = art ? sceneArt({ plate, cast: L.scene.cast || [], event: L.scene.event }) : SCENES[L.scene.id] || SCENES.classroom; d.append(h('span', { class: 'cap' }, L.scene.cap)); return d; }
 function renderLessonFlow(v) {
   const ls = S.progress.lessonState, L = lessonById(ls.n);
@@ -390,7 +390,7 @@ function lessonConv(v, L, ls) {
   if (!ls.conv) { ls.conv = buildConvPlan(L); save('progress'); }
   const C = ls.conv; const lex = mergedLex(L.lex);
   v.append(lessonTop(L, ls, C.queue.length ? C.pos / C.queue.length : 0));
-  const conv = h('div', { class: 'conv' }); const plate = L.scene.plate, cast = L.scene.cast || [], banded = !!(plate && typeof ART !== 'undefined' && ART[plate]);
+  const conv = h('div', { class: 'conv' }); const plate = L.scene.plate, cast = L.scene.cast || [], banded = !!(plate && typeof ART !== 'undefined' && (ART[plate] || NIGHT_SCENE[plate]));
   let band; const moods = {}, twist = L.twist; let popped = false;
   const speaker = m => m.sp || 'cast.weber';
   const drawBand = () => { band.innerHTML = sceneArt({ plate, cast: cast.map(c => ({ ...c, mood: moods[c.id] })), event: popped && twist && twist.event, band: true }); };
