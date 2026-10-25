@@ -44,7 +44,9 @@ function render() {
 const Still = (() => {
   let holding = false, t = 0, seen = new WeakSet();
   const off = new WeakSet();
-  const endless = () => !document.getAnimations ? [] : document.getAnimations().filter(a => a.effect && a.effect.target instanceof Element && a.effect.getTiming().iterations === Infinity);
+  // Protoa in its tab never holds still (owner, Oct 25: "when scrolling the protoa animation stops, please fix that"):
+  // it sits on the fixed tab, not on the scrolling content, so its spin costs little
+  const endless = () => !document.getAnimations ? [] : document.getAnimations().filter(a => a.effect && a.effect.target instanceof Element && a.effect.getTiming().iterations === Infinity && !a.effect.target.closest('.ptab'));
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => { es.forEach(e => e.isIntersecting ? off.delete(e.target) : off.add(e.target)); if (!holding) wake(); }) : null;
   function wake() {
     endless().forEach(a => {
