@@ -502,6 +502,16 @@ body.lay-mobile .rv-card .umlauts button:nth-child(n+5){display:none}   /* phone
 /* four grade buttons on a phone: no room for the keyboard hints (there is no keyboard) */
 body.lay-mobile .actionbar .in .kbd{display:none}
 
+/* ---------- desktop with the context rail: a gutter for Protoa ----------
+   companion.js sits the orb in the gutter beside the block you read. Between 1241 and ~1440px the column
+   filled the space up to the rail, so the orb fell back to a corner of the block and covered slabs as you
+   scrolled. The gutter (76px to the rail's edge) fits the 72px orb; a tighter gap on the sidebar side and the
+   rail's own inner padding pay for part of it. From ~1440px the column is back at its full 680px. */
+@media (min-width:1241px){
+  body.lay-desktop:not(.in-lesson) main{padding-left:24px;padding-right:80px}
+  body.lay-desktop .rail{width:340px;padding-left:0}
+}
+
 /* ---------- reduced motion: nothing travels, content stays ---------- */
 @media (prefers-reduced-motion:reduce){
   .aurora i,.aurora::after,.card.primary::after,.today-hero::before,.ticket::after{animation:none!important}
