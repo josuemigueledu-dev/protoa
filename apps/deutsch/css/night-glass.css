@@ -232,6 +232,10 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
 .view.fwd{animation:ng-fwd .55s var(--ease)} .view.back{animation:ng-back .55s var(--ease)}
 @keyframes ng-fwd{from{transform:translateX(64px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes ng-back{from{transform:translateX(-64px);opacity:.3}to{transform:none;opacity:1}}
+/* inside a lesson, review or exam the header (title, progress, the docked orb) is chrome that stays put between steps;
+   only the step under it slides, so the orb never has to chase its slot across the title */
+body.in-lesson .view.fwd,body.in-lesson .view.back{animation:none}
+body.in-lesson .view.fwd>:not(.lesson-top){animation:ng-fwd .55s var(--ease)} body.in-lesson .view.back>:not(.lesson-top){animation:ng-back .55s var(--ease)}
 .view.rise>*{animation:ng-rise .7s var(--ease) both}
 .view.rise>:nth-child(2){animation-delay:.1s} .view.rise>:nth-child(3){animation-delay:.2s} .view.rise>:nth-child(4){animation-delay:.3s} .view.rise>:nth-child(n+5){animation-delay:.38s}
 @keyframes ng-rise{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
@@ -362,7 +366,7 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
 @media (prefers-reduced-motion:reduce){
   .aurora i,.aurora::after,.card.primary::after,.today-hero::before,.ticket::after{animation:none!important}
   .card.primary::after,.today-hero::before,.ticket::after{display:none}
-  .view.fwd,.view.back,.view.rise>*{animation:none!important}
+  .view.fwd,.view.back,.view.rise>*,.view.fwd>*,.view.back>*{animation:none!important}
   .choice.bad{animation:none}
   /* the orbiter rests in front of the core, the core stays still */
   .orb .ox,.orb .oy,.orb .moon,.orb .core,.orb.shake .sphere{animation:none!important}
