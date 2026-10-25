@@ -222,3 +222,9 @@
 @media (prefers-reduced-motion:reduce){
   :is(button:is(.card,.mode,.scen,.btile,.lv,.gfeat),.btn){transition:filter .2s,background .25s,color .25s}
 }
+
+/* ---------- Sprechen: the correction under your line ----------
+   It sat as a see-through tint on the moving ground (green on green, 1–2:1 in both themes).
+   Now a solid paper slip with a mark on its edge: green for right, steel for a correction. */
+.chatlog .corr{background:var(--card-solid);color:var(--ink);box-shadow:inset 3px 0 0 var(--steel),0 8px 18px -12px var(--slab-sh-2);border-radius:var(--r-sm);padding:10px 14px 10px 17px}
+.chatlog .corr.ok{color:var(--green-deep);font-weight:700;box-shadow:inset 3px 0 0 var(--green),0 8px 18px -12px var(--slab-sh-2)}
