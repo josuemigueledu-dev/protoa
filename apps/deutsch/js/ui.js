@@ -350,9 +350,9 @@ function tilesWidget(tokens, extra, onChange) {
   return { el: h('div', { class: 'stack' }, ans, pool), value, reset: () => { [...ans.children].forEach(b => pool.append(b)); }, disable: () => [...pool.children, ...ans.children].forEach(b => b.disabled = true) };
 }
 function gapWidget(de, gaps) {
-  const toks = fill(de).split(/\s+/); const line = h('div', { class: 'gapline', lang: 'de' }); const inputs = [];
-  toks.forEach((t, i) => { if (gaps.includes(i)) { const core = stripPunct(t), punct = t.slice(core.length); const inp = deInput({ 'aria-label': 'gap ' + (inputs.length + 1) }); inp.style.width = Math.max(5, core.length + 1) + 'ch'; inputs.push(inp); line.append(inp, punct ? h('span', {}, punct) : ''); } else line.append(h('span', {}, t)); });
-  const value = () => toks.map((t, i) => { if (!gaps.includes(i)) return t; const core = stripPunct(t); return inputs[gaps.indexOf(i)].value.trim() + t.slice(core.length); }).join(' ');
+  const toks = fill(de).split(/\s+/); const line = h('div', { class: 'gapline', lang: 'de' }); const inputs = [], at = new Map(); // at: token index -> its input, so gaps may come in any order
+  toks.forEach((t, i) => { if (gaps.includes(i)) { const core = stripPunct(t), punct = t.slice(core.length); const inp = deInput({ 'aria-label': 'gap ' + (inputs.length + 1) }); inp.style.width = Math.max(5, core.length + 1) + 'ch'; inputs.push(inp); at.set(i, inp); line.append(inp, punct ? h('span', {}, punct) : ''); } else line.append(h('span', {}, t)); });
+  const value = () => toks.map((t, i) => { if (!at.has(i)) return t; const core = stripPunct(t); return at.get(i).value.trim() + t.slice(core.length); }).join(' ');
   return { el: h('div', { class: 'stack' }, line, umlautRow(inputs[0])), value, inputs, focus: () => inputs[0].focus(), disable: () => inputs.forEach(i => i.disabled = true) };
 }
 function typeWidget(attrs = {}, onDictated) { const inp = deInput(Object.assign({ placeholder: 'Auf Deutsch …', 'aria-label': 'Your line in German' }, attrs)); return { el: h('div', { class: 'stack' }, inp, h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, onDictated))), value: () => inp.value, focus: () => inp.focus(), inputs: [inp], disable: () => inp.disabled = true }; }
