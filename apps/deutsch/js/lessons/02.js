@@ -41,7 +41,7 @@ LESSONS.push({
     { w: 'Freut mich, {name}. Woher kommen Sie?', g: 'Freut mich,=nice to meet you | {name}.={name} | Woher=where from | kommen=come | Sie?=you (formal)', mood: 'neutral' },
     { l: true, de: 'Ich komme aus {city}.', en: 'I come from {city}.', g: 'Ich=I | komme=come | aus=from | {city}.={city}', type: 'tiles', gaps: [1], extra: ['kommen'], alts: ['Aus {city}.', 'Ich bin aus {city}.'], react: 'Aha, aus {city}.=ah, from {city}' },
     { w: 'Aus {city}, schön! Ich komme aus Berlin. Sind Sie Student?', g: 'Aus=from | {city},={city} | schön!=nice | Ich=I | komme=come | aus=from | Berlin.=Berlin | Sind=are | Sie=you (formal) | Student?=(a) student', mood: 'amused' },
-    { l: true, de: 'Ja, ich bin Student.', en: 'Yes, I am a student.', g: 'Ja,=yes | ich=I | bin=am | Student.=(a) student', type: 'tiles', gaps: [0,2,3], extra: ['sind'], alts: ['Ja, ich bin ein Student.', 'Ja. Ich bin Student.'], react: 'Gut zu wissen.=good to know' },
+    { l: true, de: 'Ja, ich bin Student.', en: 'Yes, I am a student.', g: 'Ja,=yes | ich=I | bin=am | Student.=(a) student', type: 'tiles', gaps: [0,2,3], extra: ['sind'], alts: ['Ja, ich bin ein Student.', 'Ja. Ich bin Student.', 'Ja, ich bin Studentin.'], react: 'Gut zu wissen.=good to know' },
     { w: 'Und ich? Bin ich auch Student?', g: 'Und=and | ich?=I | Bin=am | ich=I | auch=too | Student?=(a) student', mood: 'amused' },
     { l: true, de: 'Nein, Sie sind Lehrer.', en: 'No, you are a teacher.', g: 'Nein,=no | Sie=you (formal) | sind=are | Lehrer.=teacher', type: 'tiles', gaps: [0,2], extra: ['bin', 'Student'], alts: ['Nein. Sie sind Lehrer.', 'Nein, Sie sind der Lehrer.', 'Nein, Sie sind Lehrer, Herr Weber.'], react: 'Stimmt.=that is right' },
     { w: 'Gut, dann bis Dienstag, {name}!', g: 'Gut,=good | dann=then | bis Dienstag,=until Tuesday | {name}!={name}', mood: 'pleased' },
@@ -82,6 +82,6 @@ GRAMMAR.push({ id: 'v2', title: 'The verb comes second', lesson: 2,
     drills: [
       { q: 'Put in order: aus / ich / Berlin / komme', a: ['ich komme aus berlin'], en: 'I come from Berlin.' },
       { q: 'Put in order: Sie / Student / sind / ?', a: ['sind sie student'], en: 'Are you a student?' },
-      { q: 'Put in order: heute / ich / bin / gut', a: ['heute bin ich gut', 'ich bin heute gut'], en: 'Today I am well.' },
+      { q: 'Put in order: heute / ich / bin / in Berlin', a: ['heute bin ich in berlin', 'ich bin heute in berlin'], en: 'Today I am in Berlin.' },
       { q: 'Put in order: heißen / wie / Sie / ?', a: ['wie heißen sie'], en: 'What is your name?' },
       { q: 'Put in order: der / ist / Lehrer / Herr Weber', a: ['herr weber ist der lehrer'], en: 'Mr Weber is the teacher.' } ] });
