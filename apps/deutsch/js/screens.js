@@ -72,7 +72,7 @@ function forecastWidget() {
     h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, '+6 days')));
 }
 function nextStationWidget() {
-  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString() + ' words. Pass the exam with 90 % to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
+  const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString() + ' words. Pass the exam with 90% to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
   const n = currentLessonN(); if (!n) return null; const c = courseOf(n), L = lessonById(n);
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Next station')), h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('b', { lang: 'de', style: 'font-family:var(--display)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + n + ' · ' + L.title))), h('button', { class: 'btn sm', onclick: () => openOnMap(n) }, 'Go to station'));
 }
@@ -114,7 +114,7 @@ function computeStamps() {
   const st = [{ id: 'laute', t: 'Laute', s: 'Lesson 0', icon: 'sound', on: !!S.progress.sounds }];
   COURSE.forEach(c => st.push({ id: 'st' + c.n, t: c.station, s: 'Lesson ' + c.n, icon: c.icon, on: done.has(c.n) }));
   [50, 100, 250, 500, 1000, 1500, 2400].forEach(n => st.push({ id: 'w' + n, t: n + ' Wörter', s: n === 2400 ? 'B1 vocabulary' : 'words yours', icon: n >= 1000 ? 'bulb' : 'puzzle', on: words >= n }));
-  LEVELS.forEach(l => st.push({ id: 'lv' + l.code, t: l.code + ' bestanden', s: 'level exam ≥ 90 %', icon: 'exam', on: levelsPassed().includes(l.code) }));
+  LEVELS.forEach(l => st.push({ id: 'lv' + l.code, t: l.code + ' bestanden', s: 'level exam ≥ 90%', icon: 'exam', on: levelsPassed().includes(l.code) }));
   st.push({ id: 'talk1', t: 'Erstes Gespräch', s: 'Sprechen', icon: 'question', on: talks >= 1 }, { id: 'talk10', t: '10 Gespräche', s: 'Sprechen', icon: 'people', on: talks >= 10 });
   st.push({ id: 'd7', t: '7 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 7 }, { id: 'd30', t: '30 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 30 });
   st.push({ id: 'r100', t: '100 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 100 }, { id: 'r1000', t: '1000 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 1000 });
@@ -160,7 +160,7 @@ function heatmap(weeks = 16) {
 }
 
 /* ---------- Profile ---------- */
-function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90 %.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', {}, e.code + ' exam · ' + fmtDate(e.date)), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + '%' + (e.passed ? ' · bestanden' : ''))))); }
+function examHistory() { const ex = (S.progress.exams || []).slice().reverse(); if (!ex.length) return h('p', { class: 'faint' }, 'Each level ends with an exam modelled on the Goethe-Zertifikat. You pass at 90%.'); return h('div', { class: 'stack', style: 'gap:4px' }, ...ex.slice(0, 6).map(e => h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', {}, e.code + ' exam · ' + fmtDate(e.date)), h('span', { class: 'chip' + (e.passed ? ' ok' : '') }, e.score + '%' + (e.passed ? ' · bestanden' : ''))))); }
 function renderProfile(v) {
   checkStamps();
   const p = S.profile, days = S.progress.days || {}, keys = Object.keys(days).sort(), since = keys[0] || todayStr();
@@ -191,7 +191,7 @@ function renderProfile(v) {
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
   const sorted = [...stamps.filter(s => s.on), ...stamps.filter(s => !s.on)];
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', { lang: 'de' }, 'Stempelheft'), h('span', { class: 'faint' }, got + ' of ' + stamps.length + ' stamps')), h('div', { class: 'stamps', id: 'stamp-grid' }, ...sorted.slice(0, got + 10).map(stampEl)), stamps.length > got + 10 ? h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: e => { const g = document.getElementById('stamp-grid'); g.innerHTML = ''; sorted.forEach((s, i) => g.append(stampEl(s, i))); e.currentTarget.remove(); } }, 'Show all ' + stamps.length + ' stamps') : ''));
-  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Sounds (Lesson 0)', 'German spelling to sound', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, layout, audio, theme, import & export', () => openMore(renderSettings)]];
+  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Sounds (Lesson 0)', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, audio, theme, layout, import & export', () => openMore(renderSettings)]];
   links.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: fn }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›'))));
 }
 
@@ -220,7 +220,7 @@ function renderPracticeHub(v) {
     ['frame', 'Grammar', 'Reference units with drills', 1, () => go('grammar')],
   ];
   v.append(h('div', { class: 'modes' }, ...modes.map(([icon, t, d, n, fn]) => h('button', { class: 'mode', disabled: !n, onclick: fn }, sigEl(icon), h('b', {}, t), h('span', {}, d)))));
-  const gate = examGate(); if (gate) v.append(h('button', { class: 'card listrow', onclick: () => openExamPreview(gate.code) }, sigEl('exam'), h('div', { class: 'grow' }, h('b', {}, 'The ' + gate.code + ' exam is ready'), h('div', { class: 'faint' }, 'New lessons wait until you pass it with 90 %. Practise here first.')), h('span', { class: 'muted' }, '›')));
+  const gate = examGate(); if (gate) v.append(h('button', { class: 'card listrow', onclick: () => openExamPreview(gate.code) }, sigEl('exam'), h('div', { class: 'grow' }, h('b', {}, 'The ' + gate.code + ' exam is ready'), h('div', { class: 'faint' }, 'New lessons wait until you pass it with 90%. Practise here first.')), h('span', { class: 'muted' }, '›')));
   const g = goalInfo(); if (!gate && g.today < g.perDay && currentLessonN()) v.append(h('button', { class: 'card listrow', onclick: () => openOnMap(currentLessonN()) }, sigEl(courseOf(currentLessonN()).icon, ''), h('div', { class: 'grow' }, h('b', {}, 'New words'), h('div', { class: 'faint' }, `${g.perDay - g.today} more today toward your goal · next station ${courseOf(currentLessonN()).station}`)), h('span', { class: 'muted' }, '›')));
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
@@ -267,7 +267,7 @@ function renderTalk(v) {
   if (TALK && TALK.active) { renderTalkChat(v); return; }
   if (TALK && TALK.summary) { renderTalkSummary(v); return; }
   v.append(h('div', { class: 'talkhero' }, teacherSlot(72, 'pleased'), h('div', { class: 'grow' }, h('h1', { lang: 'de' }, 'Sprechen'), h('p', {}, 'A real conversation with Protoa at your level. Every line you write is corrected, and the replies keep to the words you know.'))));
-  if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen needs Claude'), h('p', { class: 'faint' }, 'Protoa\'s replies and corrections are written by Claude, through the Protoa server. It is not reachable right now, so this section stays closed.')));
+  if (!S.ai) v.append(h('div', { class: 'card soft stack' }, h('b', {}, 'Sprechen is closed for now'), h('p', { class: 'faint' }, 'Protoa’s replies and corrections are written by Claude, through the Protoa server, which is not reachable right now. Lessons and Practice work as usual.')));
   // Night Glass: each scenario shows the painted place it happens in
   v.append(h('div', { class: 'scens' }, ...SCENARIOS.map(sc => h('button', { class: 'scen' + (TALK_SCENE[sc.id] ? ' pic' : ''), disabled: !S.ai, onclick: () => startTalk(sc) }, TALK_SCENE[sc.id] ? h('span', { class: 'scpic', 'aria-hidden': 'true', style: `background-image:url(art/night/scenes/${TALK_SCENE[sc.id]}.jpg)` }) : sigEl(sc.icon), h('div', { class: 'grow' }, h('b', { lang: 'de' }, sc.title), h('span', {}, sc.en + ' · words from ' + courseOf(sc.n).station))))));
   const hist = (S.progress.talks || []).slice(-5).reverse();
@@ -340,7 +340,7 @@ function endTalk() {
 }
 function renderTalkSummary(v) {
   const T = TALK; document.body.classList.add('in-lesson');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke für das Gespräch!'), h('p', { class: 'muted' }, `${T.turns} lines in German about "${T.sc.en.toLowerCase()}". ${T.fixes.length ? T.fixes.length + ' of them got a correction.' : 'No corrections needed.'}`)));
+  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke für das Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. ${T.turns} lines in German about "${T.sc.en.toLowerCase()}". ${T.fixes.length ? T.fixes.length + ' of them got a correction.' : 'No corrections needed.'}`)));
   if (T.fixes.length) {
     const card = h('div', { class: 'card stack' }, h('h2', {}, 'Your corrected lines'));
     T.fixes.forEach(f => card.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'faint', lang: 'de', style: 'text-decoration:line-through' }, f.said), h('div', { class: 'row' }, glossEl(f.de, null), playBtn(f.de)), f.note ? h('div', { class: 'faint' }, f.note) : '')));
