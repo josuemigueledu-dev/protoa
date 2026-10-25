@@ -35,11 +35,15 @@ function stampSvg(station, icon) {
 }
 /* the word picture on its article plate, or the word tile when there is no picture: never initials */
 const GLYPH = { phrase: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', verb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' };
-const wordPic = w => w.pic && (ART['word.' + w.pic] || ART[w.pic]) || '';
+/* Night Glass word pictures (art/night/words/), matched by the noun itself so a lesson needs no pic id */
+const NIGHT_WORD = { kaffee: 'kaffee', tee: 'tee', kuchen: 'kuchen', gitarre: 'gitarre', 'fußball': 'fussball', 'café': 'cafe', handy: 'handy', lehrer: 'lehrer', student: 'student', stadt: 'stadt', frau: 'frau', mann: 'mann', freund: 'freund', freundin: 'freundin', brot: 'brot', apfel: 'apfel', wasser: 'wasser', buch: 'buch', stuhl: 'stuhl', tisch: 'tisch', fahrkarte: 'fahrkarte', 'schlüssel': 'schluessel', tasse: 'tasse' };
+const nightWord = w => { const k = String(w.de || '').replace(/^(der|die|das) /i, '').trim().toLowerCase(); const p = String(w.pic || '').replace(/^word\./, ''); return NIGHT_WORD[k] || (Object.values(NIGHT_WORD).includes(p) ? p : ''); };
+const nightImg = w => `<img src="art/night/words/${nightWord(w)}.jpg" alt="" decoding="async">`;
+const wordPic = w => nightWord(w) ? nightImg(w) : w.pic && (ART['word.' + w.pic] || ART[w.pic]) || '';
 function wordArt(w, size) {
   const pic = wordPic(w);
   if (pic) {
-    const d = document.createElement('div'); d.className = 'illus ' + (w.g || ''); d.style.width = d.style.height = size + 'px';
+    const d = document.createElement('div'); d.className = 'illus ' + (w.g || '') + (nightWord(w) ? ' photo' : ''); d.style.width = d.style.height = size + 'px';
     d.innerHTML = pic; return d;
   }
   const t = document.createElement('div'); t.className = 'wtile'; t.style.width = t.style.height = size + 'px'; t.lang = 'de';
