@@ -25,7 +25,7 @@ LESSONS.push({
     { de: 'acht', en: ['eight'], type: 'adj', ipa: 'axt', resp: 'AKHT', syl: 'acht', ex: 'Zwei und sechs macht [acht].', exEn: 'Two and six makes eight.', exG: 'Zwei=two | und=and | sechs=six | macht=makes | acht.=eight' },
     { de: 'neun', en: ['nine'], type: 'adj', ipa: 'nɔɪ̯n', resp: 'NOYN', syl: 'neun', ex: 'Wir lernen [neun] Wörter.', exEn: 'We are learning nine words.', exG: 'Wir=we | lernen=are learning | neun=nine | Wörter.=words' },
     { de: 'zehn', en: ['ten'], type: 'adj', ipa: 'tseːn', resp: 'TSAYN', syl: 'zehn', ex: 'Ich lerne heute [zehn] Wörter.', exEn: 'I am learning ten words today.', exG: 'Ich=I | lerne=am learning | heute=today | zehn=ten | Wörter.=words' },
-    { de: 'die Zahl', en: ['number'], type: 'n', g: 'f', pl: 'die Zahlen', ipa: 'tsaːl', resp: 'TSAHL', syl: 'Zahl', ex: 'Das ist die [Zahl] sieben.', exEn: 'That is the number seven.', exG: 'Das ist=that is | die=the | Zahl=number | sieben.=seven' },
+    { de: 'die Zahl', en: ['number', 'figure'], type: 'n', g: 'f', pl: 'die Zahlen', ipa: 'tsaːl', resp: 'TSAHL', syl: 'Zahl', ex: 'Das ist die [Zahl] sieben.', exEn: 'That is the number seven.', exG: 'Das ist=that is | die=the | Zahl=number | sieben.=seven' },
     { de: 'der Raum', en: ['room'], type: 'n', g: 'm', pl: 'die Räume', ipa: 'ʁaʊ̯m', resp: 'ROWM', syl: 'Raum', ex: 'Wir sind in [Raum] zwei null vier.', exEn: 'We are in room two zero four.', exG: 'Wir=we | sind=are | in=in | Raum=room | zwei=two | null=zero | vier.=four' },
   ],
   build: [

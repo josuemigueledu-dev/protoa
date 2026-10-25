@@ -26,7 +26,7 @@ LESSONS.push({
     { de: 'zwanzig', en: ['twenty'], type: 'adj', ipa: 'ˈtsvantsɪç', resp: 'TSVAHN·tsikh', syl: 'zwan·zig', ex: 'Tomasz ist [zwanzig] Jahre alt.', exEn: 'Tomasz is twenty years old.', exG: 'Tomasz=Tomasz | ist=is | zwanzig=twenty | Jahre alt.=years old' },
     { de: 'das Jahr', en: ['year'], type: 'n', g: 'n', pl: 'die Jahre', ipa: 'jaːɐ̯', resp: 'YAHR', syl: 'Jahr', ex: 'Die Gitarre ist fünfzehn [Jahre] alt.', exEn: 'The guitar is fifteen years old.', exG: 'Die Gitarre=the guitar | ist=is | fünfzehn=fifteen | Jahre=years | alt.=old' },
     { de: 'alt', en: ['old'], type: 'adj', ipa: 'alt', resp: 'AHLT', syl: 'alt', ex: 'Das Café ist [alt].', exEn: 'The café is old.', exG: 'Das Café=the café | ist=is | alt.=old' },
-    { de: 'die Nummer', en: ['number'], type: 'n', g: 'f', pl: 'die Nummern', ipa: 'ˈnʊmɐ', resp: 'NUM·er', syl: 'Num·mer', ex: 'Ihre [Nummer], bitte.', exEn: 'Your number, please.', exG: 'Ihre=your (formal) | Nummer,=number | bitte.=please' },
+    { de: 'die Nummer', en: ['number (phone, room)', 'number'], type: 'n', g: 'f', pl: 'die Nummern', ipa: 'ˈnʊmɐ', resp: 'NUM·er', syl: 'Num·mer', ex: 'Ihre [Nummer], bitte.', exEn: 'Your number, please.', exG: 'Ihre=your (formal) | Nummer,=number | bitte.=please' },
     { de: 'das Handy', en: ['mobile phone', 'phone', 'cell phone'], type: 'n', g: 'n', pl: 'die Handys', ipa: 'ˈhɛndi', resp: 'HEN·dee', syl: 'Han·dy', ex: 'Lenas [Handy] ist neu.', exEn: "Lena's phone is new.", exG: 'Lenas=Lena\'s | Handy=phone | ist=is | neu.=new' },
   ],
   build: [

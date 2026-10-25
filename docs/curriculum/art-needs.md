@@ -16,6 +16,7 @@ Abstract words (*Sprache, Frage, Idee, Zahl* …) stay without one. Night Glass 
 | `word.handy` | das Handy | 10 | a phone, screen lit |
 | `word.tee` | der Tee | 11 | a glass of tea with the bag's tag over the rim |
 | `word.kuchen` | der Kuchen | 11 | one slice of a plain cake (Rührkuchen or Apfelkuchen) |
+| `word.test` | der Test | 12 | one A4 sheet with ten numbered lines and a pen; no grade on it |
 
 ## Cast
 
@@ -32,3 +33,4 @@ carry `who: 'cast.ana'` / `'cast.lena'`, and a learner turn's reaction carries `
 | id | what | first used | notes |
 |---|---|---|---|
 | `event.order` | a tray with two teas and one coffee, set down before anyone ordered | lesson 11 | the twist of lesson 11 (the barista already knows the order); until it is drawn the lesson uses `event.delay`. Later callbacks: lesson 13 (he knows the learner's order) |
+| `event.test` | Herr Weber's hand putting a test sheet face down on a desk | lesson 12 | the twist of lesson 12 (*Das war nicht schlecht*, conv line 14). Until it is drawn lesson 12 has no `twist`; add `twist: { at: 14, event: 'event.test', mood: 'surprised' }` when the file lands |
