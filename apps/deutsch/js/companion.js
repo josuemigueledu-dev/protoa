@@ -136,6 +136,8 @@ const Companion = (() => {
   }
   function frame(now) {
     P.raf = 0; if (!TEACHER.isConnected) return;
+    /* sitting in its header slot it needs no measuring between re-evaluations */
+    if (TEACHER.parentNode !== document.body && now - P.aAt <= 90) { P.raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(.05, (now - (P.last || now)) / 1000) || .016; P.last = now;
     const [rx, ry] = target(now, now / 1000), s = size(), calm = still();
     if (P.s !== s) { P.s = s; TEACHER.style.setProperty('--s', s + 'px'); }
@@ -147,6 +149,13 @@ const Companion = (() => {
     if (dock && !P.held && !P.hop && Math.hypot(rx - P.x, ry - P.y) > 60) { P.hop = now; P.fade = TEACHER.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, easing: 'ease-in', fill: 'forwards' }); }
     if (P.hop && !P.held) { if (now - P.hop < 100) { P.raf = requestAnimationFrame(frame); return; } P.held = true; P.fade.cancel(); TEACHER.animate(calm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, scale: .82 }, { opacity: 1, scale: 1 }], { duration: calm ? 160 : 320, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
     if (P.held) { P.x = P.tx = rx; P.y = P.ty = ry; P.vx = P.vy = 0; P.trip = null; }
+    /* once held, it becomes part of the header: a child of the slot, so a scroll (or the header's own movement)
+       carries it on the same frame with no script; it leaves the slot for the page when it has somewhere else to be */
+    if (dock && P.held) {
+      if (TEACHER.parentNode !== P.a.el) { P.a.el.append(TEACHER); TEACHER.classList.add('in-slot'); P.sq = P.lift = 0; const f = TEACHER.querySelector('.float'); if (f) f.style.transform = ''; }
+      P.raf = requestAnimationFrame(frame); return;
+    }
+    if (TEACHER.classList.contains('in-slot')) { TEACHER.classList.remove('in-slot'); if (TEACHER.parentNode !== document.body) document.body.append(TEACHER); }
     /* ease the target itself, so switching what it attends to never jerks */
     const ke = 1 - Math.exp(-dt / (calm ? .05 : .16)); P.tx += (rx - P.tx) * ke; P.ty += (ry - P.ty) * ke;
     /* a new trip starts when the destination moves far: remember it for the arc */

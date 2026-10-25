@@ -15,5 +15,5 @@
     el.classList.add('tilting'); };
   document.addEventListener('pointermove', e => { last = e; if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
   document.addEventListener('pointerleave', () => { if (cur) clear(cur); cur = null; });
-  document.addEventListener('scroll', () => { if (cur) { clear(cur); cur = null; } }, { passive: true });
+  document.addEventListener('scroll', () => { if (cur) { clear(cur); cur = null; } }, { passive: true, capture: true });   // capture: #app's scroll does not bubble
 })();

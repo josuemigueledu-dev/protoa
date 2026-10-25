@@ -212,6 +212,19 @@ body.lay-desktop .sidebar{background:var(--glass-dark);-webkit-backdrop-filter:n
 .nav{border-radius:var(--r-xs);font-weight:700}
 .nav[aria-current="page"]{background:var(--steel);color:var(--nink);box-shadow:inset 3px 0 0 var(--magenta)}
 .nav:hover,.stlist>button:hover,.searchres button:hover,.searchres button.sel{background:var(--bg-2)}
+/* ---------- the app shell: the document never scrolls, #app is the one scroller ----------
+   iOS Safari scrolls a document on its own thread and catches sticky and fixed bars up a frame later, worst inside
+   an iframe (the claude.ai copy): the lesson header slid up with the page and snapped back, the bottom bar shifted.
+   Here the page under the tab bar and the action bar never moves, and the sticky headers ride the same scroller
+   as the content they sit on. Script scrolls #app (PANE in ui.js), never window. */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+#app{height:100%;overflow:hidden auto;overscroll-behavior:contain;align-items:flex-start}
+#app>.col{min-height:100%;overflow-x:clip}   /* clip, not hidden: no second scroller, and nothing (not even scrollIntoView) can move the page sideways */
+.topbar,.lesson-top{top:0}
+.conv-band{top:var(--lt-h,0px)}
+/* docked in a lesson header, the orb is a child of its slot (companion.js): it moves with the header by layout, never by script */
+.lesson-top .tslot{position:relative}
+.orb.companion.in-slot{position:absolute;left:0;top:0;transform:none!important;visibility:visible;animation:none}
 /* lesson header: a navy band over the stage */
 .lesson-top{--band:var(--night);background:var(--night);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* the bar at the bottom of a lesson step is the prototype's feedback sheet: dark frosted glass */

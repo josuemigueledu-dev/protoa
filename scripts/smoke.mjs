@@ -41,7 +41,8 @@ async function open(browser, label, viewport, colorScheme) {
 }
 
 async function noSidewaysScroll(page, label) {
-  const { scrollWidth, innerWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth }));
+  // the document never scrolls (the app shell); #app is the scroller, so measure both
+  const { scrollWidth, innerWidth } = await page.evaluate(() => ({ scrollWidth: Math.max(document.documentElement.scrollWidth, document.getElementById('app').scrollWidth), innerWidth }));
   if (scrollWidth > innerWidth) fail(`${label}: page scrolls sideways (${scrollWidth}px in a ${innerWidth}px window)`);
 }
 

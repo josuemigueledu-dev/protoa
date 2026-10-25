@@ -26,7 +26,7 @@ function renderSidebar() {
 
 /* ---------- time on task: counts active minutes (page visible + interaction in the last 60 s) ---------- */
 let lastAct = Date.now(), tickCount = 0;
-['pointerdown', 'keydown', 'scroll'].forEach(e => window.addEventListener(e, () => { lastAct = Date.now(); }, { passive: true }));
+['pointerdown', 'keydown', 'scroll'].forEach(e => window.addEventListener(e, () => { lastAct = Date.now(); }, { passive: true, capture: true }));   // capture: #app's scroll does not bubble
 setInterval(() => {
   newDayCheck();
   if (!S.progress || document.hidden || Date.now() - lastAct > 60000) return;
@@ -329,7 +329,7 @@ function renderTalkChat(v) {
     KEYS = e => { if (e.key === 'Enter' && document.activeElement === inp) send(); };
     setTimeout(() => inp.focus(), 60);
   }
-  requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight }));
+  requestAnimationFrame(() => PANE.scrollTo({ top: PANE.scrollHeight }));
 }
 function endTalk() {
   const T = TALK; if (!T) return;
