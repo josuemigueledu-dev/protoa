@@ -52,7 +52,9 @@ let renderedDay = null; // the day the screen on show was drawn for (screens.js 
    moment, and the leaving slabs keep moving on their own layers meanwhile instead of standing still and then jumping */
 let drawTok = null;
 function lessonMode() { return !!((route === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused && lessonById(S.progress.lessonState.n)) || (route === 'practice' && ((PR && PR.queue.length) || REVIEW_SUMMARY)) || (route === 'talk' && TALK && (TALK.active || TALK.summary)) || route === 'exam'); }
+let lastRoute = route;
 function render() {
+  Perf.screen(lastRoute, route, NAV); lastRoute = route;
   const dir = DIRS[NAV], old = view.querySelector(':scope > .view:not(.leaving)'), tok = drawTok = {};
   if (dir && old && old.animate && !reduced()) {
     leave(old, dir, document.body.classList.contains('in-lesson') && lessonMode());
@@ -101,6 +103,35 @@ const Still = (() => {
   return { hold };
 })();
 PANE.addEventListener('scroll', () => Still.hold(200), { passive: true });
+/* ---------- frame meter: how smooth it really is on the learner's phone ----------
+   Off unless something asks for it: Arthur's own copy passes window.PROTOA_PERF_SINK (it keeps the records in his
+   private data so the team can read real iPhone numbers), and ?perf or localStorage 'weg:perf' turns it on to look at.
+   It counts frames only for a moment after a screen change and while scrolling. */
+const Perf = (() => {
+  let on = false; try { on = !!window.PROTOA_PERF_SINK || /[?&]perf\b/.test(location.search) || localStorage.getItem('weg:perf') === '1'; } catch (e) { }
+  if (!on) return { screen() { } };
+  const log = [];
+  let run = null;
+  function sample(kind, what, ms) {
+    if (run) { run.until = Math.max(run.until, performance.now() + ms); return; }
+    const r = run = { kind, what, t0: performance.now(), until: performance.now() + ms, f: [] };
+    let last = performance.now();
+    const step = t => { r.f.push(t - last); last = t; if (t < r.until) requestAnimationFrame(step); else done(r); };
+    requestAnimationFrame(step);
+  }
+  function done(r) {
+    run = null; const f = r.f.slice(1); if (f.length < 3) return;
+    const sorted = f.slice().sort((a, b) => a - b);
+    const rec = { at: new Date().toISOString(), kind: r.kind, what: r.what, frames: f.length, worst: Math.round(sorted[sorted.length - 1]), med: Math.round(sorted[f.length >> 1] * 10) / 10, over17: f.filter(x => x > 17.5).length, over33: f.filter(x => x > 34).length, w: innerWidth, dpr: devicePixelRatio, ua: navigator.userAgent.slice(0, 120) };
+    log.push(rec); if (log.length > 60) log.shift();
+    try { window.PROTOA_PERF_SINK && window.PROTOA_PERF_SINK(rec); } catch (e) { }
+    if (/[?&]perf\b/.test(location.search)) console.log('[perf]', JSON.stringify(rec));
+  }
+  let scrolling = false;
+  PANE.addEventListener('scroll', () => { if (!scrolling) { scrolling = true; sample('scroll', route, 400); setTimeout(() => { scrolling = false; }, 400); } else if (run) run.until = performance.now() + 300; }, { passive: true });
+  window.PROTOA_PERF_LOG = log;
+  return { screen(from, to, nav) { sample('screen', from + '>' + to + ' ' + nav, 1300); } };
+})();
 // a sideways swipe moves to the tab beside this one (not inside a lesson, review or talk, where swipes are for the exercise)
 (() => {
   let x0 = 0, y0 = 0, t0 = 0, on = false;
