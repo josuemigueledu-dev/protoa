@@ -112,7 +112,8 @@ function renderMap(v) {
   if (nowEl && 'IntersectionObserver' in window) {
     const pill = h('button', { class: 'weiter', hidden: true, onclick: () => PANE.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
     document.body.append(pill);
-    const io = new IntersectionObserver(([e]) => { pill.hidden = e.isIntersecting; pill.firstChild.textContent = e.boundingClientRect.top < 0 ? '↑' : '↓'; }, { threshold: .1 });
+    // one batch can hold several entries (off screen while the map slides in, then on screen): the last one is now
+    const io = new IntersectionObserver(es => { const e = es[es.length - 1]; pill.hidden = e.isIntersecting; pill.firstChild.textContent = e.boundingClientRect.top < 0 ? '↑' : '↓'; }, { threshold: .1 });
     io.observe(nowEl.querySelector('.kmk') || nowEl); pill._io = io;
   }
 }
