@@ -422,7 +422,7 @@ const REVIEW_EVERY = 4;
    (docs/curriculum/story.md, "Protoa's voice"); a lesson without a line falls back to who or where. */
 const PROTOA_TODAY = {
   1: ['Dein erster Tag im Kurs. Sag einfach: Guten Tag.', 'Your first day in class. Just say: Guten Tag.'],
-  2: ['Herr Weber hat eine Liste. Dein Name ist auch da.', 'Herr Weber has a list. Your name is on it too.'],
+  2: ['Herr Weber hat eine Liste. Dein Name steht auch drauf.', 'Herr Weber has a list. Your name is on it too.'],
   3: ['Neun Uhr sieben. Jemand kommt zu spät, mit Mehl am Ärmel.', 'Seven past nine. Someone is late, with flour on her sleeve.'],
   4: ['Neben der Tafel hängt etwas Neues.', 'Something new is hanging beside the board.'],
   5: ['Pause. Ana will Kaffee, aber die Schlange ist lang.', 'Break. Ana wants coffee, but the queue is long.'],
