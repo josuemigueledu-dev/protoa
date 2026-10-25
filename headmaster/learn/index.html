@@ -56,6 +56,19 @@ body{background:var(--bg);color:var(--ink)}
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(PREFIX)) { const r = remote.get(k); if (r == null || updatedAt(localStorage.getItem(k)) > updatedAt(r)) mark(k); } } } catch (e) { }
   }
 
+  /* ---------- frame meter: the app reports how smooth each screen change and scroll was; batches go to Arthur's
+     private data (data/users/<id>/perf/log), never to his progress, so the team can read real iPhone numbers ---------- */
+  const perfBuf = []; let perfT = null, perfSent = 0;
+  window.PROTOA_PERF_SINK = rec => {
+    if (!db || !uid || perfSent > 300) return;
+    perfBuf.push(rec); clearTimeout(perfT); perfT = setTimeout(perfFlush, perfBuf.length >= 20 ? 0 : 8000);
+  };
+  function perfFlush() {
+    if (!perfBuf.length) return; const recs = perfBuf.splice(0); perfSent += recs.length;
+    db.doc('data/users/' + uid + '/perf/log/' + Date.now()).set({ recs }).catch(() => {});
+  }
+  addEventListener('pagehide', perfFlush);
+
   /* ---------- build: the one Arthur chose, never changed under him ---------- */
   const load = (tag, attrs) => new Promise((ok, fail) => { const e = Object.assign(document.createElement(tag), attrs); e.onload = ok; e.onerror = () => fail(new Error('Could not load ' + (attrs.src || attrs.href))); if (tag === 'script') e.async = false; document.head.append(e); });
   async function boot(id) {
