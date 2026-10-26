@@ -136,6 +136,60 @@ function buildExam(code) {
   return { code, items, idx: 0, startedAt: Date.now(), claude, version: 1 };
 }
 
+// the exam's strict marking for typed answers (dictation, words, grammar, gaps); the placement test marks the same way
+const TYPED = ['dict', 'in', 'out', 'conj', 'art', 'gap'];
+const sameTokens = (a, b) => deTokens(a).map(fold).join(' ') === deTokens(b).map(fold).join(' ');
+function markTyped(it, a) {
+  it.ok = it.type === 'in' ? checkEnglish(a, it.en).ok : it.type === 'dict' || it.type === 'out' ? sameTokens(a, it.de) : it.a.some(x => fold(stripPunct(x)) === fold(stripPunct(applyShortcuts(a))));
+  it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.type === 'in' ? it.en.join(', ') : it.type === 'dict' || it.type === 'out' ? it.de : it.a[0];
+  return it.ok;
+}
+
+/* ---------- placement test, "Not a beginner?" (docs/specs/placement.md) ---------- */
+/* Walks the built-in lessons in order, one gap item each. A miss gets one more item from the same lesson (a word,
+   English → German); a second miss, or "I don't know", ends the test there, and so does the 3-minute cap.
+   The place is the first lesson not passed (null: every built-in lesson passed). */
+const PLACE_MS = 180000, PLACE_SPREAD = 14; // test length; placed words' first reviews spread over this many days
+function placementItem(n, kind, used) {
+  const L = LESSONS.find(l => l.n === n); if (!L) return null;
+  const ws = shuffle(L.words.filter(w => !used.includes(w.de))), g = kind === 'gap' && ws.find(w => w.exEn && /\[[^\]]+\]/.test(w.ex));
+  if (g) { used.push(g.de); return { sec: 'gap', type: 'gap', lesson: n, de: g.ex.replace(/[\[\]]/g, ''), shown: g.ex.replace(/\[[^\]]+\]/, '_____'), a: [g.ex.match(/\[([^\]]+)\]/)[1]], en: g.exEn }; }
+  const w = ws[0]; if (!w) return null; used.push(w.de);
+  return { sec: 'wort', type: 'out', lesson: n, de: w.de, en: w.en, noun: w.type === 'n' };
+}
+function startPlacement(now = Date.now()) {
+  const order = LESSONS.map(l => l.n).sort((a, b) => a - b), P = { order, at: 0, miss: 0, used: [], log: [], startedAt: now, done: false, place: order[0] };
+  P.item = placementItem(order[0], 'gap', P.used); return P;
+}
+// answer: the learner's text, or null for "I don't know"
+function answerPlacement(P, answer, now = Date.now()) {
+  const it = P.item, dunno = answer === null || answer === undefined, ok = !dunno && markTyped(it, answer);
+  P.log.push({ lesson: it.lesson, type: it.type, ok, answer: dunno ? null : answer, expected: dunno ? (it.type === 'out' ? it.de : it.a[0]) : it.expected });
+  if (ok) { P.at++; P.miss = 0; } else P.miss++;
+  const n = P.order[P.at]; P.place = n ?? null;
+  if (n === undefined || dunno || P.miss >= 2 || now - P.startedAt >= PLACE_MS) { P.done = true; P.item = null; return P; }
+  P.item = placementItem(n, P.miss ? 'out' : 'gap', P.used); if (!P.item) { P.done = true; }
+  return P;
+}
+// marks every built-in lesson before `place` done and its words yours, as words you already knew:
+// first reviews spread over the next two weeks, and none of them counts as new today
+function applyPlacement(place) {
+  const today = todayStr(); let i = 0, lessons = 0;
+  for (const L of [...LESSONS].sort((a, b) => a.n - b.n)) {
+    if (place !== null && L.n >= place) break;
+    if (!S.progress.lessonsDone.includes(L.n)) { S.progress.lessonsDone.push(L.n); lessons++; }
+    for (const w of L.words) {
+      const c = cardOf(w.de);
+      if (c) { if (!c.learned) { c.learned = true; c.since = today; c.placed = true; save(null, cardShard(w.de)); } continue; }
+      const d = 1 + (i++ % PLACE_SPREAD), sh = ensureShard(shardFor(L.n));
+      sh.w[w.de] = { r: [addDays(today, d), d, 250, 1, 0], p: null, learned: true, hist: [], lesson: L.n, since: today, placed: true };
+      save(null, shardFor(L.n));
+    }
+  }
+  S.progress.placement = { date: today, place, lessons }; save('progress');
+  return lessons;
+}
+
 /* ---------- exam flow ---------- */
 let EXAM_RESULT = null;
 function openExamPreview(code) {
@@ -193,16 +247,12 @@ async function gradeExam(v) {
   const X = S.progress.exam;
   v.append(h('div', { class: 'card summary', style: 'margin-top:32px' }, teacherSlot(96, 'thinking'), h('h1', { lang: 'de' }, 'Wird korrigiert …'), h('p', { class: 'muted' }, 'Protoa is marking your answers.'), h('span', { class: 'typing' }, h('i'), h('i'), h('i'))));
   const lex = mergedLex({});
-  const sameTokens = (a, b) => deTokens(a).map(fold).join(' ') === deTokens(b).map(fold).join(' ');
   const pending = [];
   for (const it of X.items) {
     const a = it.answer;
     if (it.type === 'tf') it.ok = (a === 0) === it.a, it.pts = it.ok ? 1 : 0, it.max = 1, it.expected = it.a ? 'richtig' : 'falsch';
     else if (it.type === 'mc') it.ok = a === it.a, it.pts = it.ok ? 1 : 0, it.max = 1, it.expected = it.o[it.a];
-    else if (it.type === 'dict') { it.ok = sameTokens(a, it.de); it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; }
-    else if (it.type === 'in') { it.ok = checkEnglish(a, it.en).ok; it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.en.join(', '); }
-    else if (it.type === 'out') { it.ok = sameTokens(a, it.de); it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; }
-    else if (it.type === 'conj' || it.type === 'art' || it.type === 'gap') { it.ok = it.a.some(x => fold(stripPunct(x)) === fold(stripPunct(applyShortcuts(a)))); it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.a[0]; }
+    else if (TYPED.includes(it.type)) markTyped(it, a);
     else if (it.type === 'order') { it.ok = sameTokens(a, it.de); it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; if (!it.ok && X.claude && [...deTokens(a).map(fold)].sort().join(' ') === [...deTokens(it.de).map(fold)].sort().join(' ')) pending.push(it); }
     else if (it.type === 'trans') { const r = diagnose(a, it.de, lex, it.g, []); it.ok = r.ok; it.max = 1; it.pts = it.ok ? 1 : 0; it.expected = it.de; if (!it.ok && X.claude) pending.push(it); }
     else if (it.type === 'write' || it.type === 'speak') { it.max = it.type === 'write' ? it.pts : 1; it.pts = 0; it.expected = ''; pending.push(it); }
