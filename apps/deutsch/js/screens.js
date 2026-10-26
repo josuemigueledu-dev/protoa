@@ -240,7 +240,7 @@ function renderReviewSummary(v) {
   const s = REVIEW_SUMMARY; document.body.classList.add('in-lesson');
   const acc = s.n ? Math.round(100 * s.good / s.n) : 0, mins = Math.max(1, Math.round((Date.now() - s.t0) / 60000));
   const n1 = h('div', { class: 'n' }, '0'), n2 = h('div', { class: 'n' }, '0'), n3 = h('div', { class: 'n' }, '0');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'ticket' }, h('div', { class: 'top' }, h('b', s.stop ? { lang: 'de' } : {}, s.stop ? 'Wiederholung' : 'Daily review'), h('span', {}, fmtDate(todayStr()))),
+  v.append(h('div', { class: 'tabroom' }), h('div', { class: 'ticket' }, h('div', { class: 'top' }, h('b', s.stop ? { lang: 'de' } : {}, s.stop ? 'Wiederholung' : 'Daily review'), h('span', {}, fmtDate(todayStr()))),
     h('div', { class: 'body summary' }, teacherSlot(72, acc >= 80 ? 'pleased' : 'neutral'), h('h1', { lang: 'de' }, acc === 100 ? 'Alles sitzt.' : acc >= 90 ? 'Fast alles sitzt.' : acc >= 70 ? 'Das meiste sitzt.' : 'Heute war es schwer.'), h('p', { class: 'muted' }, acc === 100 ? 'All of it has stuck. These words now wait longer before they come back.' : acc >= 90 ? 'Almost all of it has stuck. These words now wait longer before they come back.' : acc >= 70 ? 'Most of it has stuck. The ones you missed come back sooner.' : 'A hard round. The ones you missed come back sooner, and that is how they stick.')),
     h('div', { class: 'perf' }), h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, 'cards')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'recalled')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, 'minutes')))));
   if (s.missed.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Coming back soon'), h('div', { class: 'row' }, ...[...new Set(s.missed)].slice(0, 12).map(id => h('button', { class: 'chip yours', style: 'cursor:pointer;min-height:36px', onclick: () => openWordSheet(id.replace(/^(der|die|das) /, '')) }, id.startsWith('s:') ? id.slice(2) : id)))));
@@ -348,7 +348,7 @@ function endTalk() {
 }
 function renderTalkSummary(v) {
   const T = TALK; document.body.classList.add('in-lesson');
-  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke fürs Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. You wrote ${lineCount(T.turns)} in German. ${T.fixes.length ? (T.fixes.length === 1 ? 'One' : T.fixes.length) + ' got a correction.' : 'None needed a correction.'}`)));
+  v.append(h('div', { class: 'tabroom' }), h('div', { class: 'card summary' }, teacherSlot(84, 'pleased'), h('h1', { lang: 'de' }, 'Danke fürs Gespräch.'), h('p', { class: 'muted' }, `Thanks for the conversation. You wrote ${lineCount(T.turns)} in German. ${T.fixes.length ? (T.fixes.length === 1 ? 'One' : T.fixes.length) + ' got a correction.' : 'None needed a correction.'}`)));
   if (T.fixes.length) {
     const card = h('div', { class: 'card stack' }, h('h2', {}, 'Your corrected lines'));
     T.fixes.forEach(f => card.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'faint', lang: 'de', style: 'text-decoration:line-through' }, f.said), h('div', { class: 'row' }, glossEl(f.de, null), playBtn(f.de)), f.note ? h('div', { class: 'faint' }, f.note) : '')));
