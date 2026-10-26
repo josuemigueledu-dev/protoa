@@ -127,6 +127,9 @@
 /* the ticket's stamp is the place itself, in a round frame */
 .ticket .stamp.pic{border:0;background-size:cover;background-position:center;box-shadow:0 0 0 4px var(--card-solid),0 0 0 6px var(--magenta),0 14px 30px -14px rgba(0,0,0,.6)}
 .ticket .stamp.pic .sig{display:none}
+/* on a phone the ticket is a little tighter, so the result cards under it stay above the Continue bar */
+body.lay-mobile .ticket .body{gap:12px}
+body.lay-mobile .ticket .stamp{width:112px;height:112px}
 
 /* Done: the result cards under the ticket, one row of small slabs at every width (lessonResults in map.js) */
 .kpis.result:not(#_){grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
@@ -137,17 +140,19 @@
 .kpis.result .hot .num{color:var(--red)}   /* the magenta of the ticket, deep enough to read on cream glass */
 .kpis.result .l{font-size:var(--t-cap);font-weight:700;line-height:1.25;color:var(--muted)}
 .result-note{margin:0;text-align:center}
-/* a lesson with no misses: the "Perfekt" stamp, pressed in once the numbers have counted (only transform and opacity move) */
-.card.perfect{display:flex;flex-direction:row;align-items:center;gap:20px}
-.perfect p{margin:4px 0 0}
-.pstamp{position:relative;flex:none;width:84px;height:84px;border-radius:50%;border:2.5px solid var(--red);color:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transform:rotate(-8deg);opacity:0}
+/* a lesson with no misses: the "Perfekt" stamp, pressed onto the ticket beside the station picture once the numbers
+   have counted, overlapping its ring like a rubber stamp (only transform and opacity move) */
+.ticket .stampwrap{position:relative}
+.pstamp{position:absolute;left:calc(100% - 18px);bottom:-10px;width:84px;height:84px;border-radius:50%;border:2.5px solid var(--red);color:var(--red);background:rgba(236,233,225,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transform:rotate(-12deg);opacity:0;pointer-events:none}
 .pstamp::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid currentColor;opacity:.7}
 .pstamp b{font-family:var(--hero);font-weight:400;font-size:.625rem;letter-spacing:0;text-transform:uppercase}   /* "PERFEKT" in Krona One stays inside the inner ring */
 .pstamp span{font-size:.6875rem;font-weight:700}
-.perfect.still .pstamp{opacity:1}
-.perfect.in .pstamp{animation:stamp-press .5s var(--ease) both}
-@keyframes stamp-press{0%{opacity:0;transform:rotate(-8deg) scale(1.8)}55%{opacity:1;transform:rotate(-8deg) scale(.93)}100%{opacity:1;transform:rotate(-8deg) scale(1)}}
-@media (prefers-reduced-motion:reduce){.perfect .pstamp{opacity:1;animation:none!important}}
+.pstamp.still{opacity:1}
+.pstamp.in{animation:stamp-press .5s var(--ease) both}
+@keyframes stamp-press{0%{opacity:0;transform:rotate(-12deg) scale(1.8)}55%{opacity:1;transform:rotate(-12deg) scale(.93)}100%{opacity:1;transform:rotate(-12deg) scale(1)}}
+@media (prefers-reduced-motion:reduce){.pstamp{opacity:1;animation:none!important}}
+/* the lesson's words, in their own slab under the results */
+.done-words{display:flex;flex-direction:column;gap:12px}
 .stp.on.pf .ring2{border-color:var(--red)}   /* a Perfekt stamp in the Stempelheft wears the Done screen's ink */
 .coach{align-items:flex-end}
 .coach .say .row{gap:8px;align-items:center}

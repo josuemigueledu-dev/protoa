@@ -194,9 +194,13 @@ async function playEveryLesson(browser) {
     }
     if (s.crash) stuck = `the ${s.step} step crashed`;
     if (stuck || s.step !== 'done') { fail(`${label}: could not be finished (${stuck || `stuck on "${s.step}"`})`); continue; }
-    const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount(), perfect: S.progress.lessonState.summary.perfect && (S.progress.perfect || []).includes(n) && !!document.querySelector('.card.perfect') }), n);
+    const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount(), perfect: S.progress.lessonState.summary.perfect && (S.progress.perfect || []).includes(n) && !!document.querySelector('.ticket .pstamp') }), n);
     if (!after.done) fail(`${label}: finished but not counted as done`);
     if (!after.perfect) fail(`${label}: every answer right the first time, but no "Perfekt" stamp on the Done screen and in the Stempelheft`);
+    // the result cards are on the first screen, above the Continue bar, not under the lesson's word chips
+    const rects = () => ({ row: document.querySelector('#view > .view:not(.leaving) .kpis.result')?.getBoundingClientRect().bottom, bar: document.querySelector('.actionbar')?.getBoundingClientRect().top });
+    const settled = await page.waitForFunction(() => { const row = document.querySelector('#view > .view:not(.leaving) .kpis.result')?.getBoundingClientRect().bottom, bar = document.querySelector('.actionbar')?.getBoundingClientRect().top; return row <= bar; }, null, { timeout: 2000 }).then(() => true, () => false);   // once the screen has slid in
+    if (!settled) { const r = await page.evaluate(rects); fail(`${label}: the Done screen's result cards end at y ${Math.round(r.row)}, below the Continue bar at ${Math.round(r.bar)}`); }
     if (after.learned <= learned) fail(`${label}: finished with no new words in the word bank`);
     await btn(page, 'Continue').click();
     await stopInView(page, label);
@@ -299,7 +303,7 @@ async function missAndRetry(browser) {
   else {
     const R = await page.evaluate(t => { const L = lessonById(1), ls = S.progress.lessonState, sent = S.cards.sent.w;
       const due = L.conv.map((c, i) => c.l && sent['s:' + fill(c.de)].r[0]).filter(Boolean);
-      return { done: S.progress.lessonsDone.includes(1), missed: ls.summary.missed, first: ls.summary.first, total: ls.summary.total, dueToday: due.filter(d => d === todayStr()).length, perfect: ls.summary.perfect || (S.progress.perfect || []).includes(1) || !!document.querySelector('.card.perfect'), missedDue: sent['s:' + fill(L.conv[ls.conv.queue[t].i].de)].r[0] === todayStr() };
+      return { done: S.progress.lessonsDone.includes(1), missed: ls.summary.missed, first: ls.summary.first, total: ls.summary.total, dueToday: due.filter(d => d === todayStr()).length, perfect: ls.summary.perfect || (S.progress.perfect || []).includes(1) || !!document.querySelector('.ticket .pstamp'), missedDue: sent['s:' + fill(L.conv[ls.conv.queue[t].i].de)].r[0] === todayStr() };
     }, turn.at);
     if (!R.done) fail(`${label}: lesson 1 not counted as done`);
     if (R.missed !== 1) fail(`${label}: the Done screen counts ${R.missed} missed lines, expected 1`);

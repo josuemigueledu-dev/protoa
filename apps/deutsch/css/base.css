@@ -216,7 +216,7 @@ textarea{min-height:88px;resize:vertical}
 .wtile b{font-family:var(--display);font-weight:600;font-size:var(--t-de);line-height:1.1;letter-spacing:-.01em;overflow-wrap:anywhere}
 .wtile span{font:600 var(--t-cap) var(--text);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .wcard .wtile{width:168px;height:168px} .wcard .wtile b{font-size:2.25rem}
-.learned{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 24px}
+.learned{display:flex;flex-wrap:wrap;gap:8px}
 .wchip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:3px 12px 3px 4px;border-radius:999px;background:var(--chip);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--display);font-weight:600;font-size:var(--t-body);color:var(--ink)}
 .wchip:not(:has(.il)){padding-left:12px}
 .wchip .il{width:28px;height:28px}
@@ -399,9 +399,6 @@ body:not(.lay-mobile) .weiter{bottom:24px}
 .ticket .top{background:var(--yellow);color:var(--on-yellow);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;font-weight:800}
 .ticket .top b{font-family:var(--display);font-size:var(--t-body)}
 .ticket .body{padding:24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
-.ticket .perf{height:0;border-top:3px dashed var(--line);margin:0 24px;position:relative}
-.ticket .perf::before,.ticket .perf::after{content:"";position:absolute;top:-14px;width:26px;height:26px;border-radius:50%;background:var(--bg)}
-.ticket .perf::before{left:-38px} .ticket .perf::after{right:-38px}
 .stamp{width:136px;height:136px;border-radius:50%;border:4px dashed var(--blue);display:flex;align-items:center;justify-content:center;transform:rotate(-8deg);animation:stamp .55s var(--spring) .15s;background:var(--blue-soft)}
 .stamp .sig{width:84px;height:84px}
 @keyframes stamp{0%{transform:scale(1.5) rotate(-20deg)}60%{transform:scale(.94) rotate(-6deg)}100%{transform:scale(1) rotate(-8deg)}}

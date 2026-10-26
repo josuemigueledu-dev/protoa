@@ -311,35 +311,37 @@ function lessonWords(v, L, ls) {
 /* ---------- completion ticket ---------- */
 // a long station name in a big title breaks before its last part (Schönlein-straße), never mid-name (Schön-leinstraße)
 function stationBreak(s) { return s.replace(/(\S)(straße|platz|damm|bahnhof)$/, '$1\u00ad$2'); }
+/* the ticket, then the result cards, then the lesson's words: the result and the "Perfekt" stamp are on the
+   first screen at 390 px, above the Continue bar; the word chips come after them (tester, #146) */
 function lessonDone(v, L, ls) {
   const s = ls.summary || { missed: 0, first: 0, total: 0, added: 0 }; const c = courseOf(L.n);
   v.append(lessonTop(L, ls, 1));
   const learnedWords = (ls.newWords || []).map(d => L.words.find(w => w.de === d)).filter(Boolean);
+  const res = lessonResults(L, s);
+  const st = h('div', { class: 'stamp' }, sigEl(c.icon)); const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id];
+  if (pic) { st.classList.add('pic'); st.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`; }
   v.append(h('div', { class: 'ticket' },
     h('div', { class: 'top' }, h('b', {}, 'Protoa · Fahrschein'), h('span', {}, 'Lesson ' + L.n)),
-    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, stationBreak(c.station)), (() => { const st = h('div', { class: 'stamp' }, sigEl(c.icon)); const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id]; if (pic) { st.classList.add('pic'); st.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`; } return st; })(), h('p', { class: 'muted' }, 'You can now ' + L.can)),
-    h('div', { class: 'perf', 'aria-hidden': 'true' }),
-    learnedWords.length ? h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; })) : ''));
-  v.append(...lessonResults(L, s));
+    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, stationBreak(c.station)), h('div', { class: 'stampwrap' }, st, res.stamp || ''), h('p', { class: 'muted' }, 'You can now ' + L.can))));
+  v.append(...res.out);
+  if (learnedWords.length) v.append(h('div', { class: 'card done-words' }, h('div', { class: 'eyebrow' }, 'Your new words'), h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; }))));
   const weiter = () => { S.progress.lessonState = null; save('progress'); lastSegs = null; NAV = 'fade'; go('learn'); };
   actionBar({ buttons: [h('button', { class: 'btn', onclick: weiter }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') weiter(); };
 }
 
 /* result cards (owner, Oct 26): three small slabs for time, first-try accuracy and new words, counted up once they are
-   in view; a lesson with no misses at all adds the "Perfekt" stamp, pressed in after the count, and to the Stempelheft.
-   A summary from before the cards (no n) counts the conversation only and has no time. */
+   in view; a lesson with no misses at all gets the "Perfekt" stamp, pressed onto the ticket after the count, and in the
+   Stempelheft. A summary from before the cards (no n) counts the conversation only and has no time. */
 function lessonResults(L, s) {
   const n = s.n ?? s.total, ok = s.n != null ? s.ok : s.first, acc = n ? Math.round(100 * ok / n) : 100, added = s.added ?? L.words.length;
   const card = (num, unit, label, cls = '') => { const el = h('div', { class: 'n' }, '0'); return [h('div', { class: 'kpi ' + cls }, h('div', { class: 'num' }, unit[0] || '', el, unit[1] || ''), h('div', { class: 'l' }, label)), el, num]; };
   const cards = [s.secs != null ? card(Math.max(1, Math.round(s.secs / 60)), ['', h('span', { class: 'u' }, 'min')], 'in the lesson') : null, card(acc, ['', h('span', { class: 'u' }, '%')], 'right first time'), card(added, ['+'], added === 1 ? 'new word' : 'new words', 'hot')].filter(Boolean);
   const row = h('div', { class: 'kpis result', role: 'group', 'aria-label': 'Your lesson' }, ...cards.map(c => c[0]));
-  const perf = s.perfect && h('div', { class: 'card perfect' }, h('div', { class: 'pstamp', 'aria-hidden': 'true' }, h('b', { lang: 'de' }, 'Perfekt'), h('span', { lang: 'de' }, 'Lektion ' + L.n)), h('div', {}, h('b', {}, 'Perfect lesson'), h('p', { class: 'muted' }, 'No misses. The stamp is in your Stempelheft.')));
-  const count = () => { cards.forEach(c => countUp(c[1], c[2])); if (perf) perf.classList.add(reduced() ? 'still' : 'in'); };
+  const stamp = s.perfect ? h('div', { class: 'pstamp', 'aria-hidden': 'true' }, h('b', { lang: 'de' }, 'Perfekt'), h('span', { lang: 'de' }, 'Lektion ' + L.n)) : null;
+  const count = () => { cards.forEach(c => countUp(c[1], c[2])); if (stamp) stamp.classList.add(reduced() ? 'still' : 'in'); };
   if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(count, 350); } }, { threshold: .6 }); io.observe(row); } else setTimeout(count, 350);
-  const out = [row];
-  if (perf) out.push(perf);
-  else if (s.missed) out.push(h('p', { class: 'muted small result-note' }, s.missed === 1 ? 'The line you missed comes back in today’s review.' : `The ${s.missed} lines you missed come back in today’s review.`));
-  return out;
+  const note = s.perfect ? 'No misses. The Perfekt stamp is in your Stempelheft.' : s.missed ? (s.missed === 1 ? 'The line you missed comes back in today’s review.' : `The ${s.missed} lines you missed come back in today’s review.`) : '';
+  return { stamp, out: note ? [row, h('p', { class: 'muted small result-note' }, note)] : [row] };
 }
 
 /* ---------- re-layout the map on resize ---------- */

@@ -169,8 +169,6 @@ body:not(.lay-mobile) .sheet{align-items:center} body:not(.lay-mobile) .sheet .i
 
 /* ---------- tickets, stamps, certificates ---------- */
 .ticket{border-radius:var(--r)}
-.ticket .perf{border-top:1px dashed var(--line-2)}
-.ticket .perf::before,.ticket .perf::after{background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
 .stamp{border:1.5px solid var(--yellow);background:radial-gradient(circle at 35% 25%,var(--tile-hi),transparent 55%),radial-gradient(circle,var(--yellow-soft),transparent 70%);box-shadow:0 0 0 6px var(--yellow-soft),0 0 40px -6px var(--glow),inset 0 0 24px -8px var(--glow)}
 .stp .ring2{border:1px dashed var(--line-2)}
 .stp.on .ring2{border:1.5px solid var(--yellow);background:radial-gradient(circle at 35% 25%,var(--tile-hi),transparent 55%),var(--yellow-soft);box-shadow:0 0 22px -6px var(--glow),inset 0 0 0 4px var(--card)}
