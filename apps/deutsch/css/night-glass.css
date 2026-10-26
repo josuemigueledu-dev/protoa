@@ -665,3 +665,17 @@ body:not(.lay-desktop) .tabroom{height:calc(var(--ptab-top) + var(--ptab-h) - 8p
 .view>.chatlog{content-visibility:visible}
 /* the map is one long list: the stations after yours skip the work one by one (the ones above keep their real height, so the map lands on your stop) */
 .kline>.kst.now~.kst{content-visibility:auto;contain-intrinsic-size:auto 82px;overflow-clip-margin:48px}
+
+/* ---------- page heads (docs/designs/night-glass/system.md, "Page head") ----------
+   Every screen opens the same way on the navy stage: its title (Krona One, --t-title), one intro line 8 px under it
+   (15 px, --ngrey, at most 46 characters wide), then the view's 24 px to the first slab. Practice, Sprechen, Profile,
+   Grammar, Method and Sounds each did this differently: 13 or 17 px, 0 or 24 px under the title, and Sprechen's head
+   was a dark slab of its own. */
+:root{--t-sub:.9375rem}
+:is(.pagehead .faint,.prof .grow>.faint,.talkhero p,.pagehead+p,.view>.row:first-child+h1+p,.view>.row:first-child+.hero h1+p){
+  font-size:var(--t-sub);line-height:1.45;color:var(--ngrey);margin-bottom:0;max-width:46ch;text-wrap:pretty}
+:is(.pagehead .faint,.prof .grow>.faint,.talkhero p,.view>.row:first-child+.hero h1+p){margin-top:8px}
+/* the intro is a sibling in the view's stack on Grammar and Method: pull it up from 24 px to 8 */
+:is(.pagehead+p,.view>.row:first-child+h1+p){margin-top:-16px}
+/* Sprechen's head sits on the stage like the others, not in a slab */
+.talkhero:not(#_){background:none;box-shadow:none;clip-path:none;padding:0;border-radius:0;overflow:visible}
