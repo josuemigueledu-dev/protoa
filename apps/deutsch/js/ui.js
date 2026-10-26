@@ -735,9 +735,9 @@ function renderPractice(v) {
   renderPracticeHub(v);
 }
 function finishReviewSession() {
-  const stop = PR.stop, stats = PR.stats; PR = null;
+  const stop = PR.stop, title = PR.title, stats = PR.stats; PR = null;
   if (stop) { S.progress.reviewStops = [...new Set([...(S.progress.reviewStops || []), stop])]; save('progress'); }
-  REVIEW_SUMMARY = Object.assign({ stop }, stats); route = 'practice'; NAV = 'fwd'; render();
+  REVIEW_SUMMARY = Object.assign({ stop, title }, stats); route = 'practice'; NAV = 'fwd'; render();
 }
 // one pace for every time estimate on a review: about 12 seconds a card
 function reviewMinutes(n) { return Math.max(1, Math.round(n * .2)); }
