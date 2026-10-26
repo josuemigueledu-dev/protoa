@@ -440,7 +440,7 @@ function startLesson(n, fresh) {
   const L = lessonById(n); if (!L) return;
   const blk = lessonBlocked(n); if (blk) { openExamPreview(blk.code); return; }
   const ls = S.progress.lessonState;
-  if (fresh || !ls || ls.n !== n || ls.step === 'done') S.progress.lessonState = { n, step: 'scene', wi: 0, checkQ: null, bi: 0, battempts: 0, conv: null, newWords: L.words.filter(w => !isLearned(w.de)).map(w => w.de) };
+  if (fresh || !ls || ls.n !== n || ls.step === 'done') S.progress.lessonState = { n, step: 'scene', wi: 0, checkQ: null, bi: 0, battempts: 0, conv: null, newWords: L.words.filter(w => !isLearned(w.de)).map(w => w.de), tally: { n: 0, ok: 0, seen: [] }, secs: 0 };
   S.progress.lessonState.paused = false; save('progress'); lastSegs = null; NAV = 'fwd'; route = 'learn'; render();
 }
 function pauseLesson() { stopAudio(); const ls = S.progress.lessonState; if (ls) { ls.paused = true; save('progress'); } NAV = 'down'; go('learn'); toast('Saved. Pick it up again from the map.'); }
@@ -471,6 +471,8 @@ function wordCard(w, opts = {}) {
   if (w.ex) { const ul = glossEl(w.ex.replace(/[\[\]]/g, ''), w.exG || null); c.append(h('div', { class: 'example' }, h('div', { class: 'eyebrow' }, 'In a sentence'), h('div', { class: 'row', style: 'justify-content:center' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play sentence', html: ICONS.play, onclick: () => speak(w.ex.replace(/[\[\]]/g, ''), { el: ul }) })), h('div', { class: 'muted small' }, fill(w.exEn)))); }
   return c;
 }
+/* the Done screen's first-try accuracy: each checked word and built line counts once, at its first answer */
+function tallyFirst(ls, key, right) { const t = ls.tally; if (!t || t.seen.includes(key)) return; t.seen.push(key); t.n++; if (right) t.ok++; }
 function lessonCheck(v, L, ls) {
   if (!ls.checkQ) { ls.checkQ = shuffle(L.words.filter(w => !isLearned(w.de)).map(w => w.de)); ls.checkYours = L.words.filter(w => isLearned(w.de)).map(w => w.de); ls.checkTotal = ls.checkQ.length; save('progress'); }
   v.append(lessonTop(L, ls, ls.checkTotal ? 1 - ls.checkQ.length / ls.checkTotal : 1));
@@ -496,7 +498,7 @@ function lessonCheck(v, L, ls) {
   const grid = h('div', { class: 'choices' }); let locked = false;
   const cont = () => { NAV = 'fwd'; render(); };
   choices.forEach((ch, i) => grid.append(h('button', { class: 'choice', onclick: e => {
-    if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true);
+    if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true); tallyFirst(ls, 'c' + w.de, ch === w.en[0]);
     if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { e.currentTarget.classList.add('bad'); [...grid.children].find(b => b.textContent.endsWith(w.en[0]))?.classList.add('ok'); uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     save('progress'); showAbove(grid, head); KEYS = ev => { if (ev.key === 'Enter') cont(); };
@@ -527,6 +529,7 @@ function lessonPicCheck(v, L, ls, w, others) {
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, `Word check · ${ls.checkQ.length} left`));
   const cont = () => { NAV = 'fwd'; render(); };
   const pc = picChoice(w, others, right => {
+    tallyFirst(ls, 'c' + w.de, right);
     if (right) { uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     save('progress'); showAbove(pc.grid, pc.ask, pc.grid.querySelector('.choice.ok')); KEYS = ev => { if (ev.key === 'Enter') cont(); };
@@ -559,7 +562,7 @@ function lessonBuild(v, L, ls) {
   const fb = h('div', { class: 'ladder' }); let done = false;
   const next = () => setStep('build', { bi: ls.bi + 1, battempts: 0 });
   const check = () => {
-    if (done) return; if (isBlank(widget)) return answerFirst(fb, item.type === 'tiles'); const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g);
+    if (done) return; if (isBlank(widget)) return answerFirst(fb, item.type === 'tiles'); const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g); tallyFirst(ls, 'b' + ls.bi, r.ok);
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
     else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
@@ -694,7 +697,11 @@ function finishLesson(L, ls) {
   // every learner turn becomes a conversation card: missed ones due now, the rest in 3 days (§8.4, extended)
   L.conv.forEach((t, i) => { if (!t.l) return; const prev = L.conv[i - 1] && L.conv[i - 1].w ? { de: fill(L.conv[i - 1].w), g: fill(L.conv[i - 1].g) } : null; addSentenceCard(t, L.n, { due: missed.has(i) ? todayStr() : addDays(todayStr(), 3), prompt: prev }); });
   if (!S.progress.lessonsDone.includes(L.n)) S.progress.lessonsDone.push(L.n);
-  ls.step = 'done'; ls.summary = { missed: missed.size, first: C.firstTry.filter(x => x).length, total: C.firstTry.length, added: (ls.newWords || L.words).length };
+  // result cards: time in the lesson, first answers right (check, build and conversation), new words; no misses at all is a perfect lesson
+  const T = ls.tally, first = C.firstTry.filter(x => x).length, n = (T ? T.n : 0) + C.firstTry.length, ok = (T ? T.ok : 0) + first;
+  const perfect = !!T && n > 0 && ok === n && !missed.size;
+  if (perfect) S.progress.perfect = [...new Set([...(S.progress.perfect || []), L.n])].sort((a, b) => a - b);
+  ls.step = 'done'; ls.summary = { missed: missed.size, first, total: C.firstTry.length, added: (ls.newWords || L.words).length, n, ok, secs: ls.secs, perfect };
   save('progress'); NAV = 'fwd'; render(); uiSound('done'); Voice.proud(3200); if (!reduced()) confetti();
 }
 function countUp(el, n) { if (reduced() || n === 0) { el.textContent = n; return; } const t0 = performance.now(), d = 700; const f = t => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }

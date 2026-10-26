@@ -31,6 +31,7 @@ setInterval(() => {
   newDayCheck();
   if (!S.progress || document.hidden || Date.now() - lastAct > 60000) return;
   const t = todayStr(); S.progress.days[t] = S.progress.days[t] || { new: 0, reviews: 0 }; S.progress.days[t].secs = (S.progress.days[t].secs || 0) + 15;
+  const ls = S.progress.lessonState; if (route === 'learn' && ls && !ls.paused && ls.step !== 'done') ls.secs = (ls.secs || 0) + 15;   // the lesson's own clock, for its Done screen
   if (++tickCount % 4 === 0) { save('progress'); if (document.body.classList.contains('lay-desktop') && !document.body.classList.contains('in-lesson')) renderSidebar(); }
 }, 15000);
 // an app left open overnight (a phone asleep, a laptop lid shut) shows the new day when it is looked at again:
@@ -118,6 +119,7 @@ function computeStamps() {
   st.push({ id: 'talk1', t: 'Erstes Gespräch', s: 'Sprechen', icon: 'question', on: talks >= 1 }, { id: 'talk10', t: '10 Gespräche', s: 'Sprechen', icon: 'people', on: talks >= 10 });
   st.push({ id: 'd7', t: '7 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 7 }, { id: 'd30', t: '30 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 30 });
   st.push({ id: 'r100', t: '100 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 100 }, { id: 'r1000', t: '1000 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 1000 });
+  (S.progress.perfect || []).forEach(n => st.push({ id: 'pf' + n, t: 'Perfekt', s: 'Lesson ' + n + ' · no misses', icon: courseOf(n).icon, on: true, pf: true }));   // only once earned: no row of 60 empty ones
   for (let n = REVIEW_EVERY; n <= COURSE.length; n += REVIEW_EVERY) st.push({ id: 'R' + n, t: 'Wiederholung', s: 'after ' + courseOf(n).station, icon: 'review', on: rv.has('R' + n) });
   return st;
 }
@@ -126,7 +128,7 @@ function checkStamps() {
   if (!fresh.length) return; S.progress.stampsSeen = [...seen, ...fresh.map(s => s.id)]; save('progress');
   toast(fresh.length === 1 ? 'New stamp: ' + fresh[0].t : fresh.length + ' new stamps in your Stempelheft');
 }
-function stampEl(s, i) { return h('div', { class: 'stp' + (s.on ? ' on r' + (i % 3 + 1) : ''), title: s.on ? s.t + ' — earned' : s.t + ' — not yet' }, h('div', { class: 'ring2' }, sigEl(s.icon)), h('b', { lang: 'de' }, s.t), h('span', {}, s.s)); }
+function stampEl(s, i) { return h('div', { class: 'stp' + (s.on ? ' on r' + (i % 3 + 1) : '') + (s.pf ? ' pf' : ''), title: s.on ? s.t + ' — earned' : s.t + ' — not yet' }, h('div', { class: 'ring2' }, sigEl(s.icon)), h('b', { lang: 'de' }, s.t), h('span', {}, s.s)); }
 
 /* ---------- charts (single series → no legend; text in text colours; hover tooltip on every mark) ---------- */
 function barChart(data, opts = {}) {

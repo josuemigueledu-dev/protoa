@@ -179,7 +179,7 @@ function mergeProgress(a, b) {
   const [newer, older] = (a.updatedAt || 0) >= (b.updatedAt || 0) ? [a, b] : [b, a];
   const out = Object.assign(DEF_PROGRESS(), JSON.parse(JSON.stringify(newer)));
   const uni = k => [...new Set([...(a[k] || []), ...(b[k] || [])])].sort((x, y) => (typeof x === 'number' ? x - y : String(x).localeCompare(String(y))));
-  out.lessonsDone = uni('lessonsDone'); out.v1Lessons = uni('v1Lessons'); out.reviewStops = uni('reviewStops');
+  out.lessonsDone = uni('lessonsDone'); out.v1Lessons = uni('v1Lessons'); out.reviewStops = uni('reviewStops'); out.perfect = uni('perfect');
   out.sounds = !!(a.sounds || b.sounds);
   out.days = Object.assign({}, older.days || {}); for (const [d, v] of Object.entries(newer.days || {})) { const o = out.days[d] || {}; out.days[d] = { new: Math.max(o.new || 0, v.new || 0), reviews: Math.max(o.reviews || 0, v.reviews || 0), secs: Math.max(o.secs || 0, v.secs || 0) }; }
   out.stampsSeen = uni('stampsSeen'); out.levelsPassed = uni('levelsPassed');
@@ -544,7 +544,7 @@ function exportJSON() {
     if (c.sent) continue; const d = wordDef(id) || {};
     words.push({ de: id, en: (d.en || []).join('; '), type: d.type || 'x', plural: d.pl || '', ipa: d.ipa || '', respelling: d.resp || '', syllables: d.syl || '', example: d.ex || '', example_en: d.exEn || '', lesson: c.lesson || c.v1 || 0, srs: { r: c.r, p: c.p } });
   }
-  const P = S.progress, progress = { reviewStops: P.reviewStops || [], stampsSeen: P.stampsSeen || [], levelsPassed: P.levelsPassed || [], exams: P.exams || [], examCooldown: P.examCooldown || {}, talkCount: P.talkCount || 0, sounds: !!P.sounds };
+  const P = S.progress, progress = { reviewStops: P.reviewStops || [], perfect: P.perfect || [], stampsSeen: P.stampsSeen || [], levelsPassed: P.levelsPassed || [], exams: P.exams || [], examCooldown: P.examCooldown || {}, talkCount: P.talkCount || 0, sounds: !!P.sounds };
   return JSON.stringify({ lang: LANG, exportedAt: todayStr(), source: 'Protoa', words, lessonsDone: P.lessonsDone, v1LessonsDone: P.v1Lessons || [], settings: { dailyNew: S.settings.perDay }, history: { activity: P.days }, progress }, null, 1);
 }
 const V1_TYPES = { phr: 'phrase', part: 'part', q: 'q', num: 'num', n: 'n', v: 'v', adj: 'adj', adv: 'adv', pron: 'pron', conj: 'conj', prep: 'prep', interj: 'interj' };
@@ -567,7 +567,7 @@ function importJSON(text) {
   if (Array.isArray(j.v1LessonsDone)) { // this app's own export (v1 never wrote v1LessonsDone): merge it like a second device, achievements are kept from both
     const arr = x => Array.isArray(x) ? x : [], p = j.progress && typeof j.progress === 'object' ? j.progress : {}, days = {};
     if (j.history && j.history.activity) for (const [d, a] of Object.entries(j.history.activity)) if (/^\d{4}-\d\d-\d\d$/.test(d) && a) days[d] = { new: +a.new || 0, reviews: +a.reviews || 0, secs: +a.secs || 0 };
-    S.progress = mergeProgress(S.progress, { lessonsDone: arr(j.lessonsDone).map(Number).filter(n => n > 0), v1Lessons: arr(j.v1LessonsDone).map(Number).filter(n => n > 0), days, reviewStops: arr(p.reviewStops), stampsSeen: arr(p.stampsSeen), levelsPassed: arr(p.levelsPassed), exams: arr(p.exams).filter(e => e && typeof e === 'object'), examCooldown: p.examCooldown && typeof p.examCooldown === 'object' ? p.examCooldown : {}, talkCount: +p.talkCount || 0, sounds: !!p.sounds, updatedAt: 0 });
+    S.progress = mergeProgress(S.progress, { lessonsDone: arr(j.lessonsDone).map(Number).filter(n => n > 0), v1Lessons: arr(j.v1LessonsDone).map(Number).filter(n => n > 0), days, reviewStops: arr(p.reviewStops), perfect: arr(p.perfect).map(Number).filter(n => n > 0), stampsSeen: arr(p.stampsSeen), levelsPassed: arr(p.levelsPassed), exams: arr(p.exams).filter(e => e && typeof e === 'object'), examCooldown: p.examCooldown && typeof p.examCooldown === 'object' ? p.examCooldown : {}, talkCount: +p.talkCount || 0, sounds: !!p.sounds, updatedAt: 0 });
   } else {
     if (Array.isArray(j.lessonsDone)) { // v1's lessons are not this app's lessons: remember them separately, never block or skip anything here
       const v1 = j.lessonsDone.map(Number); S.progress.v1Lessons = [...new Set([...(S.progress.v1Lessons || []), ...v1.filter(n => n > 0)])].sort((a, b) => a - b); if (v1.includes(0)) S.progress.sounds = true;

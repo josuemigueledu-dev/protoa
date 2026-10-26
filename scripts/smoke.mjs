@@ -5,6 +5,7 @@
 // played to its end with its own model answers (Done → Continue lands on the new stop, after the last lesson too), and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
+// A lesson with every answer right the first time earns the "Perfekt" stamp; one with a miss does not.
 // A review card answered wrong and graded Good anyway is not counted as recalled.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // A Grammar unit opens at its top, however far the list or the lesson was scrolled.
@@ -193,8 +194,9 @@ async function playEveryLesson(browser) {
     }
     if (s.crash) stuck = `the ${s.step} step crashed`;
     if (stuck || s.step !== 'done') { fail(`${label}: could not be finished (${stuck || `stuck on "${s.step}"`})`); continue; }
-    const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount() }), n);
+    const after = await page.evaluate(n => ({ done: S.progress.lessonsDone.includes(n), learned: learnedCount(), perfect: S.progress.lessonState.summary.perfect && (S.progress.perfect || []).includes(n) && !!document.querySelector('.card.perfect') }), n);
     if (!after.done) fail(`${label}: finished but not counted as done`);
+    if (!after.perfect) fail(`${label}: every answer right the first time, but no "Perfekt" stamp on the Done screen and in the Stempelheft`);
     if (after.learned <= learned) fail(`${label}: finished with no new words in the word bank`);
     await btn(page, 'Continue').click();
     await stopInView(page, label);
@@ -297,10 +299,11 @@ async function missAndRetry(browser) {
   else {
     const R = await page.evaluate(t => { const L = lessonById(1), ls = S.progress.lessonState, sent = S.cards.sent.w;
       const due = L.conv.map((c, i) => c.l && sent['s:' + fill(c.de)].r[0]).filter(Boolean);
-      return { done: S.progress.lessonsDone.includes(1), missed: ls.summary.missed, first: ls.summary.first, total: ls.summary.total, dueToday: due.filter(d => d === todayStr()).length, missedDue: sent['s:' + fill(L.conv[ls.conv.queue[t].i].de)].r[0] === todayStr() };
+      return { done: S.progress.lessonsDone.includes(1), missed: ls.summary.missed, first: ls.summary.first, total: ls.summary.total, dueToday: due.filter(d => d === todayStr()).length, perfect: ls.summary.perfect || (S.progress.perfect || []).includes(1) || !!document.querySelector('.card.perfect'), missedDue: sent['s:' + fill(L.conv[ls.conv.queue[t].i].de)].r[0] === todayStr() };
     }, turn.at);
     if (!R.done) fail(`${label}: lesson 1 not counted as done`);
     if (R.missed !== 1) fail(`${label}: the Done screen counts ${R.missed} missed lines, expected 1`);
+    if (R.perfect) fail(`${label}: a lesson with a missed line got the "Perfekt" stamp`);
     if (R.first !== R.total - 1) fail(`${label}: ${R.first} of ${R.total} turns right first time, expected all but one`);
     if (!R.missedDue || R.dueToday !== 1) fail(`${label}: the missed line should be due for review today, and only it (${R.dueToday} due today)`);
   }
