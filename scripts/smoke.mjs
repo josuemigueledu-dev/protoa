@@ -4,7 +4,7 @@
 // the new day without disturbing a lesson in progress. Every built-in lesson can be
 // played to its end with its own model answers, and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
-// straight on lets the old screen finish leaving.
+// straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -341,6 +341,42 @@ async function stepPassesOn(browser) {
   await ctx.close();
 }
 
+// Pausing the exam with ✕ keeps the answer still in the box (typed or picked), so "Continue the exam" shows it again.
+async function examPauseKeepsAnswer(browser) {
+  const label = 'exam pause';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { LESSONS.forEach(L => L.words.forEach(w => markLearned(w, L.n))); S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); S.progress.exam = buildExam('A1'); });
+  const cur = sel => page.locator(`#view > .view:not(.leaving) ${sel}`);
+  const pauseAndContinue = async () => {
+    await cur('button[aria-label="Pause the exam"]').click();
+    await drawn(page);
+    if (await page.evaluate(() => route) === 'exam') return fail(`${label}: ✕ did not leave the exam`);
+    await page.evaluate(() => enterExam());
+    await drawn(page);
+  };
+  for (const [kind, types] of [['typed', ['in']], ['picked', ['tf', 'mc']]]) {
+    const at = await page.evaluate(types => { const X = S.progress.exam; X.idx = X.items.findIndex(i => types.includes(i.type)); if (X.idx >= 0) enterExam(); return X.idx; }, types);
+    if (at < 0) { fail(`${label}: the A1 exam has no ${kind} item`); continue; }
+    await drawn(page); await page.waitForTimeout(400);
+    if (kind === 'typed') {
+      await cur('#exam-input').fill('half an answer');
+      await pauseAndContinue();
+      const v = await cur('#exam-input').inputValue();
+      if (v !== 'half an answer') fail(`${label}: after pausing, the typed answer came back as "${v}"`);
+    } else {
+      await cur('.exam-item .choice').nth(1).click();
+      await pauseAndContinue();
+      if (!await cur('.exam-item .choice').nth(1).evaluate(b => b.classList.contains('picked'))) fail(`${label}: after pausing, the picked answer was not picked any more`);
+    }
+    if (await page.evaluate(() => S.progress.exam.idx) !== at) fail(`${label}: pausing moved the exam on from item ${at + 1}`);
+  }
+  await ctx.close();
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -373,6 +409,7 @@ try {
   await missAndRetry(browser);
   await sheetsOwnKeys(browser);
   await stepPassesOn(browser);
+  await examPauseKeepsAnswer(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
