@@ -475,8 +475,10 @@ function wordCard(w, opts = {}) {
 function tallyFirst(ls, key, right) { const t = ls.tally; if (!t || t.seen.includes(key)) return; t.seen.push(key); t.n++; if (right) t.ok++; }
 /* cast reactions (owner, Oct 26): after 5 right in a row in a lesson's check and build, or in Practice, someone from
    the scene (Weber in Practice and by default) says one dry line from CAST_CHEERS, German over English, for about 2 s.
-   The bubble rides on the action bar, so it leaves with it, and takes no tap or focus. A recorded line plays when
-   nothing else is. key: the lesson or 'practice'; the run starts again when it changes, and after every cheer. */
+   The bubble rides on the action bar, so it leaves with it, and takes no tap or focus. It must not cover the answer
+   just marked (tester, #146): it rises from the bar when the screen leaves room there, and otherwise hangs under the
+   screen's header, over the question already answered. A recorded line plays when nothing else is.
+   key: the lesson or 'practice'; the run starts again when it changes, and after every cheer. */
 let cheerRun = { key: null, n: 0 }, cheerLast = { who: null, line: {} };
 function castCheer(key, right, cast) {
   if (cheerRun.key !== key) cheerRun = { key, n: 0 };
@@ -490,6 +492,12 @@ function castCheer(key, right, cast) {
   const name = nightCastName(id), b = h('div', { class: 'cheer', role: 'status' }, h('div', { class: 'cheer-in' }, bustEl(id, 'neutral', 44),
     h('div', { class: 'box' }, h('span', { class: 'who' }, name.charAt(0).toUpperCase() + name.slice(1)), h('b', { lang: 'de' }, de), h('span', { class: 'en' }, en))));
   b.querySelector('.bust').setAttribute('aria-hidden', 'true'); bar.append(b); setTimeout(() => b.remove(), 2400);
+  // one read: the room between the screen's content and the bar (offsetHeight: the bar's spring-up transform must not count)
+  const kids = [...(document.querySelector('#view > .view:not(.leaving)')?.children || [])], top = innerHeight - bar.offsetHeight;
+  if (top - Math.max(0, ...kids.map(e => e.getBoundingClientRect().bottom)) < b.offsetHeight + 24) {
+    const head = Math.max(0, ...kids.filter(e => e.classList.contains('lesson-top')).map(e => e.getBoundingClientRect().bottom));
+    b.classList.add('top'); b.style.top = head + 12 - top + 'px';
+  }
   if (VOX_URL[de]) setTimeout(() => { if (b.isConnected && !curSource && !curUtter) speak(de); }, 450);
 }
 function lessonCheck(v, L, ls) {
