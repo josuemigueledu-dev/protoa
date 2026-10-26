@@ -110,7 +110,15 @@ function renderMap(v) {
   const focusY = () => { const b = nowEl.getBoundingClientRect(), y = PANE.scrollTop - PANE.getBoundingClientRect().top; return Math.min(b.top + y - 96, b.bottom + y - floor()); };
   // phones: and no face is left half under the tab bar; scroll on until it is whole
   const wholeFaces = () => { if (!document.body.classList.contains('lay-mobile')) return; const bar = tabsEl.getBoundingClientRect().top, cut = [...list.querySelectorAll('.bust')].map(b => b.getBoundingClientRect()).find(r => r.top < bar && r.bottom > bar); if (cut) PANE.scrollTop += cut.bottom - bar + 8; };
-  if (nowEl) requestAnimationFrame(() => { if (nowEl.getBoundingClientRect().bottom > floor()) { PANE.scrollTo({ top: Math.max(0, focusY()), behavior: 'auto' }); wholeFaces(); } });
+  // a map drawn straight from a tap (Done → Continue) gets here before the browser has sized the rows that only
+  // lay out on screen (content-visibility, night-glass.css): the pane can't scroll that far yet, so try a frame later
+  const toStop = tries => requestAnimationFrame(() => {
+    if (!nowEl.isConnected || nowEl.getBoundingClientRect().bottom <= floor()) return;
+    const y = Math.max(0, focusY());
+    if (y > PANE.scrollHeight - PANE.clientHeight && tries) return toStop(tries - 1);
+    PANE.scrollTo({ top: y, behavior: 'auto' }); wholeFaces();
+  });
+  if (nowEl) toStop(3);
   if (nowEl && 'IntersectionObserver' in window) {
     const pill = h('button', { class: 'weiter', hidden: true, onclick: () => PANE.scrollTo({ top: Math.max(0, focusY()), behavior: reduced() ? 'auto' : 'smooth' }) }, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '↓'), 'Your stop');
     document.body.append(pill);
