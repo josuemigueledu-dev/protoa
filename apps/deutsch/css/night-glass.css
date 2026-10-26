@@ -624,6 +624,9 @@ body.lay-tablet .lesson-top>.close{margin-right:calc(var(--ptab-w) - 24px)}
 body:not(.lay-desktop) .lesson-top.rv-top{grid-template-columns:44px minmax(0,1fr) auto}
 body.lay-mobile .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 8px)}
 body.lay-tablet .rv-top .rv-count{margin-right:calc(var(--ptab-w) - 24px)}
+/* a summary with no header above it (review, Sprechen) starts below the tab, 12px clear of it, not under its corner */
+.tabroom{height:16px}
+body:not(.lay-desktop) .tabroom{height:calc(var(--ptab-top) + var(--ptab-h) - 8px)}
 
 /* ---------- reduced motion: nothing travels, content stays ---------- */
 @media (prefers-reduced-motion:reduce){
