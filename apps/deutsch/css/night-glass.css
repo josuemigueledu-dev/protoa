@@ -202,6 +202,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--field-focus,var(--ste
 .card .bar i,.widget .bar i{background:var(--steel)}
 .minibars i{background:var(--steel)}
 .ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--ring);filter:none}
+/* Your words: the word starts below its strength ring (top 8px, 22px tall), so a long word never runs under it */
+.btile{padding-top:34px}
 .today-hero .goal .ring circle.bg{stroke:rgba(238,241,244,.14)}
 
 /* ---------- frame: navy top bar, cream glass tab bar with a magenta line ----------
