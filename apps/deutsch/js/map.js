@@ -193,11 +193,13 @@ function mapRow(it) {
 function openSheet(build, cls = '') {
   document.querySelector('.sheet')?.remove();
   const sheet = h('div', { class: 'sheet ' + cls, role: 'dialog', 'aria-modal': 'true' }); const inner = h('div', { class: 'in' });
-  const close = () => { if (sheet.classList.contains('closing')) return; sheet.classList.add('closing'); setTimeout(() => sheet.remove(), reduced() ? 0 : 220); document.removeEventListener('keydown', esc_); };
+  const opener = document.activeElement; // focus goes back to what opened the sheet, without scrolling to it
+  const close = () => { if (sheet.classList.contains('closing')) return; sheet.classList.add('closing'); setTimeout(() => sheet.remove(), reduced() ? 0 : 220); document.removeEventListener('keydown', esc_); if (opener && opener.isConnected && opener !== document.body) opener.focus({ preventScroll: true }); };
   const esc_ = e => { if (e.key === 'Escape') close(); };
   sheet.addEventListener('click', e => { if (e.target === sheet) close(); });
   inner.append(h('div', { class: 'grab', 'aria-hidden': 'true' }), h('button', { class: 'icon-btn sm close', 'aria-label': 'Close', html: ICONS.x, onclick: close }));
   build(inner, close);
+  const title = inner.querySelector('h1, h2, .wcard .de'); if (title) sheet.setAttribute('aria-label', title.textContent.trim());
   // swipe down to close
   let y0 = null, dy = 0;
   inner.addEventListener('pointerdown', e => { if (inner.scrollTop > 0 || e.target.closest('button,input,textarea,select')) return; y0 = e.clientY; dy = 0; inner.style.transition = 'none'; });
