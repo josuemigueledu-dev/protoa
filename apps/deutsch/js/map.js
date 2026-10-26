@@ -74,10 +74,7 @@ function mapHead(ch, chN) {
     h('div', { class: 'klv', role: 'list', 'aria-label': 'Levels' }, ...MAP_LEVELS.map((l, i) => h('div', { class: 'lvl' + (i === at ? ' at' : ''), role: 'listitem', 'aria-label': l.code + ': ' + Math.round(fill(l) * 100) + ' %' },
       h('i', { 'aria-hidden': 'true' }, h('b', { style: `transform:scaleX(${fill(l)})` })), h('span', { 'aria-hidden': 'true' }, l.code)))));
 }
-function renderMap(v) {
-  const { items, cur } = mapModel(), done = S.progress.lessonsDone;
-  const refN = cur || (done.length ? Math.max(...done) : 1), chI = Math.max(0, CHAPTERS.findLastIndex(c => c.from <= refN));
-  v.append(mapHead(CHAPTERS[chI], chI + 1));
+function mapRows(items) {
   // a chapter whose lessons are all unwritten folds into one row
   const chapterOf = n => CHAPTERS.findLastIndex(c => c.from <= n), folded = new Set();
   CHAPTERS.forEach((c, i) => { const ls = items.filter(it => it.kind === 'lesson' && chapterOf(it.n) === i); if (ls.length && ls.every(it => it.state === 'soon')) folded.add(i); });
@@ -90,8 +87,21 @@ function renderMap(v) {
     if (it.kind === 'review' && ends.has(it.to)) it.test = chapterOf(it.to) + 1;
     rows.push(it);
   });
-  // the line is steel down to your stop (the current one, else the first not done) and grey after it
-  let nowI = rows.findIndex(r => r.state === 'now'); if (nowI < 0) nowI = rows.findIndex(r => r.kind !== 'chapter' && r.kind !== 'fold' && r.state !== 'done'); if (nowI < 0) nowI = rows.length - 1;
+  return rows;
+}
+// your stop, where the line turns from steel to grey: the current one; past the written lessons, the stop after
+// your last lesson, as on Today (Lesson 0 · Sounds is optional, so it is never your stop)
+function stopIndex(rows) {
+  const now = rows.findIndex(r => r.state === 'now'); if (now >= 0) return now;
+  const last = rows.findLastIndex(r => r.kind === 'lesson' && r.state === 'done');
+  const next = rows.findIndex((r, i) => i > last && r.kind !== 'start' && r.kind !== 'chapter' && r.kind !== 'fold' && r.state !== 'done');
+  return next >= 0 ? next : rows.length - 1;
+}
+function renderMap(v) {
+  const { items, cur } = mapModel(), done = S.progress.lessonsDone;
+  const refN = cur || (done.length ? Math.max(...done) : 1), chI = Math.max(0, CHAPTERS.findLastIndex(c => c.from <= refN));
+  v.append(mapHead(CHAPTERS[chI], chI + 1));
+  const rows = mapRows(items), nowI = stopIndex(rows);
   // after a lesson: the line fills from the stop the map showed last time down to the new one
   const fromN = S.progress.trainAt, fromI = fromN && cur && fromN < cur && !reduced() ? rows.findIndex(r => r.kind === 'lesson' && r.n === fromN) : -1;
   const list = h('ol', { class: 'kline', 'aria-label': 'Course map' }); v.append(list);
