@@ -184,7 +184,7 @@
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07);transition:transform .15s var(--ease)}
 .gfeat:active{transform:scale(.99)}
 .gfeat .k{color:var(--magenta-ink);font-weight:700;font-size:.8125rem}
-.gfeat .t{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.5rem;line-height:1.1}
+.gfeat .t{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.375rem;line-height:1.1}
 .gfeat .conj{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;min-width:0;overflow-wrap:anywhere;background:rgba(127,140,160,.14);border-radius:var(--r);padding:12px 14px;font-size:1.0625rem}
 .gfeat .conj span:nth-child(odd){color:var(--ngrey)} .gfeat .conj b{color:var(--cyan-ink)}
 .gfeat .go{font-weight:700;font-size:.875rem;color:var(--ngrey)}
