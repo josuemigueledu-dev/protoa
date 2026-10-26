@@ -184,14 +184,14 @@ function renderProfile(v) {
   let tot = 0, good = 0; const cut = dayKey(-30);
   for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) for (const [d, , g] of (c.hist || [])) if (d >= cut) { tot++; if (g >= 2) good++; }
   const f = forecast(14);
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, tot ? `recall ${Math.round(100 * good / tot)}% over ${tot} reviews (30 days)` : 'no reviews in the last 30 days')),
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, tot ? `${Math.round(100 * good / tot)}% recalled · ${tot} review${tot === 1 ? '' : 's'} in 30 days` : 'no reviews in the last 30 days')),
     barChart(f.map((n, i) => ({ v: n, tip: `${i === 0 ? 'today (incl. overdue)' : dayKey(i)}: ${n} due` })), { label: 'Reviews due, next 14 days', h: 140, xlabels: [[0, 'today'], [13, '+13 days']] })));
   v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Word strength'), strengthBar()));
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Activity'), h('span', { class: 'faint' }, 'last 16 weeks')), heatmap(16), h('div', { class: 'legend' }, h('span', {}, 'less'), ...[0, 1, 2, 3, 4].map(i => h('i', { style: `background:var(--heat-${i})` })), h('span', {}, 'more'))));
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
   const sorted = [...stamps.filter(s => s.on), ...stamps.filter(s => !s.on)];
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', { lang: 'de' }, 'Stempelheft'), h('span', { class: 'faint' }, got + ' of ' + stamps.length + ' stamps')), h('div', { class: 'stamps', id: 'stamp-grid' }, ...sorted.slice(0, got + 10).map(stampEl)), stamps.length > got + 10 ? h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: e => { const g = document.getElementById('stamp-grid'); g.innerHTML = ''; sorted.forEach((s, i) => g.append(stampEl(s, i))); e.currentTarget.remove(); } }, 'Show all ' + stamps.length + ' stamps') : ''));
-  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Lesson 0 · Sounds', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, theme, voice, moving your progress', () => openMore(renderSettings)]];
+  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Lesson 0 · Sounds', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, audio, theme, voice, moving your progress', () => openMore(renderSettings)]];
   links.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: fn }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›'))));
 }
 

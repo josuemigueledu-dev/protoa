@@ -37,7 +37,7 @@ function paceWidget() {
 function levelTrack() {
   const info = levelInfo(), w = learnedCount();
   return h('div', { class: 'levels', role: 'list', 'aria-label': 'Levels' }, ...info.map(l => h('div', { class: 'lv' + (l.passed ? ' passed' : l.reached ? ' ready' : ''), role: 'listitem' },
-    h('b', {}, l.code), h('span', {}, l.passed ? 'passed' : l.reached ? 'Exam ready' : Math.max(0, l.words - w) + ' to go'))));
+    h('b', {}, l.code), h('span', {}, l.passed ? 'passed' : l.reached ? 'exam ready' : Math.max(0, l.words - w).toLocaleString('en') + ' to go'))));
 }
 
 /* ---------- exam content (built-in texts; items from the learner's own words) ---------- */
