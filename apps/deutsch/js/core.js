@@ -292,7 +292,7 @@ const VoiceLight = {
 // (see RENDER NOTES at the end of this file). Sprites would be shipped as base64 MP3 in VOX_FILES.
 const VOX = {};
 const VOX_FILES = {};
-// Pre-rendered lines from `node scripts/voices.mjs render`: text -> audio/<hash>.opus, filled by loadVoxManifest().
+// Pre-rendered lines from `node scripts/voices.mjs render`: text -> audio/<hash>.opus (or [sprite, start ms, length ms]), filled by loadVoxManifest().
 // Absent (no manifest, or opened as a file) means every line uses the device voice.
 const VOX_URL = {};
 async function loadVoxManifest() {
@@ -337,13 +337,16 @@ function stopAudio() {
 let hlTimers = [];
 function highlightWord(i) { hlTimers.forEach(clearTimeout); hlTimers = []; document.querySelectorAll('.gl .w.speaking').forEach(e => e.classList.remove('speaking')); if (i === null) return; }
 async function playVoxUrl(text, rate) {
-  const c = ctx(), url = 'audio/' + VOX_URL[text], seq = audioSeq;
+  // an entry is a file of its own, or [file, start ms, length ms]: a slice of a sprite that holds many lines, so a
+  // copy with a file limit (the owner's) ships a few files instead of hundreds
+  const e = VOX_URL[text], [file, at, len] = Array.isArray(e) ? e : [e];
+  const c = ctx(), url = 'audio/' + file, seq = audioSeq;
   try {
     if (!voxBuffers[url]) voxBuffers[url] = await fetch(url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); }).then(b => c.decodeAudioData(b));
   } catch (e) { delete VOX_URL[text]; return false; }
   if (seq !== audioSeq) return true;
   const src = c.createBufferSource(); src.buffer = voxBuffers[url]; src.playbackRate.value = rate || 1; VoiceLight.audio(src, c);
-  curSource = src; src.start(); Voice.talk(true);
+  curSource = src; if (at != null) src.start(0, at / 1000, len / 1000); else src.start(); Voice.talk(true);
   return new Promise(res => { src.onended = () => { if (curSource === src) { curSource = null; Voice.talk(false); VoiceLight.end(); } res(true); }; });
 }
 async function playVox(text, rate) {
