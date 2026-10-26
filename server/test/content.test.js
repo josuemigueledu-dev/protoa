@@ -18,7 +18,7 @@ const scenes = get('Object.keys(SCENES)');
 const pics = get('Object.keys(PICS)');
 const course = get('COURSE');
 
-const TYPES = ['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'conj', 'pron'];
+const TYPES = ['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'conj', 'pron', 'num', 'name'];
 const MOODS = ['neutral', 'pleased', 'thinking', 'amused', 'surprised'];
 const PLACEHOLDER = /\{(\w+)\}/g;
 const str = v => typeof v === 'string' && v.trim().length > 0;

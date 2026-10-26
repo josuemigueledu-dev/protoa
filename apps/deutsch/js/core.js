@@ -463,6 +463,8 @@ function orderHint(Af, T, target, lex) {
   return k === 0 ? `It starts with <em>${esc(T[0])}</em>.` : `<em>${esc(raw.slice(0, k).join(' ').replace(/[,;:]$/, ''))}</em> is right; next comes <em>${esc(T[k])}</em>.`;
 }
 
+// a course word for a token as written in a line: Was → was, Tag → der Tag
+function courseWord(w) { return wordDef(w) || wordDef(w.toLowerCase()) || ['der', 'die', 'das'].map(a => wordDef(a + ' ' + w)).find(Boolean) || null; }
 // Compare answer with target line. Returns {ok:true, exact, note?} or {ok:false, kind, hint, caps?}
 function diagnose(answer, target, lex, glossStr, alts = []) {
   answer = applyShortcuts(answer);
@@ -483,7 +485,13 @@ function diagnose(answer, target, lex, glossStr, alts = []) {
   }
   if (!A.length) return { ok: false, kind: 'empty', hint: 'Type your line in German.' };
   const gl = glossStr ? parseGloss(glossStr) : [];
-  const enOf = w => { for (const [d, e] of gl) if (deTokens(d).some(x => sameWord(x, w))) return e; return ''; };
+  // a word's gloss: its own entry in the line's gloss, else the chunk it sits in ("Guten Morgen", part: true), else its course entry
+  const enOf = w => {
+    const hit = gl.find(([d]) => deTokens(d).some(x => sameWord(x, w)));
+    if (hit) return { en: hit[1], part: deTokens(hit[0]).length > 1 };
+    const def = courseWord(w); return def && def.en && def.en.length ? { en: def.en[0] } : null;
+  };
+  const meansOf = w => { const g = enOf(w); return !g || fold(g.en) === fold(w) ? '' : g.part ? `, as in "${esc(g.en)}"` : `, "${esc(g.en)}"`; };
   const Af = A.map(fold), Tf = T.map(fold);
   // 1. word order: same multiset
   if (A.length === T.length && [...Af].sort().join(' ') === [...Tf].sort().join(' '))
@@ -513,14 +521,17 @@ function diagnose(answer, target, lex, glossStr, alts = []) {
       }
     }
     // spelling: edit distance ≤ 2 to some answer token not used by target
+    // a near miss that is itself a course word (Was for Wer, a wrong tile) is the wrong word, not a typo
     const near = A.find(a => !Tf.includes(fold(a)) && editDist(a, t) <= 2 && t.length > 2);
-    if (near) return { ok: false, kind: 'spelling', hint: `Almost: check the spelling of <em>${esc(t)}</em>.` };
+    const nearWord = near && (courseWord(near) || verbLemmaOf(near, lex) || ARTICLES[fold(near)]);
+    if (near && !nearWord) return { ok: false, kind: 'spelling', hint: `Almost: check the spelling of <em>${esc(t)}</em>.` };
     // related word used instead
     const rel = A.find(a => { const r = (lex.related || {})[a] || (lex.related || {})[a.toLowerCase()]; return r && (sameWord(r, t) || deTokens(r).some(x => sameWord(x, t)) || verbLemmaOf(t, lex) === r); });
     if (rel) return { ok: false, kind: 'related', hint: `Close in meaning, but here German uses <em>${esc(t)}</em>, not <em>${esc(rel)}</em>.` };
+    if (nearWord) return { ok: false, kind: 'word', hint: `Wrong word: here it is <em>${esc(t)}</em>${meansOf(t)}, not <em>${esc(near)}</em>${meansOf(near)}.` };
     // missing / unknown
     const en = enOf(t);
-    return { ok: false, kind: 'missing', hint: `A word is missing or wrong: it starts with <em>${esc(t[0])}</em>${en ? ` and means "${esc(en)}"` : ''}.` };
+    return { ok: false, kind: 'missing', hint: `A word is missing or wrong: it starts with <em>${esc(t[0])}</em>${!en ? '' : en.part ? ` and is part of "${esc(en.en)}"` : ` and means "${esc(en.en)}"`}.` };
   }
   // all target words present but extra words / punctuation
   const extra = A.filter(a => !Tf.includes(fold(a)));
