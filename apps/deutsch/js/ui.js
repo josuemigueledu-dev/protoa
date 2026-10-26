@@ -1033,8 +1033,9 @@ function onboarding() {
   const fields = [['name', 'Your name', 'e.g. Alex'], ['city', 'Where you live', 'e.g. Orlando'], ['field', 'What you study or do', 'e.g. computer science'], ['interests', 'Three to five interests', 'e.g. cycling, cinema, cooking'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
   const close = (saveIt, place) => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); if (place) openPlacementIntro(true); else render(); };
-  inner.append(h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => close(true) }, 'Save and start'), h('button', { class: 'btn ghost', onclick: () => close(false) }, 'Skip for now')));
-  inner.append(h('button', { class: 'btn ghost', style: 'white-space:normal;line-height:1.25', onclick: () => close(true, true) }, 'Not a beginner? Find your lesson'));
+  // the buttons ride a foot that stays at the sheet's bottom edge, so "Not a beginner?" is in view on every screen size
+  inner.append(h('div', { class: 'foot' }, h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => close(true) }, 'Save and start'), h('button', { class: 'btn ghost', onclick: () => close(false) }, 'Skip for now')),
+    h('button', { class: 'btn quiet', onclick: () => close(true, true) }, 'Not a beginner? Find your lesson')));
   sheet.append(inner); document.body.append(sheet); setTimeout(() => inputs.name.focus(), 100);
 }
 

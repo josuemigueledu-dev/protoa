@@ -278,6 +278,18 @@ body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
 .sheet .in>.grab+.close+h2{padding-right:40px}
 /* About you's intro is a page head's intro line: 15 px, 8 px under the title (it was 13 px, 0 px under) */
 .sheet .in>.row:first-child h2+p{font-size:var(--t-sub);line-height:1.45;margin:8px 0 0;max-width:46ch;text-wrap:pretty}
+/* About you: the buttons ride a foot pinned to the sheet's bottom edge, on paper with a hairline over the fields that scroll
+   under it, so "Not a beginner? Find your lesson" is in view at 390 and 1280 (it sat under the screen's edge, #146);
+   the two text boxes are two lines tall (88 px before), so less of the form scrolls under it */
+.sheet .in>.foot{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom,0px));z-index:1;display:flex;flex-direction:column;gap:8px;
+  margin:0 calc(-1 * max(24px,env(safe-area-inset-right,0px))) calc(-24px - env(safe-area-inset-bottom,0px)) calc(-1 * max(24px,env(safe-area-inset-left,0px)));
+  padding:16px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));
+  background:var(--card-solid);box-shadow:0 -1px 0 var(--line)}
+/* a field that takes focus scrolls clear of the foot, not under it */
+.sheet .in:has(>.foot){scroll-padding-bottom:160px}
+.sheet .foot .row>.btn{flex:1}
+.sheet .foot .btn.quiet{min-height:44px;padding:8px 16px;font-size:var(--t-sub);white-space:normal;line-height:1.25}
+.sheet textarea[id^=ob-]{min-height:76px}
 /* a preview sheet (a lesson, a review stop, the exam, Laute, "Not a beginner?"): the eyebrow 4 px over the title and
    the line under it 8 px below, as on a page head, so the three read as one block under the picture (16 and 16 before) */
 .preview>.eyebrow+h1{margin-top:-12px}
