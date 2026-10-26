@@ -157,7 +157,7 @@ function mapRow(it) {
     const fresh = L.words.filter(w => !isLearned(w.de)).length;
     const ph = h('button', { class: 'kpic' + (pic ? '' : ' none'), 'aria-label': `About lesson ${it.n}`, onclick: () => openLessonPreview(it.n) }); if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
     li.append(h('div', { class: 'card primary kcard', 'aria-label': aria }, ph,
-      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)} min`),
+      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)}\u00a0min`),
         h('button', { class: 'btn go', onclick: () => startLesson(it.n) }, resume ? 'Continue' : 'Start'))));
     return li;
   }
@@ -196,7 +196,7 @@ function openStation(it) {
   if (it.kind === 'review') return openReviewPreview(it);
   if (it.kind === 'exam') return it.state === 'done' ? toast(it.code + ' exam passed') : openExamPreview(it.code);
   if (it.kind === 'start') return openSheet((inner, close) => inner.append(h('div', { class: 'preview' },
-    h('div', { class: 'bigicon' }, sigEl('sound')), h('div', { class: 'eyebrow' }, 'Lesson 0 · Start'), h('h1', { lang: 'de' }, 'Laute'), h('p', { class: 'muted' }, 'How German spelling maps to sound: 18 pairings, each with words to tap and hear.'),
+    h('div', { class: 'bigicon' }, sigEl('sound')), h('div', { class: 'eyebrow' }, 'Lesson 0 · Sounds'), h('h1', { lang: 'de' }, 'Laute'), h('p', { class: 'muted' }, `How German spelling maps to sound: ${SOUNDS.length} pairings, each with words to tap and hear.`),
     h('button', { class: 'btn', onclick: () => { close(); openMore(renderSounds); } }, S.progress.sounds ? 'Open again' : 'Start'))));
 }
 function openLessonPreview(n) {
@@ -222,7 +222,7 @@ function openReviewPreview(it) {
   openSheet((inner, close) => {
     const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon rv' }, sigEl('review')), h('div', { class: 'eyebrow' }, 'Review stop'), h('h1', { lang: 'de' }, 'Wiederholung'),
       h('p', { class: 'muted' }, 'Words and lines from ' + courseOf(it.from).station + ' to ' + courseOf(it.to).station + (items.some(x => !x.c.lesson && x.c.v1) ? ', including the ones you brought from Protoa v1.' : '.')),
-      h('div', { class: 'facts' }, h('span', { class: 'chip' }, items.length > 20 ? '20 of ' + items.length + ' cards' : items.length + ' card' + (items.length === 1 ? '' : 's')), h('span', { class: 'chip' }, '≈ ' + Math.max(3, Math.round(Math.min(items.length, 20) * .4)) + ' min'), it.state === 'done' ? h('span', { class: 'chip ok' }, 'done') : ''));
+      h('div', { class: 'facts' }, h('span', { class: 'chip' }, items.length > 20 ? '20 of ' + items.length + ' cards' : items.length + ' card' + (items.length === 1 ? '' : 's')), h('span', { class: 'chip' }, '≈ ' + reviewMinutes(Math.min(items.length, 20)) + ' min'), it.state === 'done' ? h('span', { class: 'chip ok' }, 'done') : ''));
     const start = () => { close(); startReview(shuffle(items).slice(0, 20).map((x, i) => x.kind === 'sent' ? x : Object.assign({}, x, { kind: i % 3 === 2 && x.c.r && x.c.r[1] >= 4 ? 'p' : 'r' }))); PR.stop = it.id; };
     if (!items.length) p.append(h('p', { class: 'faint' }, 'Nothing to review yet. Words from these lessons appear here once you have learned them.'));
     else if (it.state === 'locked') { p.append(h('p', { class: 'faint' }, 'Opens after ' + courseOf(it.to).station + '.')); p.append(h('button', { class: 'btn ghost', onclick: start }, 'Review anyway')); }
@@ -246,7 +246,7 @@ function lessonTop(L, ls, within = 0) {
 }
 function lessonScene(v, L, ls) {
   v.append(lessonTop(L, ls), sceneEl(L));
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, L.scene.place + ' · ' + L.scene.time), ...L.scene.intro.slice(0, 2).map(p => h('p', {}, fill(p)))));
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, L.scene.place), ...L.scene.intro.slice(0, 2).map(p => h('p', {}, fill(p)))));
   // the scene's first spoken line, from the person who says it (not a fixed greeting: lessons happen in different places)
   const first = (L.conv || []).find(t => !t.l && t.w);
   if (first) {

@@ -111,7 +111,7 @@ function computeStamps() {
   const done = new Set(S.progress.lessonsDone), words = learnedCount(), rv = new Set(S.progress.reviewStops || []);
   const activeDays = Object.values(S.progress.days || {}).filter(d => (d.new || 0) + (d.reviews || 0) > 0 || (d.secs || 0) >= 60).length;
   const reviews = Object.values(S.progress.days || {}).reduce((a, d) => a + (d.reviews || 0), 0), talks = S.progress.talkCount || 0;
-  const st = [{ id: 'laute', t: 'Laute', s: 'Lesson 0', icon: 'sound', on: !!S.progress.sounds }];
+  const st = [{ id: 'laute', t: 'Laute', s: 'Lesson 0 · Sounds', icon: 'sound', on: !!S.progress.sounds }];
   COURSE.forEach(c => st.push({ id: 'st' + c.n, t: c.station, s: 'Lesson ' + c.n + ' · ' + c.topic, icon: c.icon, on: done.has(c.n) }));
   [50, 100, 250, 500, 1000, 1500, 2400].forEach(n => st.push({ id: 'w' + n, t: n + ' Wörter', s: n === 2400 ? 'B1 vocabulary' : 'your words', icon: n >= 1000 ? 'bulb' : 'puzzle', on: words >= n }));
   LEVELS.forEach(l => st.push({ id: 'lv' + l.code, t: l.code + ' bestanden', s: 'level exam ≥ 90%', icon: 'exam', on: levelsPassed().includes(l.code) }));
@@ -191,7 +191,7 @@ function renderProfile(v) {
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
   const sorted = [...stamps.filter(s => s.on), ...stamps.filter(s => !s.on)];
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', { lang: 'de' }, 'Stempelheft'), h('span', { class: 'faint' }, got + ' of ' + stamps.length + ' stamps')), h('div', { class: 'stamps', id: 'stamp-grid' }, ...sorted.slice(0, got + 10).map(stampEl)), stamps.length > got + 10 ? h('button', { class: 'btn ghost sm', style: 'align-self:flex-start', onclick: e => { const g = document.getElementById('stamp-grid'); g.innerHTML = ''; sorted.forEach((s, i) => g.append(stampEl(s, i))); e.currentTarget.remove(); } }, 'Show all ' + stamps.length + ' stamps') : ''));
-  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Sounds (Lesson 0)', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, theme, voice, moving your progress', () => openMore(renderSettings)]];
+  const links = [['Grammar reference', 'Verb position, gender, endings…', () => go('grammar')], ['Lesson 0 · Sounds', 'German spelling to sound, once', () => openMore(renderSounds)], ['Method', 'Why each feature exists, with sources', () => openMore(renderMethod)], ['Settings', 'Goal, about me, theme, voice, moving your progress', () => openMore(renderSettings)]];
   links.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: fn }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›'))));
 }
 
@@ -200,7 +200,6 @@ let REVIEW_SUMMARY = null;
 function renderPracticeHub(v) {
   if (REVIEW_SUMMARY) { renderReviewSummary(v); return; }
   const due = dueCards(), learnedAll = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, c]) => c.learned && !c.sent);
-  const est = Math.max(1, Math.round(due.length * 0.15));
   v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('div', {}, h('h1', {}, 'Practice'), h('div', { class: 'faint' }, 'Every word you know, kept strong.'))));
   // first run: no word learned yet, so the hero says where the first ones come from instead of "0 cards due"
   const fresh = !learnedAll.length && !due.length, nextN = fresh ? currentLessonN() : null, nextL = nextN != null && lessonById(nextN);
@@ -208,7 +207,7 @@ function renderPracticeHub(v) {
     const ls = S.progress.lessonState, resume = ls && ls.n === nextN;
     v.append(h('div', { class: 'card stack primary hubfresh' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('h2', {}, 'No words yet'), h('div', { class: 'faint' }, `Lesson ${nextN}, ${nextL.title}, brings your first ${nextL.words.length} words. After it they come back here, a few at a time, so they stay.`))),
       h('button', { class: 'btn wide', onclick: () => startLesson(nextN) }, (resume ? 'Continue lesson ' : 'Start lesson ') + nextN)));
-  } else v.append(h('div', { class: 'card stack primary' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('div', {}, h('span', { class: 'big' }, due.length), h('span', { class: 'muted' }, due.length === 1 ? ' card due' : ' cards due')), h('div', { class: 'faint' }, due.length ? summarize(due) + ' About ' + est + ' min.' : 'Nothing due right now. New cards come back on schedule.'))),
+  } else v.append(h('div', { class: 'card stack primary' }, h('div', { class: 'hubhero' }, sigEl('review'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Daily review'), h('div', {}, h('span', { class: 'big' }, due.length), h('span', { class: 'muted' }, due.length === 1 ? ' card due' : ' cards due')), h('div', { class: 'faint' }, due.length ? summarize(due) + (due.length > 40 ? ` A round is 40 cards, about ${reviewMinutes(40)}\u00a0min.` : ` About ${reviewMinutes(due.length)}\u00a0min.`) : 'Nothing due right now. New cards come back on schedule.'))),
     due.length ? h('button', { class: 'btn wide', onclick: () => startReview(due.slice(0, 40)) }, due.length > 40 ? 'Review 40 now' : 'Start review') : ''));
   const pick = (arr, n) => shuffle(arr).slice(0, n);
   const weak = learnedAll.filter(([id, c]) => c.r && c.r[4] >= 2), conv = Object.entries((S.cards.sent || { w: {} }).w);
@@ -232,7 +231,7 @@ function renderPracticeHub(v) {
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
-  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? ' word' : ' words')); }))));
+  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? '\u00a0word' : '\u00a0words')); }))));
   // the forecast and strength charts are empty until the first words; Your words below says how to start
   if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
   v.append(wordBank());

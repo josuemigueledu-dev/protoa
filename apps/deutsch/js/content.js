@@ -80,23 +80,27 @@ const SCENES = {
 /* ---------- Lesson 0: Sounds ---------- */
 const SOUNDS = [
   { k: 'ei', say: 'like English "eye"', ex: [['nein','no'],['mein','my'],['heißen','to be called']] },
-  { k: 'ie', say: 'a long "ee"', ex: [['wie','how'],['Sie','you (formal)'],['Wiedersehen','seeing again']] },
-  { k: 'eu / äu', say: 'like "oy" in "boy"', ex: [['Freut mich','nice to meet you'],['neun','nine'],['Häuser','houses']] },
-  { k: 'au', say: 'like "ow" in "cow"', ex: [['aus','from'],['Haus','house'],['auch','also']] },
-  { k: 'w', say: 'an English "v"', ex: [['wie','how'],['Weber','Weber'],['Wasser','water']] },
+  { k: 'ie', say: 'a long "ee", a Spanish i held for longer', ex: [['wie','how'],['Sie','you (formal)'],['sieben','seven']] },
+  { k: 'eu / äu', say: 'like "oy" in "boy", or Spanish "hoy"', ex: [['Freut mich','nice to meet you'],['neun','nine'],['Häuser','houses']] },
+  { k: 'au', say: 'like "ow" in "cow", or Spanish "auto"', ex: [['aus','from'],['Haus','house'],['auch','also']] },
+  { k: 'lang / kurz', say: 'long or short: a vowel is usually long before one consonant and short before two. Spanish vowels are all short, so hold the long ones.', ex: [['Tag','day'],['Stadt','city'],['Sohn','son'],['Sonne','sun']] },
+  { k: 'w', say: 'an English "v": top teeth on the lower lip. Never a Spanish b.', ex: [['wie','how'],['Weber','Weber'],['Wasser','water']] },
   { k: 'v', say: 'usually an English "f"', ex: [['vier','four'],['Vater','father'],['viel','much']] },
+  { k: 's', say: 'before a vowel, a buzzing "z" as in "zoo". The Spanish s never buzzes.', ex: [['sieben','seven'],['Sonntag','Sunday'],['lesen','to read']] },
   { k: 'z', say: '"ts", as in "cats"', ex: [['zehn','ten'],['Zeit','time'],['zu','to']] },
-  { k: 'j', say: 'an English "y"', ex: [['ja','yes'],['Jahr','year'],['jetzt','now']] },
+  { k: 'j', say: 'an English "y", as in "yes"', ex: [['ja','yes'],['Jahr','year'],['jetzt','now']] },
+  { k: 'r', say: 'at the start of a syllable, a light rasp at the back of the throat. Never rolled like the Spanish r.', ex: [['rot','red'],['Brot','bread'],['drei','three']] },
   { k: 'sch', say: 'English "sh"', ex: [['schön','beautiful'],['Schule','school'],['Tschüss','bye']] },
   { k: 'st- / sp-', say: '"sht" and "shp" at the start of a word', ex: [['Student','student'],['Stadt','city'],['Sport','sport']] },
-  { k: 'ch', say: 'after i/e: a soft hiss ("ich"); after a/o/u: a throaty "kh" ("Buch")', ex: [['ich','I'],['nicht','not'],['Buch','book']] },
+  { k: 'ch', say: 'after a, o, u and au: the Spanish j of "jamón" ("Buch"). Everywhere else: a soft hiss, like the h in "huge" ("ich").', ex: [['Buch','book'],['acht','eight'],['ich','I'],['nicht','not']] },
+  { k: '-ig', say: 'at the end of a word, like "ich"', ex: [['zwanzig','twenty'],['richtig','right'],['billig','cheap']] },
   { k: 'ß', say: 'a sharp "ss"; the vowel before it is long', ex: [['heißen','to be called'],['Straße','street'],['groß','big']] },
   { k: 'ä', say: 'like "e" in "bed" (short) or "ai" in "fair" (long)', ex: [['Städte','cities'],['spät','late'],['Käse','cheese']] },
-  { k: 'ö', say: 'say "ay" with rounded lips', ex: [['schön','beautiful'],['möchte','would like'],['Köln','Cologne']] },
-  { k: 'ü', say: 'say "ee" with rounded lips', ex: [['Tschüss','bye'],['fünf','five'],['über','over']] },
+  { k: 'ö', say: 'say a Spanish e with your lips rounded for o', ex: [['schön','beautiful'],['möchte','would like'],['Köln','Cologne']] },
+  { k: 'ü', say: 'say a Spanish i with your lips rounded for u', ex: [['Tschüss','bye'],['fünf','five'],['über','over']] },
   { k: '-er', say: 'at the end of a word: a relaxed "uh"', ex: [['Lehrer','teacher'],['Weber','Weber'],['aber','but']] },
-  { k: 'h', say: 'silent after a vowel; it makes the vowel long', ex: [['Lehrer','teacher'],['sehen','to see'],['Uhr','clock']] },
-  { k: 'b / d / g', say: 'at the end of a word they soften to "p / t / k"', ex: [['Tag','day'],['und','and'],['halb','half']] },
+  { k: 'h', say: 'at the start of a word you breathe it, as in "hat"; the Spanish h is silent. After a vowel it is silent and makes the vowel long.', ex: [['Hallo','hello'],['heute','today'],['sehen','to see'],['Uhr','clock']] },
+  { k: 'b / d / g', say: 'at the end of a word they harden to "p / t / k"', ex: [['Tag','day'],['und','and'],['halb','half']] },
 ];
 
 /* ---------- Lessons and grammar ----------
@@ -124,11 +128,12 @@ const METHOD = [
   { f: 'Building the conversation yourself', why: 'Writing your own lines forces you to notice the gap between what you want to say and what you can say. That gap is where learning happens.', src: 'Output hypothesis: Swain (1985, 1995).', lab: 'est' },
   { f: 'Help only after a mistake; the hint names the problem', why: 'The ladder (meaning → targeted hint → answer) is a prompt, not a correction. Prompts that push you to self-repair lead to more uptake than being handed the right form.', src: 'Lyster & Ranta (1997); Lyster & Saito (2010) meta-analysis.', lab: 'est' },
   { f: 'Illustrations on concrete nouns', why: 'A picture plus a word gives two routes to the memory instead of one.', src: 'Dual coding: Paivio (1971, 1986).', lab: 'est' },
-  { f: 'One partner, one city, a story', why: 'Words met inside a scene with a person and a place come back more easily than words met in a list. The scene gives each lesson a hook.', src: 'Narrative and memory: Mar, Li, Nguyen & Ta (2021) meta-analysis; context effects in vocabulary learning (inferred for this specific design).', lab: 'inf' },
+  { f: 'One cast, one city, one story', why: 'Words met inside a scene, with people you know and a place you can picture, come back more easily than words met in a list. Every lesson carries the same story on, in Berlin.', src: 'Narrative and memory: Mar, Li, Nguyen & Ta (2021) meta-analysis; context effects in vocabulary learning (inferred for this specific design).', lab: 'inf' },
   { f: 'Word-by-word glosses under German', why: 'Seeing the meaning of each word in context lets you read real sentences from day one and pick up small words incidentally.', src: 'Hulstijn, Hollander & Greidanus (1996): marginal glosses improve incidental vocabulary learning.', lab: 'est' },
   { f: 'Sentence cards from your own mistakes', why: 'A line you missed in conversation comes back as a review card. The review is personal: it targets what you, specifically, got wrong.', src: 'Error-driven learning; our transfer from conversation to card is our own design choice.', lab: 'spec' },
   { f: 'Difficulty that follows your accuracy', why: 'Conversations lengthen and turns get harder when you are right most of the time, and ease off when you are struggling. The aim is to keep you in the band where effort pays.', src: 'Desirable difficulties: Bjork (1994); adaptive thresholds (85% / 65%) are our own choice.', lab: 'inf' },
-  { f: 'Goal set by you, no streak-shaming', why: 'Pressure from an app is a poor substitute for your own reasons. The header shows a number, never a judgement.', src: 'Self-determination theory: Deci & Ryan (2000). Applying it this way is our inference.', lab: 'inf' },
+  { f: 'Comparisons with Spanish and English', why: 'Where German works like Spanish (Sie and usted, nouns with a gender), the lesson says so; where it differs (w is a v, the verb comes second), it says that too. What you already know becomes a hook, and the usual traps get a name.', src: 'Crosslinguistic influence: Odlin (1989); Jarvis & Pavlenko (2008). Naming the contrasts in lessons is our inference from this research.', lab: 'inf' },
+  { f: 'Goal set by you, no streak-shaming', why: 'Pressure from an app is a poor substitute for your own reasons. Today shows your goal as a number, never a judgement.', src: 'Self-determination theory: Deci & Ryan (2000). Applying it this way is our inference.', lab: 'inf' },
 ];
 /* ---------- Dictionary of the learner's Weg v1 words (lessons 1–8) ----------
    Imported cards reference these by headword, so every imported word gets a full card:
