@@ -389,7 +389,7 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
     return;
   }
   if (it.kind === 'pic') {
-    const pc = picChoice(def, it.pics, right => { if (done) return; done = true; uiSound(right ? 'ok' : 'bad'); fb.append(exRow()); showGrades(right ? 2 : 0, right ? 'ok' : 'bad', (right ? '✓ ' : 'This is ') + '<em lang="de">' + esc(def.de) + '</em> = ' + esc(def.en.join(', '))); });
+    const pc = picChoice(def, it.pics, right => { if (done) return; done = true; uiSound(right ? 'ok' : 'bad'); fb.append(exRow()); showGrades(right ? 2 : 0, right ? 'ok' : 'bad', (right ? '✓ ' : '') + '<em lang="de">' + esc(def.de) + '</em> = ' + esc(def.en.join(', '))); });
     card.append(h('div', { class: 'eyebrow' }, 'Picture choice'), pc.ask, pc.grid, fb);
     KEYS = pc.keys;
     return;

@@ -39,9 +39,10 @@ function mapModel() {
     const L = lessonById(n);
     items.push({ kind: 'lesson', n, c: courseOf(n), L, state: !L ? 'soon' : done.has(n) ? 'done' : n === cur ? 'now' : 'locked' });
     if (n % REVIEW_EVERY === 0) {
-      const from = n - REVIEW_EVERY + 1, id = 'R' + n, all = rangeN(from, n);
+      // the stop that ends a chapter is its chapter test (test: the chapter's number): it covers the whole chapter, not just the last four
+      const test = CHAPTERS.findIndex(c => c.from === n + 1), from = test > 0 ? CHAPTERS[test - 1].from : n - REVIEW_EVERY + 1, id = 'R' + n, all = rangeN(from, n);
       const st = (S.progress.reviewStops || []).includes(id) ? 'done' : all.every(k => done.has(k)) ? 'open' : all.every(k => written.has(k)) ? 'locked' : 'soon';
-      items.push({ kind: 'review', id, from, to: n, state: st });
+      items.push({ kind: 'review', id, from, to: n, state: st, test: Math.max(0, test) });
     }
   }
   items.push({ kind: 'term', state: 'soon' });
@@ -78,13 +79,11 @@ function mapRows(items) {
   // a chapter whose lessons are all unwritten folds into one row
   const chapterOf = n => CHAPTERS.findLastIndex(c => c.from <= n), folded = new Set();
   CHAPTERS.forEach((c, i) => { const ls = items.filter(it => it.kind === 'lesson' && chapterOf(it.n) === i); if (ls.length && ls.every(it => it.state === 'soon')) folded.add(i); });
-  const ends = new Set(CHAPTERS.map((c, i) => CHAPTERS[i + 1] ? CHAPTERS[i + 1].from - 1 : null));   // the review stop that closes a chapter is its chapter test
   const rows = []; let firstSoon = true;
   items.forEach(it => {
     if (it.kind === 'chapter') { const i = CHAPTERS.indexOf(it.ch); if (folded.has(i)) { const to = CHAPTERS[i + 1] ? CHAPTERS[i + 1].from - 1 : COURSE.length; rows.push({ kind: 'fold', ch: it.ch, num: it.num, from: it.ch.from, to }); } else rows.push(it); return; }
     if ((it.kind === 'lesson' || it.kind === 'review') && folded.has(chapterOf(it.kind === 'lesson' ? it.n : it.to))) return;
     if (it.kind === 'lesson' && it.state === 'soon') { it.firstSoon = firstSoon; firstSoon = false; }
-    if (it.kind === 'review' && ends.has(it.to)) it.test = chapterOf(it.to) + 1;
     rows.push(it);
   });
   return rows;
@@ -149,7 +148,8 @@ function mapRow(it) {
     return li;
   }
   if (it.kind === 'lesson') {
-    title = L ? L.theme || L.title : c.station; de = !L || !!L.theme; sub = 'Lesson ' + it.n + ' · ' + (L ? L.title : c.topic);
+    // a lesson not written yet has no German title: its topic names it (two lessons share a station, so the station would repeat)
+    title = L ? L.theme || L.title : c.topic; de = !!(L && L.theme); sub = 'Lesson ' + it.n + (L ? ' · ' + L.title : '');
     aria = `Lesson ${it.n}: ${L ? L.title : c.topic}, ${({ done: 'done', now: 'your stop', locked: 'not yet, opens after ' + prevName(it.n), soon: 'coming soon' })[st]}`;
     face = L && typeof bustEl === 'function' ? newcomer(L) || leadOf(L) : null;
     if (st === 'done') mk.innerHTML = CHECK_SVG; else if (st === 'locked') mk.innerHTML = LOCK_SVG;
@@ -240,7 +240,7 @@ function openLessonPreview(n) {
 function openReviewPreview(it) {
   const items = reviewCardsFor(it.from, it.to);
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon rv' }, sigEl('review')), h('div', { class: 'eyebrow' }, 'Review stop'), h('h1', { lang: 'de' }, 'Wiederholung'),
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon rv' }, sigEl('review')), h('div', { class: 'eyebrow' }, it.test ? 'Chapter ' + it.test + ' test' : 'Review stop'), h('h1', { lang: 'de' }, it.test ? 'Kapiteltest' : 'Wiederholung'),
       h('p', { class: 'muted' }, 'Words and lines from ' + courseOf(it.from).station + ' to ' + courseOf(it.to).station + (items.some(x => !x.c.lesson && x.c.v1) ? ', including the ones you brought from Protoa v1.' : '.')),
       h('div', { class: 'facts' }, h('span', { class: 'chip' }, items.length > 20 ? '20 of ' + items.length + ' cards' : items.length + ' card' + (items.length === 1 ? '' : 's')), h('span', { class: 'chip' }, '≈ ' + reviewMinutes(Math.min(items.length, 20)) + ' min'), it.state === 'done' ? h('span', { class: 'chip ok' }, 'done') : ''));
     const start = () => { close(); startReview(shuffle(items).slice(0, 20).map((x, i) => x.kind === 'sent' ? x : Object.assign({}, x, { kind: i % 3 === 2 && x.c.r && x.c.r[1] >= 4 ? 'p' : 'r' }))); PR.stop = it.id; };
