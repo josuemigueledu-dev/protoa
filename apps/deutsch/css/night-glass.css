@@ -206,7 +206,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--field-focus,var(--ste
 .ring .bg{stroke:var(--line-2)} .ring .fg{stroke:var(--ring);filter:none}
 /* Your words: the word starts below its strength ring (top 8px, 22px tall), so a long word never runs under it */
 .btile{padding-top:34px}
-.today-hero .goal .ring circle.bg{stroke:rgba(238,241,244,.14)}
+/* the goal ring's empty track: --nink is the text colour on this slab in both themes (near-white on Night, ink on Day), so the track shows on either */
+.today-hero .goal .ring circle.bg{stroke:var(--nink);stroke-opacity:.14}
 
 /* ---------- frame: navy top bar, cream glass tab bar with a magenta line ----------
    The tab bar is solid: with no live blur, even 3% see-through let the dark text of the cream slabs scrolling under
