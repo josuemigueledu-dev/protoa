@@ -124,6 +124,18 @@ The words under a result row: `wordSlab(title, words)` in `map.js`, styled by `.
 ![The same in light](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-word-slab-2.png)
 ![At 1280](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-word-slab-3.png)
 
+### Sheet head (done: `[design]` sheet heads)
+
+Every sheet (`openSheet()` in `map.js`, plus the word sheet and About you) opens the same way at its top edge:
+
+- **The grab:** 44×5, 12 px under the top edge, centred, on every sheet that can be pulled down (`openSheet`). The word sheet has none (it can't be dragged) and About you has none (it closes with its buttons).
+- **The close button:** 40×40 (`.icon-btn.sm.close`), 16 px from the top and the right. Its centre line, 36 px down, is the head's line.
+- **A titled sheet** (Search words, Keyboard shortcuts, About you): the title is a slab title, Krona One 22, left, **24 px under the top edge**, so it sits on the close button's line, and it stops **40 px** short of the right padding so a long title never runs under the button. An intro line under it is a page head's intro: 15 px, 8 px under the title, at most 46 characters (About you's was 13 px, right under). Then the sheet's 16 px gap to the first control. (Search and Shortcuts had the title 41 px down, 17 px under the close button's line.)
+- **A preview sheet** (a lesson, a review stop, the exam, Laute, "Not a beginner?"): centred, the 120 px picture, then the eyebrow (13 px, 700) **4 px** over the title (26 px, Krona One), the line under the title **8 px** below it, then 16 px to the rest. The eyebrow, title and line read as one block, as on a page head (16 and 16 before).
+
+![Titled sheets before / after, 390 px dark: Search, Keyboard shortcuts, About you](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-sheet-heads-1.png)
+![Preview sheets before / after, 390 px dark: a lesson, Not a beginner?, the A1 exam](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-sheet-heads-2.png)
+
 ### Settings rows
 
 A label is one short line; anything that explains it goes under the control as a `.faint` line (as the microphone note does). Labels with a bracketed explanation wrap to two lines and make the rows uneven.
@@ -143,7 +155,10 @@ In this order, one per `[design]` PR:
 5. ~~One clamp for the hero titles (`--t-hero`).~~ Done.
 6. ~~One result row: the Done screen's cards and the review summary.~~ Done.
 7. ~~The word slab under a result: one heading and one chip for Done's "Your new words" and the review's "Coming back soon".~~ Done.
-8. The intro line under a page title: Practice's "Every word you know, kept strong." and the Sprechen intro sit about 4 px under their titles, against the 8 px of the page head rule (tester, #146).
-9. The cast reaction slip (#213): its padding, gaps and name weight onto the speech bubble's (`.bub .box`, 12/16), and its colours onto tokens (review on #213, merged before the fixes).
+8. ~~The intro line under a page title.~~ Already in line: re-measured at 12:20 UTC Oct 26, every page head (Practice, Sprechen, Profile, Grammar, Method, Laute) has its intro 8 px under the title, 15 px, at 390 and 1280.
+9. ~~The cast reaction slip (#213) onto the bubble's padding and tokens.~~ Done by ux in #218.
+10. ~~Sheet heads.~~ Done.
+11. Grammar tables (`.conj`): the label and the German on one baseline (`align-items:baseline`), a wrapped German line at `line-height:1.35`, rows 8 px apart (review on #222).
+12. Chips: the lesson preview's "already yours: 12" is white text on magenta (the old "yours" chip, below AA) and its "done" chip drops to a line of its own; the facts under a preview sheet, a review stop and the exam should be one chip style.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.
