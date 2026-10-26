@@ -154,7 +154,7 @@ function mapRow(it) {
     face = L && typeof bustEl === 'function' ? newcomer(L) || leadOf(L) : null;
     if (st === 'done') mk.innerHTML = CHECK_SVG; else if (st === 'locked') mk.innerHTML = LOCK_SVG;
   } else if (it.kind === 'review') {
-    title = it.test ? 'Kapiteltest' : 'Wiederholung'; sub = (it.test ? 'after lesson ' + it.to + ' · ' : '') + 'review of lessons ' + it.from + '–' + it.to;
+    title = it.test ? 'Kapiteltest' : 'Wiederholung'; sub = it.test ? 'after lesson ' + it.to + ' · test of lessons ' + it.from + '–' + it.to : 'review of lessons ' + it.from + '–' + it.to;
     aria = (it.test ? `Chapter ${it.test} test, ` : 'Review stop, ') + `lessons ${it.from} to ${it.to}, ` + ({ done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon' })[st];
     if (it.test) mk.textContent = 'K' + it.test; else if (st === 'done') mk.innerHTML = CHECK_SVG; else mk.innerHTML = ICONS.practice || '';
   } else if (it.kind === 'exam') {
@@ -240,13 +240,13 @@ function openLessonPreview(n) {
 function openReviewPreview(it) {
   const items = reviewCardsFor(it.from, it.to);
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon rv' }, sigEl('review')), h('div', { class: 'eyebrow' }, it.test ? 'Chapter ' + it.test + ' test' : 'Review stop'), h('h1', { lang: 'de' }, it.test ? 'Kapiteltest' : 'Wiederholung'),
-      h('p', { class: 'muted' }, 'Words and lines from ' + courseOf(it.from).station + ' to ' + courseOf(it.to).station + (items.some(x => !x.c.lesson && x.c.v1) ? ', including the ones you brought from Protoa v1.' : '.')),
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon rv' + (it.test ? ' test' : '') }, it.test ? 'K' + it.test : sigEl('review')), h('div', { class: 'eyebrow' }, it.test ? 'Chapter ' + it.test + ' test' : 'Review stop'), h('h1', { lang: 'de' }, it.test ? 'Kapiteltest' : 'Wiederholung'),
+      h('p', { class: 'muted' }, 'Words and lines from lessons ' + it.from + '–' + it.to + (items.some(x => !x.c.lesson && x.c.v1) ? ', including the ones you brought from Protoa v1.' : '.')),
       h('div', { class: 'facts' }, h('span', { class: 'chip' }, items.length > 20 ? '20 of ' + items.length + ' cards' : items.length + ' card' + (items.length === 1 ? '' : 's')), h('span', { class: 'chip' }, '≈ ' + reviewMinutes(Math.min(items.length, 20)) + ' min'), it.state === 'done' ? h('span', { class: 'chip ok' }, 'done') : ''));
     const start = () => { close(); startReview(shuffle(items).slice(0, 20).map((x, i) => x.kind === 'sent' ? x : Object.assign({}, x, { kind: i % 3 === 2 && x.c.r && x.c.r[1] >= 4 ? 'p' : 'r' }))); PR.stop = it.id; };
     if (!items.length) p.append(h('p', { class: 'faint' }, 'Nothing to review yet. Words from these lessons appear here once you have learned them.'));
-    else if (it.state === 'locked') { p.append(h('p', { class: 'faint' }, 'Opens after ' + courseOf(it.to).station + '.')); p.append(h('button', { class: 'btn ghost', onclick: start }, 'Review anyway')); }
-    else p.append(h('button', { class: 'btn', onclick: start }, it.state === 'done' ? 'Review again' : 'Start review'));
+    else if (it.state === 'locked') { p.append(h('p', { class: 'faint' }, 'Opens after lesson ' + it.to + '.')); p.append(h('button', { class: 'btn ghost', onclick: start }, it.test ? 'Take it anyway' : 'Review anyway')); }
+    else p.append(h('button', { class: 'btn', onclick: start }, it.test ? (it.state === 'done' ? 'Take the test again' : 'Start the test') : it.state === 'done' ? 'Review again' : 'Start review'));
     inner.append(p);
   }, 'station');
 }
