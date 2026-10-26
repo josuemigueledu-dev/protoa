@@ -136,6 +136,20 @@ Every sheet (`openSheet()` in `map.js`, plus the word sheet and About you) opens
 ![Titled sheets before / after, 390 px dark: Search, Keyboard shortcuts, About you](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-sheet-heads-1.png)
 ![Preview sheets before / after, 390 px dark: a lesson, Not a beginner?, the A1 exam](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-sheet-heads-2.png)
 
+### Grammar table (done: `[design]` grammar tables)
+
+One table (`.conj`) in three places: Grammar's rule of the day (`.gfeat`), a Grammar unit, and a verb's forms on a word card. The rules sit in `css/night-glass-lesson.css`, by the rule of the day.
+
+- **Two columns:** the label (15 px, `--t-sub`, muted) and the German (17 px, bold). Both sit **on one baseline**. Before, the grid stretched both cells from the top, so a 13 px label sat 8 px above the German's baseline, or 3 px on the rule of the day.
+- **Line height 1.35** in both cells, and the German's cell takes the German's size. A German line that wraps then reads as one block, 23 px between its lines. It was 30 px, so it looked like two rows.
+- **Spacing:** rows 8 px apart, columns 16 px apart, on the 4 px grid. It was 4/24 in units and 6/14 on the rule of the day.
+- **The label column is capped:** at most 40% of the width in a unit, 45% on the rule of the day. A long label ("that is right, exactly") wraps before the German does. At 390 px the German now wraps in only one unit, the same one as before. At 360 px fewer cells wrap, and the tables are 10% shorter.
+- **Placement:** a unit's table starts at the text's left edge, under the paragraphs it explains. It used to be centred. The word card keeps its table centred, but the German column is left-aligned now, so "kommst" and "kommen" start on one line. Before, each form was centred on its own.
+- The rule of the day keeps its tinted box (12/16 padding) and its cyan German.
+
+![Rule of the day and a unit, 390 dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-grammar-tables-1.png)
+![Word card at 390 and a unit at 1280, light: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-grammar-tables-2.png)
+
 ### Settings rows
 
 A label is one short line; anything that explains it goes under the control as a `.faint` line (as the microphone note does). Labels with a bracketed explanation wrap to two lines and make the rows uneven.
@@ -158,7 +172,7 @@ In this order, one per `[design]` PR:
 8. ~~The intro line under a page title.~~ Already in line: re-measured at 12:20 UTC Oct 26, every page head (Practice, Sprechen, Profile, Grammar, Method, Laute) has its intro 8 px under the title, 15 px, at 390 and 1280.
 9. ~~The cast reaction slip (#213) onto the bubble's padding and tokens.~~ Done by ux in #218.
 10. ~~Sheet heads.~~ Done.
-11. Grammar tables (`.conj`): the label and the German on one baseline (`align-items:baseline`), a wrapped German line at `line-height:1.35`, rows 8 px apart (review on #222).
+11. ~~Grammar tables (`.conj`).~~ Done.
 12. Chips: the lesson preview's "already yours: 12" is white text on magenta (the old "yours" chip, below AA) and its "done" chip drops to a line of its own; the facts under a preview sheet, a review stop and the exam should be one chip style.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.
