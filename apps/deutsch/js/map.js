@@ -212,7 +212,7 @@ function openLessonPreview(n) {
   const done = S.progress.lessonsDone.includes(n), cur = currentLessonN(), inProg = ls && ls.n === n && !done && (ls.step !== 'scene' || ls.wi);
   const yours = L.words.filter(w => isLearned(w.de)).length, fresh = L.words.length - yours;
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + c.topic), h('h1', { lang: 'de' }, c.station), h('p', { class: 'muted' }, L.title + ' · ' + L.scene.place));
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + c.topic), h('h1', { lang: 'de' }, stationBreak(c.station)), h('p', { class: 'muted' }, L.title + ' · ' + L.scene.place));
     p.append(h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'By the end you can'), h('p', {}, L.can)));
     p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip yours' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
     const go_ = fresh_ => { close(); startLesson(n, fresh_); };
@@ -297,6 +297,8 @@ function lessonWords(v, L, ls) {
 }
 
 /* ---------- completion ticket ---------- */
+// a long station name in a big title breaks before its last part (Schönlein-straße), never mid-name (Schön-leinstraße)
+function stationBreak(s) { return s.replace(/(\S)(straße|platz|damm|bahnhof)$/, '$1\u00ad$2'); }
 function lessonDone(v, L, ls) {
   const s = ls.summary || { missed: 0, first: 0, total: 0, added: 0 }; const c = courseOf(L.n);
   const acc = s.total ? Math.round(100 * s.first / s.total) : 100;
@@ -305,7 +307,7 @@ function lessonDone(v, L, ls) {
   const n1 = h('div', { class: 'n' }, '0'), n2 = h('div', { class: 'n' }, '0'), n3 = h('div', { class: 'n' }, '0');
   v.append(h('div', { class: 'ticket' },
     h('div', { class: 'top' }, h('b', {}, 'Protoa · Fahrschein'), h('span', {}, 'Lesson ' + L.n)),
-    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, c.station), (() => { const st = h('div', { class: 'stamp' }, sigEl(c.icon)); const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id]; if (pic) { st.classList.add('pic'); st.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`; } return st; })(), h('p', { class: 'muted' }, 'You can now ' + L.can)),
+    h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, stationBreak(c.station)), (() => { const st = h('div', { class: 'stamp' }, sigEl(c.icon)); const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id]; if (pic) { st.classList.add('pic'); st.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`; } return st; })(), h('p', { class: 'muted' }, 'You can now ' + L.can)),
     h('div', { class: 'perf', 'aria-hidden': 'true' }),
     learnedWords.length ? h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; })) : '',
     h('div', { class: 'stats' }, h('div', { class: 'stat' }, n1, h('div', { class: 'l' }, (s.added ?? L.words.length) === 1 ? 'word added' : 'words added')), h('div', { class: 'stat' }, h('div', { class: 'row', style: 'gap:0;align-items:baseline' }, n2, h('span', { class: 'n' }, '%')), h('div', { class: 'l' }, 'first try')), h('div', { class: 'stat' }, n3, h('div', { class: 'l' }, s.missed === 1 ? 'line due today' : 'lines due today')))));
