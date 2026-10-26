@@ -63,7 +63,7 @@ LESSONS.push({
 });
 GRAMMAR.push({ id: 'conj', title: 'Joining words: und, oder, aber, denn', lesson: 11,
     body: '<p><em>und</em>, <em>oder</em>, <em>aber</em> and <em>denn</em> join two sentences and leave both as they are: subject first, then the verb. <em>Ana trinkt Tee, aber Lena trinkt Kaffee.</em> <em>Ana kommt später, denn sie arbeitet.</em> They do not count as the first word, so the verb does not jump in front of the subject the way it does after <em>dann</em> or <em>heute</em>.</p><p><em>aber</em> is <em>pero</em>. <em>denn</em> is <em>porque</em>, but it only joins: it never starts a sentence and cannot answer <em>Warum?</em> on its own. Put a comma before <em>aber</em> and <em>denn</em>.</p>',
-    table: [['und', 'and (y)'], ['oder', 'or (o)'], ['aber', 'but (pero)'], ['denn', 'because (porque)'], ['…, aber Lena trinkt …', 'subject, then verb'], ['Dann trinkt Lena …', 'verb, then subject']],
+    table: [['and (y)', 'und'], ['or (o)', 'oder'], ['but (pero)', 'aber'], ['because (porque)', 'denn'], ['subject, then verb', '…, aber Lena trinkt …'], ['verb, then subject', 'Dann trinkt Lena …']],
     examples: [
       { de: 'Ana trinkt Tee, aber Lena trinkt Kaffee.', g: 'Ana=Ana | trinkt=drinks | Tee,=tea | aber=but | Lena=Lena | trinkt=drinks | Kaffee.=coffee', en: 'Ana drinks tea, but Lena drinks coffee.' },
       { de: 'Ana kommt später, denn sie arbeitet.', g: 'Ana=Ana | kommt=is coming | später,=later | denn=because | sie=she | arbeitet.=is working', en: 'Ana is coming later, because she is working.' },

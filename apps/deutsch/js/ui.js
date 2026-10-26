@@ -781,7 +781,7 @@ function renderReview(v) {
     h('div', { class: 'rv-say' }, teacherSlot(44, 'neutral'), h('div', {}, h('b', { lang: 'de' }, say[0]), h('span', {}, say[1])))));
   card.classList.add('rv-card'); v.append(card);
   const deck = it.kind === 'p' ? it.c.p : it.c.r, box = rvBox(deck);
-  const meta = () => h('div', { class: 'rv-meta' }, h('span', {}, def && def.lesson ? 'Lesson ' + def.lesson + ' · ' + courseOf(def.lesson).station : it.c.sent ? 'Conversation' : 'Your words'), h('span', {}, 'Box ' + box));
+  const meta = () => h('div', { class: 'rv-meta' }, h('span', {}, def && def.lesson ? 'Lesson ' + def.lesson + ' · ' + courseOf(def.lesson).topic : it.c.sent ? 'Conversation' : 'Your words'), h('span', {}, 'Box ' + box));
   v.append(h('div', { class: 'rv-boxes', role: 'img', 'aria-label': `Box ${box} of 5. You know ${learnedCount()} words.` }, h('span', {}, 'Boxes 1–5'),
     h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null, wrong = false;
@@ -994,11 +994,11 @@ function renderSettings(v) {
 function onboarding() {
   const p = S.profile; const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'About you' }); const inner = h('div', { class: 'in' });
   inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Tell me a little about yourself, so our conversations fit your life. Skip it if you like: it’s also in Settings → About me.'))));
-  const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
+  const fields = [['name', 'Your name', 'e.g. Alex'], ['city', 'Where you live', 'e.g. Orlando'], ['field', 'What you study or do', 'e.g. computer science'], ['interests', 'Three to five interests', 'e.g. cycling, cinema, cooking'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
   const close = (saveIt, place) => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); if (place) openPlacementIntro(true); else render(); };
   inner.append(h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => close(true) }, 'Save and start'), h('button', { class: 'btn ghost', onclick: () => close(false) }, 'Skip for now')));
-  inner.append(h('button', { class: 'btn ghost', style: 'white-space:normal;line-height:1.25', onclick: () => close(true, true) }, 'Not a beginner? Find your lesson\u00a0·\u00a03\u00a0min'));
+  inner.append(h('button', { class: 'btn ghost', style: 'white-space:normal;line-height:1.25', onclick: () => close(true, true) }, 'Not a beginner? Find your lesson'));
   sheet.append(inner); document.body.append(sheet); setTimeout(() => inputs.name.focus(), 100);
 }
 

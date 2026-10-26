@@ -67,7 +67,7 @@ LESSONS.push({
 
 GRAMMAR.push({ id: 'neg', title: 'nicht, sehr, zu and gern', lesson: 12,
     body: '<p><em>nicht</em> means not. It comes after the verb, right before the word it negates: <em>Das ist nicht leicht.</em> <em>Ana kommt nicht aus Spanien.</em> When nothing follows, it goes to the end: <em>Ich koche heute nicht.</em> Spanish puts <em>no</em> before the verb (<em>no es fácil</em>); in a sentence like this, German never does. <em>nein</em> only answers a question.</p><p><em>sehr</em> is <em>muy</em> and <em>zu</em> is <em>demasiado</em>: <em>sehr schnell</em> is very fast, <em>zu schnell</em> is too fast. <em>gern</em> has no Spanish word: where Spanish says <em>me gusta leer</em>, German adds <em>gern</em> to the verb, <em>Ich lese gern</em>. <em>Ich lese nicht gern</em>: I don\'t like reading.</p>',
-    table: [['nicht leicht', 'not easy'], ['noch nicht', 'not yet'], ['sehr langsam', 'very slowly (muy)'], ['zu schnell', 'too fast (demasiado)'], ['ein bisschen schwer', 'a bit hard'], ['Ich lese gern.', 'I like reading.']],
+    table: [['not easy', 'nicht leicht'], ['not yet', 'noch nicht'], ['very slowly (muy)', 'sehr langsam'], ['too fast (demasiado)', 'zu schnell'], ['a bit hard', 'ein bisschen schwer'], ['I like reading.', 'Ich lese gern.']],
     examples: [
       { de: 'Das ist nicht leicht.', g: 'Das ist=that is | nicht=not | leicht.=easy', en: 'That is not easy.' },
       { de: 'Ich koche heute nicht.', g: 'Ich=I | koche=am cooking | heute=today | nicht.=not', en: 'I am not cooking today.' },
