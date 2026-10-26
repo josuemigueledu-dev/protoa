@@ -6,6 +6,7 @@
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
+// A Grammar unit opens at its top, however far the list or the lesson was scrolled.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -426,6 +427,42 @@ async function grammarKeepsItsTab(browser) {
   await ctx.close();
 }
 
+// a Grammar unit is a screen of its own: it opens at its top, title and back button in view, however far the list
+// (or the lesson's Notice) was scrolled
+async function grammarUnitOpensAtTop(browser) {
+  const label = 'grammar unit';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { LESSONS[0].words.forEach(w => markLearned(w, 1)); S.progress.lessonsDone = [1]; S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); });
+  const cur = (sel, opts) => page.locator(`#view > .view:not(.leaving) ${sel}`, opts);
+  const atTop = async (title, how) => {
+    await drawn(page); await page.waitForTimeout(400);
+    const at = await page.evaluate(() => { const h1 = document.querySelector('#view > .view:not(.leaving) h1'); return { title: h1?.textContent, y: h1 ? Math.round(h1.getBoundingClientRect().top) : null, scroll: Math.round(PANE.scrollTop) }; });
+    if (at.title !== title) fail(`${label}: ${how} showed "${at.title}", not the unit "${title}"`);
+    else if (at.scroll > 0 || at.y < 0) fail(`${label}: ${how} opened the unit mid-page (scrolled ${at.scroll} px, its title at y ${at.y})`);
+  };
+  await page.evaluate(() => go('grammar')); await drawn(page); await page.waitForTimeout(300);
+  const rows = cur('.listrow:not(.soon)');
+  const row = rows.nth(await rows.count() - 1), title = (await row.locator('b').first().textContent()).trim();
+  await row.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
+  if (await page.evaluate(() => PANE.scrollTop) < 200) fail(`${label}: the Grammar list did not scroll, so this check proves nothing`);
+  await row.click();
+  await atTop(title, 'the last unit in the scrolled list');
+  // back to the list, then the same from a lesson's Notice step scrolled down
+  await cur('.btn', { hasText: '‹ Grammar' }).click(); await drawn(page); await page.waitForTimeout(300);
+  if (await page.evaluate(() => !!document.querySelector('#view > .view:not(.leaving) .listrow')) !== true) fail(`${label}: "‹ Grammar" did not lead back to the list`);
+  const unit = await page.evaluate(() => { const L = LESSONS.find(L => L.notice && L.notice.grammar && GRAMMAR.some(g => g.id === L.notice.grammar)); startLesson(L.n, true); S.progress.lessonState.step = 'notice'; render(); return GRAMMAR.find(g => g.id === L.notice.grammar).title; });
+  await drawn(page); await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelectorAll('#view > .view:not(.leaving) [hidden]').forEach(e => e.hidden = false));
+  const btn = cur('.btn', { hasText: 'Open in Grammar' });
+  await btn.scrollIntoViewIfNeeded(); await btn.click();
+  await atTop(unit, '"Open in Grammar" from a lesson');
+  await ctx.close();
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -460,6 +497,7 @@ try {
   await stepPassesOn(browser);
   await examPauseKeepsAnswer(browser);
   await grammarKeepsItsTab(browser);
+  await grammarUnitOpensAtTop(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
