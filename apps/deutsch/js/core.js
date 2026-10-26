@@ -300,16 +300,17 @@ async function loadVoxManifest() {
 }
 let actx = null, voxBuffers = {}, curSource = null, curUtter = null, onWordCb = null;
 function ctx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; }
-/* ---------- Protoa's voice ----------
-   Protoa is a woman with a low, smooth, calm voice (owner, Oct 26); her lines and the cast's are pre-rendered (VOX_URL).
-   Anything not pre-rendered (lines with the learner's name, live replies) uses the best voice the device offers, ranked
-   toward a natural female German voice: Microsoft's neural de-DE voices first (Seraphina, Katja, Amala…, in Edge and
-   on Windows 11), then Apple's premium/enhanced Anna and Petra, then other female voices; male voices only as a last
-   resort. The pace is measured. */
+/* ---------- the default voice ----------
+   Protoa stays silent (owner, Oct 26). Words, examples and practice are read by Herr Weber, and the cast speak their own
+   lines: all pre-rendered (VOX_URL). Anything not pre-rendered (lines with the learner's name, live replies) uses the
+   best voice the device offers, ranked toward a modern, educated, deep (not guttural) male German voice like Weber's:
+   Microsoft's neural de-DE voices first (Conrad, Killian, Florian…, in Edge and on Windows 11), then Apple's
+   premium/enhanced Markus and Yannick, then other male voices; female voices only as a last resort. Pitch is lowered a
+   touch and the pace is measured. */
 const VOICE_RANK = [
-  [/Seraphina/i, 100, 'f'], [/Katja/i, 96, 'f'], [/Amala/i, 93, 'f'], [/Louisa/i, 90, 'f'], [/Tanja|Maja|Elke|Klarissa|Ingrid/i, 86, 'f'],
-  [/Anna/i, 84, 'f'], [/Petra|Helena|Hedda/i, 80, 'f'], [/Google Deutsch/i, 72, 'f'], [/Gisela|Sandy|Shelley|Grandma|Flo/i, 50, 'f'],
-  [/Conrad|Killian|Florian|Christoph|Bernd|Ralf|Kasper|Klaus|Markus|Yannick|Viktor|Martin|Jonas|Lukas|Stefan|Eddy|Rocko|Reed|Grandpa/i, 40, 'm'], [/x-deg|x-nfh/i, 38, 'm'],
+  [/Conrad/i, 100, 'm'], [/Killian/i, 96, 'm'], [/Florian/i, 93, 'm'], [/Christoph/i, 90, 'm'], [/Bernd/i, 88, 'm'], [/Ralf/i, 87, 'm'], [/Kasper/i, 86, 'm'], [/Klaus/i, 85, 'm'],
+  [/Markus/i, 84, 'm'], [/Yannick/i, 82, 'm'], [/Viktor/i, 76, 'm'], [/Martin|Jonas|Lukas/i, 72, 'm'], [/x-deg|x-nfh/i, 70, 'm'], [/Stefan/i, 55, 'm'],
+  [/Katja|Amala|Seraphina|Tanja|Louisa|Maja|Elke|Gisela|Klarissa|Ingrid/i, 44, 'f'], [/Google Deutsch/i, 38, 'f'], [/Anna|Petra|Helena|Hedda|Sandy|Shelley|Eddy|Flo|Grandma|Grandpa|Rocko|Reed/i, 30, 'f'],
 ];
 function voiceInfo(v) {
   let score = 25, sex = '?';
@@ -325,7 +326,7 @@ function germanVoices() {
 function germanVoice() { const all = germanVoices(), pick = S.settings.voiceName && all.find(x => x.v.name === S.settings.voiceName); return (pick || all[0] || {}).v || null; }
 function voiceTuning(v) {
   const info = v ? voiceInfo(v) : { sex: '?', score: 0 }, depth = S.settings.voiceDepth == null ? .5 : +S.settings.voiceDepth;
-  const base = info.sex === 'f' ? .95 : info.sex === 'm' ? .97 : 1;   // a touch lower: Protoa's voice is low and calm
+  const base = info.sex === 'm' ? (info.score >= 80 ? .97 : .93) : 1;
   return { pitch: Math.max(.72, Math.min(1.15, base - (depth - .5) * .18)), rate: +S.settings.voiceRate || .92 };
 }
 let audioSeq = 0; // bumped by every stopAudio(), so a clip still being fetched is dropped
@@ -337,10 +338,10 @@ function stopAudio() {
 }
 let hlTimers = [];
 function highlightWord(i) { hlTimers.forEach(clearTimeout); hlTimers = []; document.querySelectorAll('.gl .w.speaking').forEach(e => e.classList.remove('speaking')); if (i === null) return; }
-async function playVoxUrl(text, rate) {
+async function playVoxUrl(text, rate, el) {
   // an entry is a file of its own, or [file, start ms, length ms]: a slice of a sprite that holds many lines, so a
   // copy with a file limit (the owner's) ships a few files instead of hundreds
-  const e = VOX_URL[text], [file, at, len] = Array.isArray(e) ? e : [e];
+  const e = VOX_URL[text], [file, at, len, starts] = Array.isArray(e) ? e : [e];
   const c = ctx(), url = 'audio/' + file, seq = audioSeq;
   try {
     if (!voxBuffers[url]) voxBuffers[url] = await fetch(url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); }).then(b => c.decodeAudioData(b));
@@ -348,6 +349,7 @@ async function playVoxUrl(text, rate) {
   if (seq !== audioSeq) return true;
   const src = c.createBufferSource(); src.buffer = voxBuffers[url]; src.playbackRate.value = rate || 1; VoiceLight.audio(src, c);
   curSource = src; if (at != null) src.start(0, at / 1000, len / 1000); else src.start(); Voice.talk(true);
+  if (el) lightWords(el, starts, len || src.buffer.duration * 1000, rate || 1);
   return new Promise(res => { src.onended = () => { if (curSource === src) { curSource = null; Voice.talk(false); VoiceLight.end(); } res(true); }; });
 }
 async function playVox(text, rate) {
@@ -363,8 +365,19 @@ function speak(text, opts = {}) {
   text = fill(text); stopAudio();
   const rate = opts.rate || 1;
   if (VOX[text]) return playVox(text, rate).then(() => { });
-  if (VOX_URL[text]) return playVoxUrl(text, rate).then(ok => ok ? undefined : speakDevice(text, opts, rate));
+  if (VOX_URL[text]) return playVoxUrl(text, rate, opts.el).then(ok => ok ? undefined : speakDevice(text, opts, rate));
   return speakDevice(text, opts, rate);
+}
+/* the word being spoken lights up (.speaking on the gloss's .w words). Recorded lines carry the time each word starts
+   (manifest, from Whisper), so the light follows the voice exactly; anything else is spread over the real length */
+function lightWords(el, starts, total, rate) {
+  const words = [...el.querySelectorAll('.w')]; if (!words.length) return;
+  // starts holds one time per spoken word; a gloss item can hold several words ("Bis bald."), so count them in
+  const nw = w => (w.textContent.match(/[A-Za-zÄÖÜäöüß0-9'-]+/g) || []).length;
+  let k = 0; const mapped = starts && starts.length === words.reduce((a, w) => a + nw(w), 0) ? words.map(w => { const t = starts[k]; k += nw(w); return t; }) : null;
+  const at = mapped && mapped.every(t => t != null) ? mapped : (() => { const n = words.reduce((a, w) => a + w.textContent.length + 1, 0); let t = 0; return words.map(w => { const s = t; t += (w.textContent.length + 1) / n * total; return s; }); })();
+  words.forEach((w, i) => hlTimers.push(setTimeout(() => { words.forEach(x => x.classList.remove('speaking')); w.classList.add('speaking'); }, at[i] / rate)));
+  hlTimers.push(setTimeout(() => words.forEach(x => x.classList.remove('speaking')), total / rate + 150));
 }
 function speakDevice(text, opts, rate) {
   if (!('speechSynthesis' in window)) return Promise.resolve();
@@ -374,10 +387,17 @@ function speakDevice(text, opts, rate) {
     curUtter = u; Voice.talk(true); VoiceLight.speech(text, u.rate / .9, u);
     if (opts.el && typeof Companion !== 'undefined') Companion.attend(opts.el);
     if (opts.el) {
-      const words = [...opts.el.querySelectorAll('.w')]; const total = words.reduce((a, w) => a + w.textContent.length + 1, 0);
-      const est = (text.length / 12) * 1000 / (0.9 * rate); let t = 0; // ~12 chars per second at rate 0.9 (≈4.5 syl/s)
-      words.forEach(w => { const d = (w.textContent.length + 1) / total * est; hlTimers.push(setTimeout(() => { words.forEach(x => x.classList.remove('speaking')); w.classList.add('speaking'); }, t)); t += d; });
-      hlTimers.push(setTimeout(() => words.forEach(x => x.classList.remove('speaking')), t + 200));
+      // timed from when the voice really starts (it can take a moment), and put right on every word the voice reports
+      const words = [...opts.el.querySelectorAll('.w')], est = (text.length / 12) * 1000 / (0.9 * rate); // ~12 chars a second
+      let synced = false;
+      u.addEventListener('start', () => { if (!synced) lightWords(opts.el, null, est, 1); });
+      u.addEventListener('boundary', e => {
+        if (e.name && e.name !== 'word') return;
+        if (!synced) { synced = true; hlTimers.forEach(clearTimeout); hlTimers = []; }
+        const n = (text.slice(0, e.charIndex).match(/[A-Za-zÄÖÜäöüß0-9'-]+/g) || []).length;
+        words.forEach((x, i) => x.classList.toggle('speaking', i === n));
+      });
+      u.addEventListener('end', () => words.forEach(x => x.classList.remove('speaking')));
     }
     const done = () => { if (curUtter === u) { curUtter = null; Voice.talk(false); VoiceLight.end(); } if (opts.el && typeof Companion !== 'undefined') Companion.release(opts.el); res(); };
     u.onend = done; u.onerror = done; speechSynthesis.speak(u);

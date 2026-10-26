@@ -332,7 +332,8 @@ function protoaLine(L, resume, due) {
     : plate === 'plate.classroom' ? ['Heute geht es in den Kurs.', 'Heute geht es in den <b>Kurs</b>.', 'Today it’s back to class.']
     : ['Heute geht es weiter.', '', 'Today the story goes on.'];
   const p = h('p', { lang: 'de', html: deHtml || esc(de) });
-  return h('div', { class: 'say' }, h('button', { class: 'snd', 'aria-label': 'Listen: ' + de, html: ICONS.play, onclick: () => speak(de, { el: p }) }), h('div', {}, p, h('small', {}, en)));
+  // Protoa stays silent (owner, Oct 26): her line is read, not heard
+  return h('div', { class: 'say quiet' }, h('div', {}, p, h('small', {}, en)));
 }
 function todayLessonCard(L, resume) {
   const c = courseOf(L.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id], who = newcomer(L) || leadOf(L);
@@ -852,9 +853,9 @@ function renderMethod(v) {
   v.append(h('div', { class: 'card stack', style: 'gap:6px' }, h('b', {}, 'Audio'), h('p', { class: 'small muted' }, 'German is read by the best German voice on your device (Settings → Protoa’s voice). Recorded voices for Protoa and the cast are on the way; where a line has one, it plays instead. New words play as they appear (Settings can turn that off), and Listening cards play their line. Every other sentence waits for your tap.')));
 }
 function voiceCard(s) {
-  const card = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, "Protoa's voice"),
-    h('p', { class: 'small muted' }, 'Protoa uses the best German voice on this device. You can pick another one here.'));
-  const sel = h('select', { id: 'voice-select', 'aria-label': "Protoa's voice" }), note = h('div', {});
+  const card = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Device voice'),
+    h('p', { class: 'small muted' }, 'Herr Weber and the cast speak recorded lines. Anything not recorded, like a line with your name, uses the best German voice on this device. You can pick another one here.'));
+  const sel = h('select', { id: 'voice-select', 'aria-label': 'Device voice' }), note = h('div', {});
   sel._fill = () => {
     const all = germanVoices(); sel.innerHTML = '';
     const best = all[0];
@@ -872,7 +873,7 @@ function voiceCard(s) {
     i.addEventListener('change', () => { s[key] = +i.value; save('settings'); });
     return h('label', { class: 'f' }, label, i, h('div', { class: 'row small muted', style: 'justify-content:space-between' }, h('span', {}, lo), h('span', {}, hi))); };
   card.append(sel, slider('voiceDepth', 'Depth', 0, 1, .05, 'lighter', 'deeper'), slider('voiceRate', 'Pace', .8, 1.05, .01, 'slower', 'faster'),
-    h('button', { class: 'btn ghost', onclick: () => speak('Hallo, ich bin Protoa. Schön, dass du da bist. Fangen wir an?') }, h('span', { html: ICONS.play }), 'Hear Protoa'), note);
+    h('button', { class: 'btn ghost', onclick: () => speakDevice('Guten Tag. Ich bin Herr Weber, Ihr Lehrer. Fangen wir an?', {}, 1) }, h('span', { html: ICONS.play }), 'Hear the voice'), note);
   sel._fill();
   return card;
 }
