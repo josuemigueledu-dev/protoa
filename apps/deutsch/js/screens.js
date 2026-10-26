@@ -69,7 +69,7 @@ function forecastWidget() {
   const f = forecast(7), max = Math.max(1, ...f);
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, f[0] + ' due today')),
     h('div', { class: 'minibars', role: 'img', 'aria-label': 'Reviews due over the next 7 days: ' + f.join(', ') }, ...f.map((n, i) => h('i', { class: n ? '' : 'zero', style: `height:${Math.max(3, n / max * 100)}%`, title: `${i === 0 ? 'today' : dayKey(i)}: ${n}` }))),
-    h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, '+6 days')));
+    h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, 'in 6 days')));
 }
 function nextStationWidget() {
   const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString('en') + ' words. Pass the exam with 90% to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
@@ -91,9 +91,9 @@ function strengthCounts() {
   return b;
 }
 function strengthBar() {
-  const b = strengthCounts(), tot = Math.max(1, b.reduce((a, x) => a + x, 0)), names = ['New (< 4 days)', 'Learning (4–13)', 'Young (14–29)', 'Strong (30+)'];
-  return h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'strength', role: 'img', 'aria-label': names.map((n, i) => n + ': ' + b[i]).join(', ') }, ...b.map((n, i) => n ? h('i', { style: `width:${n / tot * 100}%;background:var(--seq-${i + 1})`, title: `${names[i]}: ${n}` }) : '')),
-    h('div', { class: 'legend' }, ...b.map((n, i) => h('span', {}, h('i', { style: `background:var(--seq-${i + 1})` }), names[i] + ' ', h('b', {}, n)))));
+  const b = strengthCounts(), tot = Math.max(1, b.reduce((a, x) => a + x, 0)), names = ['New (0–3)', 'Learning (4–13)', 'Growing (14–29)', 'Strong (30+)'];
+  return h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'strength', role: 'img', 'aria-label': 'Words by days until they come back. ' + names.map((n, i) => n + ': ' + b[i]).join(', ') }, ...b.map((n, i) => n ? h('i', { style: `width:${n / tot * 100}%;background:var(--seq-${i + 1})`, title: `${names[i]}: ${n}` }) : '')),
+    h('div', { class: 'legend' }, ...b.map((n, i) => h('span', {}, h('i', { style: `background:var(--seq-${i + 1})` }), names[i] + ' ', h('b', {}, n)))), h('div', { class: 'faint small' }, 'In brackets: days until a word comes back.'));
 }
 function renderRail() {
   const rail = document.getElementById('rail'); if (!rail) return; rail.innerHTML = '';
@@ -218,7 +218,7 @@ function renderPracticeHub(v) {
     ['stairs', 'Build sentences', 'Put the words in German order', learnedAll.length, () => drillSession('order', 10)],
     ['pencil', 'Translate', 'English sentence → German, typed', learnedAll.length, () => drillSession('trans', 10)],
     ['sound', 'Listening', 'Hear a word or sentence, type it', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c], i) => mk(id, c, i % 2 ? 'li' : 'ls')), 'Listening')],
-    ['ticket', 'Say it in German', SR ? 'Meaning → German word, by voice or typing' : 'Meaning → German word, typed', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c]) => mk(id, c, 'p')), 'Say it in German')],
+    ['ticket', 'Say it in German', SR ? 'English → German word, spoken or typed' : 'English → German word, typed', learnedAll.length, () => startReview(pick(learnedAll, 12).map(([id, c]) => mk(id, c, 'p')), 'Say it in German')],
     ['people', 'Conversation lines', conv.length ? conv.length + (conv.length === 1 ? ' line' : ' lines') + ' from lessons and Sprechen' : 'Lines you save from a lesson or Sprechen come here', conv.length, () => startReview(pick(conv, 10).map(([id, c]) => ({ id, sh: 'sent', c, kind: 'sent', extra: true })), 'Conversation lines')],
     ['plaster', 'Weak words', weak.length ? weak.length + (weak.length === 1 ? ' word' : ' words') + ' you missed twice or more' : 'Words you miss twice come here for extra practice', weak.length, () => startReview(weak.map(([id, c], i) => mk(id, c, ['r', 'gap', 'p', 'mc'][i % 4])), 'Weak words')],
     ['review', 'Mixed workout', 'Every exercise type in one session', learnedAll.length, () => { const p = drillPool(16, false); startReview(p.map((x, i) => mk(x.id, x.c, ['mc', 'gap', 'order', 'trans', 'li', 'p', 'r', 'ls'][i % 8])), 'Mixed workout'); }],
@@ -264,8 +264,8 @@ function explainBtn(answer, target, en) {
 const SCENARIOS = [
   { id: 'kennen', title: 'Kennenlernen', en: 'Get to know each other', icon: 'hand', n: 5, place: 'Raum 2.04', brief: 'You meet the student for the first time at the Volkshochschule am Hermannplatz. Ask about name, origin, studies or work, and where they live.', open: 'Guten Tag! Willkommen im Kurs. Wie heißen Sie?', openG: 'Guten Tag!=hello | Willkommen=welcome | im=to the | Kurs.=course | Wie=how | heißen=are called | Sie?=you (formal)', openEn: 'Hello! Welcome to the course. What is your name?' },
   { id: 'tag', title: 'Mein Tag', en: 'Talk about your day', icon: 'clock', n: 6, place: 'Neukölln', brief: 'Chat about what the student does today: work, what they are learning, what they drink and cook, music or sport.', open: 'Und, was machen Sie heute?', openG: 'Und,=so | was=what | machen=are doing | Sie=you (formal) | heute?=today', openEn: 'So, what are you doing today?' },
-  { id: 'cafe', title: 'Im Café', en: 'Order at the café by the school', icon: 'coffee', n: 14, place: 'Café · Hermannplatz', brief: 'You are the barista at the small café next to the Volkshochschule am Hermannplatz, where the student\'s German course takes its break. The student orders something to drink and something to eat, asks the price and pays.', open: 'Guten Tag! Was trinken Sie heute?', openG: 'Guten Tag!=hello | Was=what | trinken=are drinking | Sie=you (formal) | heute?=today', openEn: 'Hello! What are you having today?' },
-  { id: 'wohnung', title: 'Meine Wohnung', en: 'Describe where you live', icon: 'key', n: 18, place: 'Zu Hause', brief: 'Over coffee you ask the student about their flat or house: how big it is, the rooms, what is nice, the city they live in.', open: 'Erzählen Sie mal: Wo wohnen Sie?', openG: 'Erzählen Sie mal:=tell me | Wo=where | wohnen=live | Sie?=you (formal)', openEn: 'Tell me: where do you live?' },
+  { id: 'cafe', title: 'Im Café', en: 'Order at the café by the school', icon: 'coffee', n: 14, place: 'Café · Hermannplatz', brief: 'You are the barista at the small café next to the Volkshochschule am Hermannplatz, where the student\'s German course takes its break. The student orders something to drink and something to eat. Paying comes in a later lesson, so do not ask for money.', open: 'Guten Tag! Was trinken Sie heute?', openG: 'Guten Tag!=hello | Was=what | trinken=are drinking | Sie=you (formal) | heute?=today', openEn: 'Hello! What are you having today?' },
+  { id: 'wohnung', title: 'Meine Wohnung', en: 'Describe where you live', icon: 'key', n: 18, place: 'Zu Hause', brief: 'You ask the student about their flat or house: how big it is, the rooms, what is nice, the city they live in.', open: 'Erzählen Sie mal: Wo wohnen Sie?', openG: 'Erzählen Sie mal:=tell me | Wo=where | wohnen=live | Sie?=you (formal)', openEn: 'Tell me: where do you live?' },
 ];
 const TALK_SCENE = { kennen: 'classroom', cafe: 'cafe', wohnung: 'flat', tag: 'neukoelln' };
 let TALK = null;
