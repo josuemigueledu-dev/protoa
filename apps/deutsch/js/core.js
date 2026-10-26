@@ -18,6 +18,8 @@ const h = (tag, attrs = {}, ...kids) => {
   for (const kid of kids.flat()) if (kid !== null && kid !== undefined && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
   return el;
 };
+// lang="de" only on German text: a generated lesson with no German title falls back to its English one
+const deLang = de => de ? { lang: 'de' } : {};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // dates are the learner's local calendar days (toISOString would turn local noon into the day before east of UTC+12)
 const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');

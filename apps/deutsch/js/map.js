@@ -141,7 +141,7 @@ function mapRow(it) {
   const st = it.state, L = it.kind === 'lesson' && it.L, c = it.kind === 'lesson' && it.c;
   const li = h('li', { class: `kst ${it.kind === 'review' ? (it.test ? 'rv test' : 'rv') : it.kind === 'chapter' ? '' : it.kind} ${st || ''}` });   // not .chapter: that is the old map's floating label
   const mk = h('span', { class: 'kmk', 'aria-hidden': 'true' });
-  let title, sub, aria, face = null;
+  let title, sub, aria, face = null, de = true; // de: the title is German (the exam's is English chrome)
   if (it.kind === 'chapter' || it.kind === 'fold') {
     const [kap, name] = it.ch.de.split(' · ');
     mk.textContent = it.num; li.classList.add('kchap');
@@ -149,7 +149,7 @@ function mapRow(it) {
     return li;
   }
   if (it.kind === 'lesson') {
-    title = L ? L.theme || L.title : c.station; sub = 'Lesson ' + it.n + ' · ' + (L ? L.title : c.topic);
+    title = L ? L.theme || L.title : c.station; de = !L || !!L.theme; sub = 'Lesson ' + it.n + ' · ' + (L ? L.title : c.topic);
     aria = `Lesson ${it.n}: ${L ? L.title : c.topic}, ${({ done: 'done', now: 'your stop', locked: 'not yet, opens after ' + prevName(it.n), soon: 'coming soon' })[st]}`;
     face = L && typeof bustEl === 'function' ? newcomer(L) || leadOf(L) : null;
     if (st === 'done') mk.innerHTML = CHECK_SVG; else if (st === 'locked') mk.innerHTML = LOCK_SVG;
@@ -158,7 +158,7 @@ function mapRow(it) {
     aria = (it.test ? `Chapter ${it.test} test, ` : 'Review stop, ') + `lessons ${it.from} to ${it.to}, ` + ({ done: 'done', open: 'open', locked: 'not yet', soon: 'coming soon' })[st];
     if (it.test) mk.textContent = 'K' + it.test; else if (st === 'done') mk.innerHTML = CHECK_SVG; else mk.innerHTML = ICONS.practice || '';
   } else if (it.kind === 'exam') {
-    title = it.code + ' exam'; sub = st === 'done' ? 'passed' : st === 'now' ? 'Pass with 90% to open the next lessons' : 'after this lesson';
+    title = it.code + ' exam'; de = false; sub = st === 'done' ? 'passed' : st === 'now' ? 'Pass with 90% to open the next lessons' : 'after this lesson';
     aria = 'Level exam ' + it.code + ', ' + ({ done: 'passed', now: 'ready', open: 'after this lesson' })[st]; mk.textContent = it.code;
   } else if (it.kind === 'start') {
     title = 'Laute'; sub = 'Lesson 0 · Sounds'; aria = 'Lesson 0, Sounds' + (st === 'done' ? ', done' : '');
@@ -168,18 +168,18 @@ function mapRow(it) {
   if (st === 'now' && (L || it.kind === 'exam')) {
     li.append(mk);
     if (it.kind === 'exam') {
-      li.append(h('div', { class: 'card primary kcard' }, h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, sub)), h('button', { class: 'btn go', onclick: () => openExamPreview(it.code) }, S.progress.exam ? 'Continue' : 'Open the exam')));
+      li.append(h('div', { class: 'card primary kcard' }, h('div', { class: 'ktx' }, h('h2', {}, title), h('span', {}, sub)), h('button', { class: 'btn go', onclick: () => openExamPreview(it.code) }, S.progress.exam ? 'Continue' : 'Open the exam')));
       return li;
     }
     const ls = S.progress.lessonState, resume = !!(ls && ls.n === it.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id];
     const fresh = L.words.filter(w => !isLearned(w.de)).length;
     const ph = h('button', { class: 'kpic' + (pic ? '' : ' none'), 'aria-label': `About lesson ${it.n}`, onclick: () => openLessonPreview(it.n) }); if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
     li.append(h('div', { class: 'card primary kcard', 'aria-label': aria }, ph,
-      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.title} · ${estMinutes(L, fresh)}\u00a0min`),
+      h('div', { class: 'ktx' }, h('h2', deLang(de), title), h('span', {}, `Lesson ${it.n} · ${L.title} · ${estMinutes(L, fresh)}\u00a0min`),
         h('button', { class: 'btn go', onclick: () => startLesson(it.n) }, resume ? 'Continue' : 'Start'))));
     return li;
   }
-  const tx = h('div', { class: 'ktx' }, h('b', { lang: 'de' }, title), h('span', {}, sub));
+  const tx = h('div', { class: 'ktx' }, h('b', deLang(de), title), h('span', {}, sub));
   if (st === 'soon' && it.kind !== 'term') tx.append(h('em', { class: 'soon' }, 'Soon'));
   const body = st !== 'soon' && it.kind !== 'term' ? h('button', { class: 'kbody', 'aria-label': aria, onclick: () => openStation(it) }) : h('div', { class: 'kbody', 'aria-label': aria, role: 'group' });
   body.append(mk, tx);
@@ -224,7 +224,7 @@ function openLessonPreview(n) {
   const done = S.progress.lessonsDone.includes(n), cur = currentLessonN(), inProg = ls && ls.n === n && !done && (ls.step !== 'scene' || ls.wi);
   const yours = L.words.filter(w => isLearned(w.de)).length, fresh = L.words.length - yours;
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + L.title), h('h1', { lang: 'de' }, L.theme || L.title), h('p', { class: 'muted', lang: 'de' }, c.station + ' · ' + L.scene.place));
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + L.title), h('h1', deLang(L.theme), L.theme || L.title), h('p', { class: 'muted', lang: 'de' }, c.station + ' · ' + L.scene.place));
     p.append(h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'By the end you can'), h('p', {}, L.can)));
     p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip yours' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
     const go_ = fresh_ => { close(); startLesson(n, fresh_); };
@@ -260,7 +260,7 @@ function lessonTop(L, ls, within = 0) {
   const bars = SEG_NAMES.map((nm, i) => { const b = h('b', { style: `width:${prev[i]}%` }); segs.append(h('i', { title: nm }, b)); return b; });
   requestAnimationFrame(() => requestAnimationFrame(() => bars.forEach((b, i) => b.style.width = widths[i] + '%')));
   return h('div', { class: 'lesson-top' },
-    h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, L.theme || L.title), h('span', {}, 'Lesson ' + L.n + ' · ' + L.title))),
+    h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', deLang(L.theme), L.theme || L.title), h('span', {}, 'Lesson ' + L.n + ' · ' + L.title))),
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave lesson', html: ICONS.x, onclick: () => pauseLesson() }),
     segs, h('div', { class: 'steplbl' }, idx >= 5 ? 'Angekommen · arrived' : stepName(ls.step)));
 }
