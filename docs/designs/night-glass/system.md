@@ -2,7 +2,7 @@
 
 The rules that keep every screen the same app. `README.md` in this folder is the look (tokens, material, the orb, motion); this file is how the pieces are sized and spaced, measured from the app as it is, with what still differs. The design agent keeps it current: each `[design]` PR brings one family of components into line and updates its section here.
 
-Measured at 390×844 and 1280×800, light and dark, on main of Oct 26, 2026.
+Measured at 390×844 and 1280×800, light and dark, on main of Oct 26, 2026 (slab padding re-measured at 06:00 UTC).
 
 ![Every main screen at 390 px, dark: Today, Lessons, Practice, Sprechen, Profile, Grammar, Settings](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-system-sheet-1.png)
 ![The same in Day Glass](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-system-sheet-2.png)
@@ -24,9 +24,18 @@ A 4 px grid. The steps in use:
 | 20 | between slabs inside a lesson (`body.in-lesson .view.stack`) |
 | 24 | between slabs on every other screen (`.view.stack`); inside a slab |
 
-**Slab padding:** 24 px inside a content slab (`.card`), 20 px inside a small slab (`.widget`, `.kpi`, `.mode`, `.scen`). *Still differs:* `.widget` uses 22, `.kpi`, `.mode`, `.scen` and Grammar's dark slab (`.gfeat`) use 18, and the Today and Profile cards mix 20/24 (top/side).
+**Slab padding (done: `[design]` slab padding).** Two values, set in the "breathing room" block of `css/night-glass.css`:
 
-**Between slabs:** 24 px everywhere. *Still differs:* the course map and the Grammar list leave 30 px.
+- **24 px inside a content slab:** a full-width `.card`, Today's stop line (`.card.stopline`) and Grammar's rule of the day (`.gfeat`).
+- **20 px inside a small slab:** `.widget` (phone and desktop rail alike), `.kpi`, `.mode`, `.scen`, Today's pair of tiles (`.tduo>.card`) and the map's lesson card (`.kcard`).
+- **List rows** (`.listrow`, the rows in Profile, Grammar and Settings) are 20 px top and bottom, 24 px at the sides, and sit **16 px apart** in a list.
+- A slab whose picture runs to its edge (Today's lesson card, `.tlesson`) has no padding; its text block inside takes 24.
+- *Still differs:* Today's greeting (`.today-hero`, 22/20) waits for its own PR (see Type).
+
+![Slab padding before / after, 390 px dark: stop line, Today's tiles, Grammar's rule, Practice modes](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-slab-padding-1.png)
+![The same in Day Glass](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-slab-padding-2.png)
+
+**Between slabs:** 24 px everywhere (20 inside a lesson), the course map included: its line starts 24 px under the chapter header.
 
 ## Type
 
@@ -65,7 +74,7 @@ No slab behind the head: the title sits on the stage, as in `screens/5-grammar.j
 - **Main action:** steel fill, 12 px chamfer, arrow chip on the right (`.btn.go`). *Still differs:* three heights, 64 (Today's Start lesson), 56 (map Start), 52 (Practice's Review now, Settings). Rule to adopt: 56 px for a screen's one main action, 52 for any other filled button.
 - **Secondary:** `.btn.ghost`, same heights as filled.
 - **Small:** `.btn.ghost.sm`, 44 px tall (the smallest tap target), 13 px text. Back chips and in-slab links use it.
-- **Danger:** `.btn.danger` (not in the CSS yet): `--red` fill, `--on-status` text. Settings' reset button uses `var(--bad)`, which no stylesheet defines, so its text is unreadable (raised on #188).
+- **Danger:** `.btn.bad`: `--red` fill, full width, inside Settings' Danger zone slab (fixed in #188). *Still differs:* `night-glass.css` gives it `color:#fff`, a raw hex; it should be `var(--on-status)` like `base.css`.
 
 ### Settings rows
 
@@ -79,7 +88,9 @@ One spring, `cubic-bezier(.2,.8,.2,1)`; screens 450–700 ms, presses 150 ms. On
 
 In this order, one per `[design]` PR:
 
-1. Slab padding (24 content, 20 small) and the 24 px rhythm on the map and the Grammar list.
+1. ~~Slab padding (24 content, 20 small) and the 24 px rhythm on the map.~~ Done.
 2. Main button heights (56 / 52).
 3. Slab title sizes (22 / 17), with Today's lesson card and the map's cards.
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
+
+Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.
