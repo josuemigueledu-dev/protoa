@@ -151,8 +151,13 @@ body.lay-mobile .ticket .stamp{width:112px;height:112px}
 .pstamp.in{animation:stamp-press .5s var(--ease) both}
 @keyframes stamp-press{0%{opacity:0;transform:rotate(-12deg) scale(1.8)}55%{opacity:1;transform:rotate(-12deg) scale(.93)}100%{opacity:1;transform:rotate(-12deg) scale(1)}}
 @media (prefers-reduced-motion:reduce){.pstamp{opacity:1;animation:none!important}}
-/* the lesson's words, in their own slab under the results */
-.done-words{display:flex;flex-direction:column;gap:12px}
+/* the words under a result row, on the Done screen and the review summary alike (system.md, "Word slab"): a small
+   slab (20 px), a small slab title 12 px over the chips; a chip with a word card is a button with the short press */
+.wordslab:not(#_){padding:20px;display:flex;flex-direction:column;gap:12px}
+.wordslab h2{font-size:1.0625rem;line-height:1.15;margin:0}
+.wordslab .wchip{max-width:100%;text-align:left}
+button.wchip{transition:transform .15s var(--ease)}
+button.wchip:active{transform:scale(.96)}
 .stp.on.pf .ring2{border-color:var(--red)}   /* a Perfekt stamp in the Stempelheft wears the Done screen's ink */
 .coach{align-items:flex-end}
 .coach .say .row{gap:8px;align-items:center}

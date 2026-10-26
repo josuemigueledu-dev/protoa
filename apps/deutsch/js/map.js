@@ -324,7 +324,7 @@ function lessonDone(v, L, ls) {
     h('div', { class: 'top' }, h('b', {}, 'Protoa · Fahrschein'), h('span', {}, 'Lesson ' + L.n)),
     h('div', { class: 'body' }, h('div', { class: 'eyebrow' }, 'Station erreicht'), h('h1', { lang: 'de' }, stationBreak(c.station)), h('div', { class: 'stampwrap' }, st, res.stamp || ''), h('p', { class: 'muted' }, 'You can now ' + L.can))));
   v.append(...res.out);
-  if (learnedWords.length) v.append(h('div', { class: 'card done-words' }, h('div', { class: 'eyebrow' }, 'Your new words'), h('div', { class: 'learned', role: 'list', 'aria-label': 'Words from this lesson' }, ...learnedWords.map(w => { const c = wordChip(w); c.setAttribute('role', 'listitem'); return c; }))));
+  if (learnedWords.length) v.append(wordSlab('Your new words', learnedWords));
   const weiter = () => { S.progress.lessonState = null; save('progress'); lastSegs = null; NAV = 'fade'; go('learn'); };
   actionBar({ buttons: [h('button', { class: 'btn', onclick: weiter }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') weiter(); };
 }
@@ -350,6 +350,12 @@ function resultRow(items, label, then) {
   const count = () => { cards.forEach(c => countUp(c[1], c[2])); if (then) then(); };
   if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(count, 350); } }, { threshold: .6 }); io.observe(row); } else setTimeout(count, 350);
   return row;
+}
+/* the words under a result row (system.md, "Word slab"), on the Done screen and the review summary alike: a small
+   slab with a small slab title, then word chips; a chip with a word card opens it (a missed sentence has none) */
+function wordSlab(title, words) {
+  const chip = w => { const bare = w.de.replace(/^(der|die|das) /, ''); return wordChip(w, findWord(bare) ? () => openWordSheet(bare) : null); };
+  return h('section', { class: 'card wordslab', 'aria-label': title }, h('h2', {}, title), h('div', { class: 'learned' }, ...words.map(chip)));
 }
 
 /* ---------- re-layout the map on resize ---------- */
