@@ -137,9 +137,11 @@ function buildExam(code) {
 }
 
 // a gap item from an example: one blank per missing word, so "[Guten Morgen]" shows two; a gap of article and noun
-// also takes the noun alone ("Herr Weber ist [der Lehrer]." → "Lehrer": "Herr Weber ist Lehrer." is right too)
+// also takes the noun alone where German drops the article, a job or role after sein/werden with a person as the
+// subject ("Herr Weber ist [der Lehrer]." → "Lehrer"), never after das/es or a question word ("Das ist [die Karte].")
+const ROLE_BEFORE = /^(?!(?:das|es|dies\w*|hier|da|dort)\s+\S+\s*$|(?:wo|woher|wohin|wer|wen|wem|was|wie|wann|warum|welch\w*)\b)\S.*\s(?:bin|bist|ist|sind|seid|werde|wirst|wird|werden)\s*$/i;
 function gapItem(w) {
-  const m = w.ex.match(/\[([^\]]+)\]/)[1], noun = m.match(/^[Dd](?:er|ie|as) ([A-ZÄÖÜ]\S*)$/);
+  const m = w.ex.match(/\[([^\]]+)\]/)[1], noun = ROLE_BEFORE.test(w.ex.split('[')[0]) && m.match(/^[Dd](?:er|ie|as) ([A-ZÄÖÜ]\S*)$/);
   return { sec: 'gap', type: 'gap', de: w.ex.replace(/[\[\]]/g, ''), shown: w.ex.replace(/\[[^\]]+\]/, m.split(' ').map(() => '_____').join(' ')), a: noun ? [m, noun[1]] : [m], en: w.exEn };
 }
 // the gap's prompt, placeholder and label, in the singular or plural
