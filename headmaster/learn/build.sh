@@ -31,4 +31,7 @@ for j in $(cat "$OUT/scripts.txt"); do cat "$OUT/js/$j"; printf '
 ;
 '; done > "$OUT/app.js.tmp"
 rm -rf "$OUT/js" && mkdir -p "$OUT/js" && mv "$OUT/app.js.tmp" "$OUT/js/app.js" && echo app.js > "$OUT/scripts.txt"
+# the cast's voices (rendered on this PC by docker/tts: render.py, then pack.py): a few sprites and their manifest
+VOX=/c/Users/jm480/docker/tts/out/audio
+if [ -f $VOX/manifest.json ]; then mkdir -p "$OUT/audio" && cp $VOX/*.mp3 $VOX/manifest.json "$OUT/audio/"; fi
 echo "$ID"
