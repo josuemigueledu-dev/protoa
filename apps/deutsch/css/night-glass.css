@@ -27,6 +27,9 @@
   --steel:#2c4a74; --steel-deep:#1f3658; --magenta:#ff2e88; --cyan:#8fd3ff; --pale:#8fb4dc;
   --cyan-ink:#8fd3ff; --magenta-ink:#ff2e88;   /* the same hues as text; Day Glass deepens them to read on pale glass */
   --cut:18px; --cut-btn:12px;
+  /* the hero title, one per screen at most: the map's chapter header, the Done ticket's station and the review card's word
+     (system.md, Type); 32 at 390 px, 40 from 490 px. Today's lesson card keeps its smaller in-slab hero. */
+  --t-hero:clamp(1.75rem,8.2vw,2.5rem);
   /* paper: the light side; kept as --bg because components use it as the ink-on-dark colour */
   --bg:#e6e3db; --bg-deep:var(--night); --bg-2:rgba(17,21,27,.06);
   --card:rgba(236,233,225,.7); --card-solid:#e6e3db; --chip:rgba(255,255,255,.42);
@@ -433,7 +436,7 @@ body.lay-mobile .khead{clip-path:none;border-radius:0;margin:-16px calc(-1 * max
 .khead .kc{font-size:.9375rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .khead .kch{display:flex;align-items:center;gap:12px;margin-top:14px}
 .khead .kk{display:block;font-size:1rem;color:var(--muted)}
-.khead h2{font-size:clamp(1.75rem,9vw,2.5rem);line-height:1.02;margin:4px 0 2px;hyphens:manual}
+.khead h2{font-size:var(--t-hero);line-height:1.02;margin:4px 0 2px;hyphens:manual}
 .khead small{font-size:.875rem;color:var(--muted)}
 .khead .seat{display:none}   /* Protoa stays in its tab */
 .khead .klv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
@@ -540,7 +543,7 @@ body:not(.lay-mobile) .rv-pic .haze{display:block;position:absolute;inset:0;z-in
 .rv-word{display:flex;align-items:center;gap:12px}
 .rv-art{display:block;font-weight:700;font-size:1.0625rem;line-height:1}
 .rv-art.g-m{color:var(--der)} .rv-art.g-f{color:var(--die)} .rv-art.g-n{color:var(--das)}
-.rv-de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:clamp(1.75rem,8.4vw,2.5rem);line-height:1.12;overflow-wrap:anywhere;hyphens:auto}
+.rv-de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:var(--t-hero);line-height:1.12;overflow-wrap:anywhere;hyphens:auto}
 .rv-play{width:52px;height:52px}
 .rv-ipa{color:var(--muted);font-size:.9375rem;margin-top:-4px}
 .rv-ex{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:14px;background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s var(--ease),background .25s}
