@@ -30,7 +30,7 @@ function paceWidget() {
   const p = pace(), info = levelInfo();
   const rows = info.map((l, i) => { const e = p.eta[i]; const status = l.passed ? h('span', { class: 'chip ok' }, 'passed') : l.reached ? h('span', { class: 'chip yours' }, 'exam ready') : e.days === null ? h('span', { class: 'faint' }, e.rem.toLocaleString('en') + ' words to go') : h('span', { class: 'faint' }, `${e.days} day${e.days === 1 ? '' : 's'} · ${fmtDate(e.date)}`);
     return h('div', { class: 'lvrow' + (l.passed ? ' passed' : l.reached ? ' ready' : '') }, h('b', { class: 'lvcode' }, l.code), h('div', { class: 'grow' }, h('div', { class: 'bar' }, h('i', { style: `width:${Math.min(100, Math.max(0, (p.w - l.from) / (l.words - l.from) * 100))}%` })), h('div', { class: 'lvmeta' }, h('span', { class: 'faint' }, l.words.toLocaleString('en') + ' words'), status))); });
-  return h('div', { class: 'widget pacew' }, h('div', { class: 'wh' }, h('h2', {}, 'Tempo'), h('span', { class: 'faint' }, p.avg ? `${(Math.round(p.avg * 10) / 10)} words/day (3-day average)` : 'no new words in the last 3 days')),
+  return h('div', { class: 'widget pacew' }, h('div', { class: 'wh' }, h('h2', {}, 'Tempo'), h('span', { class: 'faint' }, p.avg ? `${(Math.round(p.avg * 10) / 10)} words/day (3-day average)` : p.w ? 'no new words in the last 3 days' : 'no words yet')),
     p.avg ? '' : h('p', { class: 'faint' }, 'Learn new words in a lesson to see when you reach each level.'), ...rows,
     p.avg ? h('p', { class: 'faint' }, `At this pace you reach ${p.eta.find(e => e.rem > 0) ? p.eta.find(e => e.rem > 0).code + ' in ' + p.eta.find(e => e.rem > 0).days + ' days' : 'B1'}. Exams come on top: each level needs its exam passed with 90%.`) : '');
 }
