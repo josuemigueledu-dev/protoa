@@ -135,3 +135,34 @@ test('markTyped marks like the exam: articles, umlaut shortcuts and case', () =>
   assert.equal(mark(it, 'right'), false);
   assert.equal(it.expected, 'wrong, false');
 });
+
+test('gap items: one blank per missing word, the prompt says "words" when there are two, and the noun alone fills an article + noun gap', () => {
+  const gaps = lessons.flatMap(L => L.words).filter(w => /\[[^\]]+\]/.test(w.ex));
+  assert.ok(gaps.some(w => /\[\S+ \S+\]/.test(w.ex)), 'the lessons have two-word gaps to check');
+  for (const w of gaps) {
+    ctx.__w = w; const it = get('gapItem(__w)'), m = w.ex.match(/\[([^\]]+)\]/)[1], n = m.split(' ').length;
+    assert.equal(it.shown.match(/_____/g).length, n, `"${w.ex}" shows ${n} blank(s)`);
+    assert.equal(it.a[0], m);
+    ctx.__it = it; const text = get('gapText(__it)');
+    assert.match(text.ask, n > 1 ? /missing words/ : /missing word in/);
+    assert.equal(text.label, n > 1 ? 'Missing words' : 'Missing word');
+  }
+  const mark = (ex, a) => { ctx.__it = get(`gapItem(${JSON.stringify({ ex, exEn: 'x' })})`); ctx.__a = a; return get('markTyped(__it, __a)'); };
+  assert.equal(mark('Herr Weber ist [der Lehrer].', 'Lehrer'), true, '"Herr Weber ist Lehrer." is right too');
+  assert.equal(mark('Herr Weber ist [der Lehrer].', 'der Lehrer'), true);
+  assert.equal(mark('Herr Weber ist [der Lehrer].', 'die Lehrer'), false);
+  assert.equal(mark('[Das ist] Ana.', 'ist'), false, 'only an article before a noun can be left out');
+  assert.equal(mark('Der Test ist [ein bisschen] schwer.', 'bisschen'), false);
+  assert.equal(mark('Ana kommt aus Mexiko. [Das stimmt].', 'Stimmt'), false);
+});
+
+test('placement: a learner who writes "Lehrer" for "Herr Weber ist [der Lehrer]." passes that lesson', () => {
+  const L = lessons.find(L => L.words.some(w => w.ex.includes('[der Lehrer]')));
+  assert.ok(L, 'a lesson has the gap');
+  ctx.__w = L.words.find(w => w.ex.includes('[der Lehrer]'));
+  ctx.__P = { order: [L.n, L.n + 1], at: 0, miss: 0, used: [], log: [], startedAt: 0, done: false, place: L.n };
+  run(`__P.item = Object.assign(gapItem(__w), { lesson: ${L.n} })`);
+  get('answerPlacement(__P, "Lehrer", 1000)');
+  assert.equal(ctx.__P.log[0].ok, true);
+  assert.equal(ctx.__P.at, 1);
+});

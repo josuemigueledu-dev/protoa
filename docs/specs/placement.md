@@ -34,6 +34,7 @@ Why this shape:
 
 Exactly like the exam (`markTyped`, now shared by `gradeExam` and the placement test):
 - `gap`: the missing word, case and punctuation ignored, umlaut shortcuts (`a:` → ä) applied.
+  The sentence shows one blank per missing word and the prompt says "words" when there are two (*[Guten Morgen]*, *[Das stimmt]*). A gap of article and noun also takes the noun alone: *Herr Weber ist [der Lehrer]* → *Lehrer* ("Herr Weber ist Lehrer." is right too).
 - `out`: the German word or phrase, token by token, with its article for nouns.
 
 No partial credit, no AI. Placing someone too low costs them a few easy lessons. Placing them too high leaves them lost, so it stays strict.
