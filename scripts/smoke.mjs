@@ -8,7 +8,7 @@
 // A lesson with every answer right the first time earns the "Perfekt" stamp; one with a miss does not.
 // A review card answered wrong and graded Good anyway is not counted as recalled.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
-// A Grammar unit opens at its top, however far the list or the lesson was scrolled.
+// A Grammar unit opens at its top, however far the list or the lesson was scrolled; "‹ Grammar" goes back to where the list was.
 // "Not a beginner?" places a learner who knows lessons 1–5 at Lesson 6, on the map.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
@@ -503,12 +503,19 @@ async function grammarUnitOpensAtTop(browser) {
   const rows = cur('.listrow:not(.soon)');
   const row = rows.nth(await rows.count() - 1), title = (await row.locator('b').first().textContent()).trim();
   await row.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
-  if (await page.evaluate(() => PANE.scrollTop) < 200) fail(`${label}: the Grammar list did not scroll, so this check proves nothing`);
+  const listY = Math.round(await page.evaluate(() => PANE.scrollTop));
+  if (listY < 200) fail(`${label}: the Grammar list did not scroll, so this check proves nothing`);
   await row.click();
   await atTop(title, 'the last unit in the scrolled list');
-  // back to the list, then the same from a lesson's Notice step scrolled down
-  await cur('.btn', { hasText: '‹ Grammar' }).click(); await drawn(page); await page.waitForTimeout(300);
+  // back to the list, where it was scrolled, then the same from a lesson's Notice step scrolled down
+  await cur('.btn', { hasText: '‹ Grammar' }).click(); await drawn(page); await page.waitForTimeout(400);
   if (await page.evaluate(() => !!document.querySelector('#view > .view:not(.leaving) .listrow')) !== true) fail(`${label}: "‹ Grammar" did not lead back to the list`);
+  const back = await page.evaluate(t => ({ y: Math.round(PANE.scrollTop), row: [...document.querySelectorAll('#view > .view:not(.leaving) .listrow')].some(r => { const b = r.getBoundingClientRect(); return r.querySelector('b').textContent.trim() === t && b.top >= 0 && b.bottom <= innerHeight; }) }), title);
+  if (Math.abs(back.y - listY) > 4 || !back.row) fail(`${label}: "‹ Grammar" came back scrolled ${back.y} px, not ${listY} px where the list was left (the unit's row ${back.row ? 'in view' : 'out of view'})`);
+  // any other way into Grammar starts at the top of the list
+  await page.evaluate(() => go('practice')); await drawn(page); await page.waitForTimeout(300);
+  await page.evaluate(() => go('grammar')); await drawn(page); await page.waitForTimeout(400);
+  if (await page.evaluate(() => PANE.scrollTop) > 0) fail(`${label}: Grammar opened from Practice kept the old scroll (${Math.round(await page.evaluate(() => PANE.scrollTop))} px)`);
   const unit = await page.evaluate(() => { const L = LESSONS.find(L => L.notice && L.notice.grammar && GRAMMAR.some(g => g.id === L.notice.grammar)); startLesson(L.n, true); S.progress.lessonState.step = 'notice'; render(); return GRAMMAR.find(g => g.id === L.notice.grammar).title; });
   await drawn(page); await page.waitForTimeout(400);
   await page.evaluate(() => document.querySelectorAll('#view > .view:not(.leaving) [hidden]').forEach(e => e.hidden = false));
