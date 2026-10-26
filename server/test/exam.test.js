@@ -132,3 +132,17 @@ test('exam: when Claude marks writing and speaking, they count and a failed atte
   assert.ok(get('examCooldownLeft("A1")') > 0);
   assert.equal(get('S.progress.exams.length'), 1);
 });
+
+test('exam grammar: uncountable nouns are never asked with ein/eine, and the writing task has its English line', () => {
+  learner({ ai: true });
+  const mass = [...get('MASS_NOUNS')].map(de => de.replace(/^(der|die|das) /, ''));
+  for (const code of ['A1', 'A2']) for (let round = 0; round < 40; round++) {
+    const exam = get(`buildExam("${code}")`);
+    for (const it of exam.items.filter(i => i.type === 'art' && i.prompt.endsWith('(a / an)'))) {
+      assert.ok(!mass.some(m => it.prompt.includes(` ${m}.`)), `${code}: "${it.prompt}" asks for ein/eine with an uncountable noun`);
+      assert.ok(!it.prompt.includes(' Moment.'), `${code}: "${it.prompt}"`);
+    }
+    const write = exam.items.find(i => i.type === 'write');
+    assert.ok(write && write.taskEn, `${code}: the writing task has no English line`);
+  }
+});
