@@ -48,6 +48,8 @@
   --field-1:transparent; --field-2:rgba(17,21,27,.06); --field-3:rgba(255,46,136,.08); --field-4:rgba(143,211,255,.12);
   /* semantic: wrong is magenta, never a penalty red */
   --red:#d81e6c; --red-deep:#a8124f; --red-soft:rgba(216,30,108,.12);
+  --chip-ok:rgba(35,128,79,.5); --chip-ok-ink:#1a613b;   /* the two state chips: the hairline and the ink, on the same glass */
+  --chip-accent:rgba(216,30,108,.5); --chip-accent-ink:#a8124f;
   --blue:#2c5aa8; --blue-deep:#1f4180; --blue-soft:rgba(44,90,168,.12);
   --green:#23804f; --green-deep:#1a613b; --green-soft:rgba(35,128,79,.13);
   --der:#2c5aa8; --die:#d81e6c; --das:#23804f;
@@ -77,6 +79,7 @@
   --bg-2:rgba(238,241,244,.08); --chip:rgba(238,241,244,.1); --card:rgba(238,241,244,.08);
   --glass-hi:rgba(255,255,255,.12); --glass-edge:rgba(255,255,255,.07); --rim:rgba(255,255,255,.14);
   --yellow-soft:rgba(143,180,220,.16); --blue:#8fb4dc; --green:#5fd39a; --red:#ff5c9e;
+  --chip-ok:rgba(95,211,154,.55); --chip-ok-ink:#5fd39a; --chip-accent:rgba(255,92,158,.55); --chip-accent-ink:#ff8ab8;
   --field:rgba(238,241,244,.1); --field-focus:var(--pale); --field-ph:var(--ngrey);
   color:var(--ink);
 }
@@ -166,7 +169,10 @@ h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .choice.picked{background:var(--yellow-soft);box-shadow:inset 0 0 0 2px var(--steel)}
 @keyframes ng-shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .chip{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r-xs)}
-.chip.yours{background:var(--magenta);color:#fff;box-shadow:none}
+/* every chip is the same glass body: a fact is muted, finished (.ok) and about you (.accent) show in the ink and its
+   hairline, so they read on any slab and pass AA. Solid magenta stays for the map's test stop, not for chips. */
+.chip.ok{background:var(--chip);color:var(--chip-ok-ink);box-shadow:inset 0 0 0 1px var(--chip-ok)}
+.chip.accent{background:var(--chip);color:var(--chip-accent-ink);box-shadow:inset 0 0 0 1px var(--chip-accent)}
 .readtext,.preview .can,details,.kbd,.jumble span,.lvrow .lvcode{background:var(--chip)}
 .preview .bigicon.test{display:grid;place-items:center;color:var(--magenta-ink);font:400 2.5rem var(--hero);letter-spacing:-.04em}   /* the Kapiteltest sheet shows the K1 mark of its map stop */
 .nextcard .sig,.listrow>.sig,.scen .sig,.preview .bigicon,.illus,.examcard .sig,.map-head .sig,.wcard .illus,.wcard .illus.m,.wcard .illus.f,.wcard .illus.n{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
