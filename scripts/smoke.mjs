@@ -136,7 +136,16 @@ async function answerRight(page, s) {
 // other: a different wrong answer from the one already given (a check of the same answer keeps the try)
 async function answerWrong(page, s, other) {
   await cursorIn(page, s);
-  if (s.type === 'tiles') { const pool = page.locator('.tiles:not(.answer) > .tile'); if (other) await (await pool.count() ? pool : page.locator('.tiles.answer > .tile')).first().click(); else if (!await page.locator('.tiles.answer > .tile').count()) await pool.first().click(); }
+  if (s.type === 'tiles') {
+    const pool = page.locator('.tiles:not(.answer) > .tile'), ans = page.locator('.tiles.answer > .tile');
+    if (other) {
+      // one tile again, but another one: adding a second tile could build a two-word line in the right order
+      const was = (await ans.allTextContents()).join(' ');
+      while (await ans.count()) await ans.first().click();
+      const k = (await pool.allTextContents()).findIndex(t => t !== was);
+      await pool.nth(Math.max(k, 0)).click();
+    } else if (!await ans.count()) await pool.first().click();
+  }
   else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill(other ? 'Unsinn' : 'Quatsch'); }
   else await page.locator('.turnbox input, .turnbox textarea').first().fill(other ? 'Quatsch Unsinn' : 'Quatsch Quatsch');
 }
