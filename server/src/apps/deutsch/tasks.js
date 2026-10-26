@@ -66,7 +66,7 @@ ${hist}`;
     tier: 'quick',
     input: z.object({ brief: str(600), question: str(300) }),
     output: z.object({ de: z.string(), tip: z.string() }),
-    prompt: ({ brief, question }) => `A beginner learner of German (A1) wants to say this to their teacher (formal Sie), in this situation: ${brief}\nWhat they want to say: "${question}"\nGive the simplest natural German sentence for it. Reply with only JSON: {"de": "...", "tip": "one short English tip about a word or structure in it"}`,
+    prompt: ({ brief, question }) => `A beginner learner of German (A1) wants to say this to the person they are talking to (formal Sie), in this situation: ${brief}\nWhat they want to say: "${question}"\nGive the simplest natural German sentence for it. Reply with only JSON: {"de": "...", "tip": "one short English tip about a word or structure in it"}`,
   },
 
   // Level exams: mark the items the app cannot mark itself.
