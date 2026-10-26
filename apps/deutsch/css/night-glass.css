@@ -402,7 +402,7 @@ body.in-lesson .view[class*=" in-"]>.lesson-top{animation:none}
 .tdue .n{font-family:var(--hero);letter-spacing:-.04em;font-size:2rem;line-height:1}
 .tdue .k{font-size:.8125rem;color:var(--muted);margin-top:4px}
 .tdue .gchips{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
-.tdue .gchips span{font-size:.6875rem;font-weight:700;border-radius:var(--r-xs);padding:2px 6px}
+.tdue .gchips span{font-size:.6875rem;font-weight:700;border-radius:var(--r-xs);padding:2px 5px}
 .tdue .g-m{color:var(--der);background:color-mix(in srgb,var(--der) 15%,transparent)}
 .tdue .g-f{color:var(--die);background:color-mix(in srgb,var(--die) 13%,transparent)}
 .tdue .g-n{color:var(--das);background:color-mix(in srgb,var(--das) 14%,transparent)}
@@ -568,26 +568,29 @@ body.lay-mobile .actionbar .tools .btn{flex:none;margin-left:auto}
 
 /* ---------- breathing room (owner, Oct 25: "the screens shouldn't look super compact") ----------
    one rhythm on every screen, no tighter than the mock-ups: 24 px between slabs (20 in a lesson),
-   at least 20 px inside a slab, and body text that is not squeezed */
+   and two slab paddings (docs/designs/night-glass/system.md, "Spacing"): 24 px inside a content slab
+   (full-width .card, the stop line, Grammar's rule of the day), 20 px inside a small one (.widget, .kpi,
+   .mode, .scen, Today's pair of tiles, the map's lesson card). List rows (.listrow) keep 20/24. */
 .view.stack{gap:24px}
 body.in-lesson .view.stack{gap:20px}
-body:not(.lay-desktop) .widget{padding:22px;gap:14px}   /* the desktop rail is narrow: its widgets keep 20 px */
+.widget{padding:20px}
+body:not(.lay-desktop) .widget{gap:14px}
 .listrow{padding:20px 24px}
-.kpi{padding:18px}
-.mode,.scen{padding:18px}
+.kpi,.mode,.scen{padding:20px}
 /* a mode with nothing to practise yet: readable, not faded; its icon goes quiet and a lock sits clear of the chamfer */
 .mode[disabled]{opacity:1}
 .mode[disabled] .sig{opacity:.4;filter:grayscale(1)}
-.mode .mlock{position:absolute;top:18px;right:24px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.mode .mlock{position:absolute;top:20px;right:24px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line-2)}
 .mode .mlock svg{width:13px;height:13px}
 .hubfresh h2{margin:2px 0 4px}
 body.lay-mobile .today-hero,.today-hero{padding:22px 20px;gap:14px}
 .today-hero .say{margin-top:12px}
 .today-hero .say p{line-height:1.4}
-.card.stopline{padding:20px}
+.card.stopline{padding:24px}
 .tduo{gap:14px}
-.tduo>.card{min-height:128px;padding:18px}
-.kcard{padding:18px}
+.tduo>.card{min-height:128px;padding:20px}
+.kcard{padding:20px}
+.kline{margin-top:0}   /* the line starts 24 px under the chapter header, the same gap as between slabs */
 .card p,.widget p,.mode .faint,.scen .faint,.listrow .faint,.widget .faint{line-height:1.55}
 .classcard .classrow{gap:14px 10px}
 
