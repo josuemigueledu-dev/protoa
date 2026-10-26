@@ -71,10 +71,13 @@ No slab behind the head: the title sits on the stage, as in `screens/5-grammar.j
 
 ### Buttons
 
-- **Main action:** steel fill, 12 px chamfer, arrow chip on the right (`.btn.go`). *Still differs:* three heights, 64 (Today's Start lesson), 56 (map Start), 52 (Practice's Review now, Settings). Rule to adopt: 56 px for a screen's one main action, 52 for any other filled button.
+- **Arrow button (done: `[design]` arrow buttons):** a screen's one forward action that starts something (Today's Start lesson, the map card's Start). Steel fill, 12 px chamfer, `.btn.go`: **56 px tall**, the square **40 px arrow chip** inset **8 px** from the top, bottom and right, the label **24 px** in. The same size on every screen and in every slab, as in the prototype (54 there, 56 on our 4 px grid).
+- **Filled button:** `.btn`, steel fill, **52 px** tall, 24 px at the sides: the lesson's Check / Continue bar, Practice's Review now, Check with Protoa. *Still differs:* the prototype puts the arrow chip on the lesson's last step and the Done screen ("Lektion abschließen →", "Weiter zur nächsten Station →"); ours are plain 52 px buttons in the action bar.
 - **Secondary:** `.btn.ghost`, same heights as filled.
 - **Small:** `.btn.ghost.sm`, 44 px tall (the smallest tap target), 13 px text. Back chips and in-slab links use it.
 - **Danger:** `.btn.bad`: `--red` fill, full width, inside Settings' Danger zone slab (fixed in #188). *Still differs:* `night-glass.css` gives it `color:#fff`, a raw hex; it should be `var(--on-status)` like `base.css`.
+
+![Arrow buttons before / after, 390 px dark: Today's lesson card and the map card](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-arrow-buttons-1.png)
 
 ### Settings rows
 
@@ -89,7 +92,7 @@ One spring, `cubic-bezier(.2,.8,.2,1)`; screens 450–700 ms, presses 150 ms. On
 In this order, one per `[design]` PR:
 
 1. ~~Slab padding (24 content, 20 small) and the 24 px rhythm on the map.~~ Done.
-2. Main button heights (56 / 52).
+2. ~~Arrow button size (56, 40 px chip).~~ Done.
 3. Slab title sizes (22 / 17), with Today's lesson card and the map's cards.
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
 

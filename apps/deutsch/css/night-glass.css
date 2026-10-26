@@ -185,8 +185,9 @@ h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .btn:focus-visible,.card:focus-visible,.mode:focus-visible,.scen:focus-visible,.btile:focus-visible,.lv:focus-visible{outline-offset:-4px}
 :focus-visible{outline-color:var(--die)!important}
 .slab-dark :focus-visible,.today-hero :focus-visible,.actionbar :focus-visible,.lesson-top :focus-visible,body.lay-desktop .sidebar :focus-visible{outline-color:var(--magenta)!important}
-/* opt-in: a square arrow chip on the right of a primary button, as in the prototype */
-.btn.go{justify-content:space-between;padding-right:7px}
+/* opt-in: a square arrow chip on the right of a primary button, as in the prototype. One size everywhere
+   (system.md, "Buttons"): 56 tall, the 40 px chip inset 8 px, the label 24 px in */
+.btn.go{justify-content:space-between;min-height:56px;padding:8px 8px 8px 24px}
 .btn.go::after{content:"→";width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:var(--r-xs);background:var(--nink);color:var(--steel);font-size:18px}
 
 /* ---------- inputs ---------- */
@@ -508,8 +509,7 @@ button.kbody:active .kmk{transform:scale(.92)}
 .kpic.none{background:linear-gradient(135deg,var(--night),var(--night2))}
 .kcard h2{font-size:1.25rem;line-height:1.1;margin:0}
 .kcard .ktx span{color:var(--muted);font-size:.8125rem}
-.kcard .btn{margin-top:8px;min-height:44px;padding-left:16px;gap:10px}
-.kcard .btn.go::after{width:32px;height:32px}
+.kcard .btn{margin-top:8px;gap:12px}
 
 /* ---------- review (screens/7-review.jpg): close · title · count on the stage, a segment per card, Protoa's line;
    the flashcard slab with its picture over the hazard stripe; the five Leitner boxes under it ---------- */
