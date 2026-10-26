@@ -5,6 +5,7 @@
 // played to its end with its own model answers (Done → Continue lands on the new stop, after the last lesson too), and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
+// A review card answered wrong and graded Good anyway is not counted as recalled.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // A Grammar unit opens at its top, however far the list or the lesson was scrolled.
 // "Not a beginner?" places a learner who knows lessons 1–5 at Lesson 6, on the map.
@@ -142,10 +143,11 @@ const convMoved = (page, at) => page.waitForFunction(at => S.progress.lessonStat
 
 // Done → Continue opens the course map scrolled to the learner's new stop, clear of the tab bar, so the line
 // filling up to it is seen (the map is drawn straight from the tap, before its rows are sized: map.js, toStop)
-const stopInView = (page, label) => page.waitForFunction(() => {
+// (`below` is the room kept for the tab bar; a desktop has none, so on screen is enough there)
+const stopInView = (page, label, below = 128) => page.waitForFunction(below => {
   const mk = document.querySelector('#view > .view:not(.leaving) .kst.here .kmk'), r = mk?.getBoundingClientRect();
-  return r && r.top >= 0 && r.bottom <= innerHeight - 128;
-}, null, { timeout: 2000 }).catch(async () => fail(`${label}: Done → Continue left the map at scroll ${await page.evaluate(() => document.getElementById('app').scrollTop)}, with the new stop off the screen`));
+  return r && r.top >= 0 && r.bottom <= innerHeight - below;
+}, below, { timeout: 2000 }).catch(async () => fail(`${label}: the map was left at scroll ${await page.evaluate(() => document.getElementById('app').scrollTop)}, with the new stop off the screen`));
 // and that stop follows every lesson done: past the last written lesson it is the stop after it, not the
 // optional Lesson 0 at the top (map.js, stopIndex)
 const stopAfterDone = async (page, label) => {
@@ -395,6 +397,36 @@ async function examPauseKeepsAnswer(browser) {
   await ctx.close();
 }
 
+// The review summary counts a card as recalled only when its answer was right: a miss graded Good afterwards
+// still reschedules as Good (grading yourself is allowed), but the summary does not say "Alles sitzt."
+async function reviewSummaryCountsMisses(browser) {
+  const label = 'review summary';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => {
+    LESSONS[0].words.forEach(w => markLearned(w, 1)); S.settings.onboarded = true; document.querySelector('.sheet')?.remove();
+    const ids = LESSONS[0].words.map(w => w.de).filter(id => wordDef(id)).slice(0, 3);
+    startReview(ids.map(id => ({ id, sh: cardShard(id), c: cardOf(id), kind: 'r', extra: true })), 'Smoke');
+  });
+  for (let i = 0; i < 3; i++) {
+    await page.waitForFunction(i => PR && PR.done === i, i);
+    await drawn(page);
+    const input = page.locator('#view > .view:not(.leaving) .rv-card input');
+    // the first card right, the other two wrong; every card then graded Good
+    await input.fill(i === 0 ? await page.evaluate(() => wordDef(PR.queue[0].id).en[0]) : 'xylophone');
+    await page.keyboard.press('Enter');
+    await page.locator('.actionbar .btn', { hasText: 'Good' }).click();
+  }
+  await drawn(page);
+  const sum = await page.evaluate(() => ({ title: document.querySelector('#view > .view:not(.leaving) .summary h1')?.textContent, ...REVIEW_SUMMARY }));
+  if (sum.n !== 3 || sum.good !== 1) fail(`${label}: 1 of 3 cards answered right, but the summary counts ${sum.good} of ${sum.n} recalled`);
+  if (sum.title === 'Alles sitzt.') fail(`${label}: two misses graded Good still read "Alles sitzt."`);
+  await ctx.close();
+}
+
 // Grammar has no tab on a phone: opened from Practice, Profile or a lesson's Notice, that tab stays lit and
 // Grammar's back button leads back there (into the lesson, at the same step).
 async function grammarKeepsItsTab(browser) {
@@ -506,8 +538,8 @@ async function placementFirstRun(browser) {
     if (st.route !== 'learn' || st.done !== '1,2,3,4,5') fail(`${label}: after placing, route "${st.route}" and lessons done ${st.done}`);
     if (!/Lesson 6\b/.test(st.here)) fail(`${label}: the map's stop is "${st.here.slice(0, 60)}", not Lesson 6`);
     if (st.due) fail(`${label}: placing made ${st.due} reviews due today; they should start tomorrow`);
-    if (width === 390) await stopInView(page, label);   // clear of the tab bar; a desktop has none, so on screen is enough
-    else if (!await page.evaluate(() => { const r = document.querySelector('#view > .view:not(.leaving) .kst.here .kmk')?.getBoundingClientRect(); return r && r.top >= 0 && r.bottom <= innerHeight; })) fail(`${label}: the map opened with Lesson 6 off the screen`);
+    // the map scrolls to the stop a frame or more after it is drawn (map.js, toStop): wait for it, at both widths
+    await stopInView(page, label, width === 390 ? 128 : 0);
     await noSidewaysScroll(page, label + ' map');
     if (width === 390) {
       // the offer on lesson 1's preview is gone once placed, and there for a new learner
@@ -555,6 +587,7 @@ try {
   await sheetsOwnKeys(browser);
   await stepPassesOn(browser);
   await examPauseKeepsAnswer(browser);
+  await reviewSummaryCountsMisses(browser);
   await grammarKeepsItsTab(browser);
   await grammarUnitOpensAtTop(browser);
   await placementFirstRun(browser);
