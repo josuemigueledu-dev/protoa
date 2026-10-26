@@ -402,10 +402,6 @@ body:not(.lay-mobile) .weiter{bottom:24px}
 .stamp{width:136px;height:136px;border-radius:50%;border:4px dashed var(--blue);display:flex;align-items:center;justify-content:center;transform:rotate(-8deg);animation:stamp .55s var(--spring) .15s;background:var(--blue-soft)}
 .stamp .sig{width:84px;height:84px}
 @keyframes stamp{0%{transform:scale(1.5) rotate(-20deg)}60%{transform:scale(.94) rotate(-6deg)}100%{transform:scale(1) rotate(-8deg)}}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px 24px 24px}
-.stat{display:flex;flex-direction:column;align-items:center;gap:4px}
-.stat .n{font-family:var(--display);font-size:var(--t-title);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.stat .l{font-size:var(--t-cap);font-weight:800;color:var(--muted)}
 
 /* ---------- today ---------- */
 .today-hero{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:24px;display:flex;align-items:center;gap:16px;overflow:hidden;position:relative}

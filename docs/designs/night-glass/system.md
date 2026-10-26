@@ -46,6 +46,7 @@ Two families: **Krona One** for display (titles, big numbers), letter-spacing �
 | hero title (one per screen at most) | 32 at 390 px, 40 from 490 px | Krona One | `--t-hero` |
 | in-slab hero (Today's lesson card) | 27 at 390 px, 30 at desktop | Krona One | |
 | page title | 26 | Krona One | `--t-title` |
+| number in a result row (three across) | 24 | Krona One | (`.kpis.result .num`) |
 | slab title | 22 | Krona One | (h2) |
 | small slab title | 17 | Krona One | (`.widget h2`) |
 | body | 17 | Atkinson 400 | `--t-body` |
@@ -96,6 +97,22 @@ No slab behind the head: the title sits on the stage, as in `screens/5-grammar.j
 
 ![Arrow buttons before / after, 390 px dark: Today's lesson card and the map card](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-arrow-buttons-1.png)
 
+### Result row (done: `[design]` result row)
+
+How a finished lesson or review shows its numbers: `resultRow()` in `map.js`, styled by `.kpis.result` in `night-glass-lesson.css`. The lesson's Done screen and the review summary both use it (before, the review put three bare numbers inside its ticket, centred, the first in magenta, while Done had three slabs under the ticket).
+
+- **Where:** right under the ticket, 20 px below it (the lesson rhythm), before any word slab. The ticket holds the headline, never the numbers.
+- **Three even small slabs** in one row at every width (`minmax(0,1fr)`, 12 px apart), each a `.kpi`: 20 px padding, 8 px from number to label. Below 380 px the row tightens to 16 px padding and 8 px gaps, so the widest number still fits at 360.
+- **Order:** minutes first, the rate in the middle, the count that grew last: Done is *minutes · first try · new words*, the review *minutes · recalled · cards*.
+- **The number:** Krona One **24 px** (one step under the 26 of a two-up `.kpi`: at 26, "100%" is wider than a third of a 390 px phone), `--ink`, tabular. Only `%` (14 px, 2 px in) or a leading `+` sits with it; minutes go in the label ("11 · minutes"), not as "11min".
+- **The label:** one line, 13 px Atkinson 800, `--muted` (`.kpi .l`, as on Profile). Keep labels to two short words; "right first time" and "in the lesson" wrapped to two lines and made the slabs uneven.
+- **One accent:** the last slab (`.hot`) takes `--red`, the magenta that reads on cream glass. Nothing else in the row is coloured.
+- **Motion:** the numbers count up (700 ms, ease-out) once the row is 60 % in view; the Perfekt stamp presses in after. Reduced motion shows the final numbers.
+
+![Result row before / after, 390 px: Done and the review summary](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-result-row-1.png)
+
+*Still differs:* the word slab under it. Done's is "Your new words" as a 13 px eyebrow over chips; the review's is "Coming back soon" as a 22 px slab title over magenta chips.
+
 ### Settings rows
 
 A label is one short line; anything that explains it goes under the control as a `.faint` line (as the microphone note does). Labels with a bracketed explanation wrap to two lines and make the rows uneven.
@@ -113,6 +130,7 @@ In this order, one per `[design]` PR:
 3. ~~Slab title sizes (22 / 17), with the map's cards.~~ Done.
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
 5. ~~One clamp for the hero titles (`--t-hero`).~~ Done.
-6. One result row: the Done screen's cards and the review summary draw a result two ways (#146); after ux's Done fix from the #204 review.
+6. ~~One result row: the Done screen's cards and the review summary.~~ Done.
+7. The word slab under a result: one heading style for Done's "Your new words" and the review's "Coming back soon".
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.

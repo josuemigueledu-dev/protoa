@@ -334,14 +334,22 @@ function lessonDone(v, L, ls) {
    Stempelheft. A summary from before the cards (no n) counts the conversation only and has no time. */
 function lessonResults(L, s) {
   const n = s.n ?? s.total, ok = s.n != null ? s.ok : s.first, acc = n ? Math.round(100 * ok / n) : 100, added = s.added ?? L.words.length;
-  const card = (num, unit, label, cls = '') => { const el = h('div', { class: 'n' }, '0'); return [h('div', { class: 'kpi ' + cls }, h('div', { class: 'num' }, unit[0] || '', el, unit[1] || ''), h('div', { class: 'l' }, label)), el, num]; };
-  const cards = [s.secs != null ? card(Math.max(1, Math.round(s.secs / 60)), ['', h('span', { class: 'u' }, 'min')], 'in the lesson') : null, card(acc, ['', h('span', { class: 'u' }, '%')], 'right first time'), card(added, ['+'], added === 1 ? 'new word' : 'new words', 'hot')].filter(Boolean);
-  const row = h('div', { class: 'kpis result', role: 'group', 'aria-label': 'Your lesson' }, ...cards.map(c => c[0]));
   const stamp = s.perfect ? h('div', { class: 'pstamp', 'aria-hidden': 'true' }, h('b', { lang: 'de' }, 'Perfekt'), h('span', { lang: 'de' }, 'Lektion ' + L.n)) : null;
-  const count = () => { cards.forEach(c => countUp(c[1], c[2])); if (stamp) stamp.classList.add(reduced() ? 'still' : 'in'); };
-  if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(count, 350); } }, { threshold: .6 }); io.observe(row); } else setTimeout(count, 350);
+  const mins = s.secs != null ? Math.max(1, Math.round(s.secs / 60)) : null;
+  const row = resultRow([mins != null ? [mins, '', mins === 1 ? 'minute' : 'minutes'] : null, [acc, '%', 'first try'], [added, '+', added === 1 ? 'new word' : 'new words', 'hot']], 'Your lesson', () => { if (stamp) stamp.classList.add(reduced() ? 'still' : 'in'); });
   const note = s.perfect ? 'No misses. The Perfekt stamp is in your Stempelheft.' : s.missed ? (s.missed === 1 ? 'The line you missed comes back in today’s review.' : `The ${s.missed} lines you missed come back in today’s review.`) : '';
   return { stamp, out: note ? [row, h('p', { class: 'muted small result-note' }, note)] : [row] };
+}
+/* one result row (system.md, "Result row"), on the lesson's Done screen and the review summary alike: small slabs,
+   minutes first and the count that grew last, each a number ('%' after it or '+' before it, nothing else, so it fits
+   a 360 px phone) over a one-line label, counted up once the row is in view; then() runs after the count starts */
+function resultRow(items, label, then) {
+  const cards = items.filter(Boolean).map(([num, unit, l, cls]) => { const el = h('div', { class: 'n' }, '0'), u = unit && unit !== '+' ? h('span', { class: 'u' }, unit) : '';
+    return [h('div', { class: 'kpi' + (cls ? ' ' + cls : '') }, h('div', { class: 'num' }, unit === '+' ? '+' : '', el, u), h('div', { class: 'l' }, l)), el, num]; });
+  const row = h('div', { class: 'kpis result', role: 'group', 'aria-label': label }, ...cards.map(c => c[0]));
+  const count = () => { cards.forEach(c => countUp(c[1], c[2])); if (then) then(); };
+  if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(count, 350); } }, { threshold: .6 }); io.observe(row); } else setTimeout(count, 350);
+  return row;
 }
 
 /* ---------- re-layout the map on resize ---------- */

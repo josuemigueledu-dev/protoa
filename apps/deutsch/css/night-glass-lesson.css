@@ -114,8 +114,6 @@
 .ticket .top b{font-family:var(--hero);font-weight:400;letter-spacing:-.03em}
 .ticket h1{font-size:var(--t-hero);line-height:1.02}
 .ticket h1,.preview h1{-webkit-hyphens:manual;hyphens:manual} /* station names break at map.js's soft hyphen only (stationBreak) */
-.ticket .stat .n{color:var(--ink)}
-.ticket .stat:nth-child(1) .n{color:var(--magenta)}
 .ticket .stamp{filter:none}
 
 /* painted word pictures fill their plate; the article colour runs along the bottom edge */
@@ -131,14 +129,16 @@
 body.lay-mobile .ticket .body{gap:12px}
 body.lay-mobile .ticket .stamp{width:112px;height:112px}
 
-/* Done: the result cards under the ticket, one row of small slabs at every width (lessonResults in map.js) */
-.kpis.result:not(#_){grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
-.kpis.result .kpi{padding:16px;gap:8px}
+/* the result row under the Done ticket and under the review summary's ticket (resultRow in map.js; system.md,
+   "Result row"): one row of three even small slabs at every width, 20 px in like every .kpi, a one-line label, and a
+   24 px number (at 26, "100%" is wider than a third of a 390 px phone) */
+.kpis.result:not(#_){grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:12px}
+.kpis.result .kpi{gap:8px}
+@media (max-width:379px){.kpis.result:not(#_){gap:8px}.kpis.result .kpi:not(#_){padding:16px}}   /* "100%" and "new words" still fit at 360 */
 .kpis.result .num{display:flex;align-items:baseline;font-family:var(--hero);font-size:1.5rem;line-height:1;letter-spacing:-.04em;color:var(--ink);white-space:nowrap}
 .kpis.result .num .n{font-size:inherit;font-variant-numeric:tabular-nums}
 .kpis.result .u{font-size:.875rem;margin-left:2px;letter-spacing:0}
 .kpis.result .hot .num{color:var(--red)}   /* the magenta of the ticket, deep enough to read on cream glass */
-.kpis.result .l{font-size:var(--t-cap);font-weight:700;line-height:1.25;color:var(--muted)}
 .result-note{margin:0;text-align:center}
 /* a lesson with no misses: the "Perfekt" stamp, pressed onto the ticket beside the station picture once the numbers
    have counted, overlapping its ring like a rubber stamp (only transform and opacity move) */

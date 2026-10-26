@@ -69,7 +69,7 @@ h2,h3{letter-spacing:-.01em}
 .eyebrow,.lesson-top .steplbl,.st .lab .soon,.kbd,.choice kbd,.srclabel{font-family:var(--text);font-weight:600;letter-spacing:.12em}
 .eyebrow{font-size:.71875rem;color:var(--muted)}
 .kbd,.choice kbd{background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line);font-size:.75rem;letter-spacing:0}
-.big,.stat .n,.kpi .n,.lv b{font-weight:600;letter-spacing:-.035em}
+.big,.kpi .n,.lv b{font-weight:600;letter-spacing:-.035em}
 .wcard .de{font-weight:700;letter-spacing:-.035em}
 .chip{font-weight:700;background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line)}
 .chip.ok{box-shadow:inset 0 0 0 1px var(--green-soft)} .chip.yours{background:var(--yellow-soft);color:var(--yellow-deep);box-shadow:inset 0 0 0 1px var(--yellow-soft)}
