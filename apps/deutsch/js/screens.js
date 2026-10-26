@@ -315,7 +315,8 @@ function renderTalkChat(v) {
       T.busy = false; Voice.busy(false); T.done = !!r.done || T.turns >= 12; NAV = 'none'; render();
     } catch (e) {
       T.busy = false; Voice.busy(false); T.log.pop(); T.turns--; inp.value = txt; typing.hidden = true; mine.remove();
-      toast(AI.message(e, 'Protoa could not answer. Try again.'));
+      toast(AI.message(e, e && e.code === 'refused' ? 'Protoa can’t answer that line. Try saying it another way.' : 'Protoa could not answer. Try again.'));
+      if (e && e.code === 'unavailable') endTalk(); // no AI to answer: keep the lines so far and close the chat
     }
   };
   const help = async () => {
@@ -323,7 +324,7 @@ function renderTalkChat(v) {
     openSheet((inner, close) => {
       const out = h('div', {}); const go_ = async () => { const q = ask.value.trim(); if (!q) return; out.innerHTML = ''; out.append(fbEl('hint', '<span class="typing"><i></i><i></i><i></i></span>'));
         try { const r = await AI.run('talkHelp', { brief: sc.brief, question: q }); out.innerHTML = ''; out.append(h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'row' }, glossEl(r.de, null), playBtn(r.de)), r.tip ? fbEl('note', esc(r.tip)) : '', h('button', { class: 'btn', onclick: () => { inp.value = r.de; close(); inp.focus(); } }, 'Use this'))); }
-        catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, 'Could not get a suggestion right now.'))); } };
+        catch (e) { out.innerHTML = ''; out.append(fbEl('bad', AI.message(e, e && e.code === 'refused' ? 'Protoa can’t help with that one. Try asking it another way.' : 'Could not get a suggestion right now.'))); } };
       ask.addEventListener('keydown', e => { if (e.key === 'Enter') go_(); });
       inner.append(h('h2', {}, 'How do I say…?'), h('p', { class: 'faint' }, 'Type it in English. You get the German, and you still say it yourself.'), ask, h('button', { class: 'btn', onclick: go_ }, 'Show me'), out);
       setTimeout(() => ask.focus(), 80);

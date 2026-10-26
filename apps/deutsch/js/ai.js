@@ -2,7 +2,8 @@
    AI.connect() asks the server whether AI is configured (false when the page is opened as a
    file or the server has no API key; the app then works without the AI features).
    AI.run(task, vars) resolves to the task's result or throws an Error with .code:
-   'unavailable' | 'rate_limited' | 'timeout' | 'refused' | 'bad_output' | 'bad_request' | 'upstream' | 'network'. */
+   'unavailable' | 'rate_limited' | 'timeout' | 'refused' | 'bad_output' | 'bad_request' | 'upstream' | 'network'
+   (and 'unsupported' from the practice AI for a task it can't fake). */
 const AI = (() => {
   const APP = 'deutsch';
   const base = () => (window.PROTOA_API || '') + '/api';
@@ -21,7 +22,12 @@ const AI = (() => {
     try { r = await fetch(`${base()}/${APP}/ai/${task}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(vars) }); }
     catch (e) { throw Object.assign(new Error('Could not reach the server.'), { code: 'network' }); }
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw Object.assign(new Error(j.error?.message || 'Request failed.'), { code: j.error?.code || 'upstream' });
+    if (!r.ok) {
+      const code = j.error?.code || 'upstream';
+      // the server has no key or its key was rejected: trying again can't help, so the AI features close as when AI is off
+      if (code === 'unavailable' && typeof S === 'object' && S) S.ai = null;
+      throw Object.assign(new Error(j.error?.message || 'Request failed.'), { code });
+    }
     return j.result;
   }
   // the text to show for a failed call: the specific reason when the learner can act on it
@@ -29,6 +35,7 @@ const AI = (() => {
     if (e && e.code === 'rate_limited') return 'Too many requests. Try again in a moment.';
     if (e && e.code === 'network') return 'Could not reach the Protoa server.';
     if (e && e.code === 'timeout') return 'Protoa took too long to answer. Try again.';
+    if (e && e.code === 'unavailable') return 'Protoa’s AI is not reachable right now. Lessons and Practice work as usual.';
     return fallback;
   }
   const api = { run };

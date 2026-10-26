@@ -54,13 +54,14 @@ export function fakeAI({ delayMs = 0, fail = '' } = {}) {
     aiOn: () => true,
     async runJSON({ task, vars }) {
       await wait(); failNow();
-      if (!Object.hasOwn(replies, task)) throw new AIError('unavailable', `${NOTE} has no reply for ${task}.`, 503);
+      if (!Object.hasOwn(replies, task)) throw new AIError('unsupported', `${NOTE} has no reply for ${task}.`, 501);
       return replies[task](vars);
     },
     // Writing a whole lesson can't be faked usefully: say so instead of returning a broken lesson.
+    // Not 'unavailable': that tells the app the whole AI is off, and the other practice replies still work.
     async runLong() {
       await wait(); failNow();
-      throw new AIError('unavailable', 'The practice AI cannot write lessons. Set ANTHROPIC_API_KEY for that.', 503);
+      throw new AIError('unsupported', 'The practice AI cannot write lessons. Set ANTHROPIC_API_KEY for that.', 501);
     },
   };
 }
