@@ -14,7 +14,7 @@ const ICONS = {
   mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
 };
-const TYPE_LABEL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', prep: 'preposition', phrase: 'phrase', interj: 'interjection', conj: 'conjunction', pron: 'pronoun', part: 'particle', q: 'question word', num: 'number' };
+const TYPE_LABEL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', prep: 'preposition', phrase: 'phrase', interj: 'interjection', conj: 'conjunction', pron: 'pronoun', part: 'particle', q: 'question word', num: 'number', name: 'noun, no article' };
 const TABS = [['today', 'Today'], ['learn', 'Lessons'], ['practice', 'Practice'], ['talk', 'Sprechen'], ['profile', 'Profile']];
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { const b = h('button', { class: 'tab', 'aria-current': (route === id || (id === 'profile' && route === 'more') || (route === 'grammar' && id === grammarFrom)) ? 'page' : null, onclick: () => go(id), html: ICONS[id] + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); }); renderSidebar(); }
@@ -784,7 +784,7 @@ function renderReview(v) {
   } else if (['mc', 'pic', 'gap', 'order', 'trans'].includes(it.kind)) {
     renderDrill(card, it, def, fb, showGrades, exRow);
   } else if (it.kind === 'p') {
-    card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.filter(m => !def.en.some(o => o.startsWith(m + ' ('))).join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
+    card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.filter(m => !def.en.some(o => o.startsWith(m + ' ('))).join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase', name: 'no article' }[def.type] || ''))));
     const w = typeWidget({ placeholder: 'Auf Deutsch …', 'aria-label': 'German word' }, () => check()); const inp = w.inputs[0];
     const check = () => {
       if (result) return; const a = inp.value.trim(); if (!a) return answerFirst(fb); const r = diagnose(a, it.id, mergedLex({}), null, def.type === 'n' ? [bare] : []); result = r; fb.innerHTML = ''; fb.append(exRow());
@@ -816,7 +816,7 @@ function emptyState(icon, title, text, action) {
 function wordBank() {
   const c = h('div', { class: 'card stack' }, h('h2', {}, 'Your words'), h('p', { class: 'muted small' }, 'A growing collection of Berlin. The ring fills as a word gets stronger. Tap a tile for its card and history.'));
   const search = h('input', { type: 'text', placeholder: 'Search', 'aria-label': 'Search words', id: 'bank-search' });
-  const fLesson = h('select', { 'aria-label': 'Filter by lesson' }, h('option', { value: '' }, 'All lessons')); const fType = h('select', { 'aria-label': 'Filter by type' }, h('option', { value: '' }, 'All types'), ...['n', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'pron', 'conj', 'part', 'q', 'num'].map(t => h('option', { value: t }, TYPE_LABEL[t] + 's')));
+  const fLesson = h('select', { 'aria-label': 'Filter by lesson' }, h('option', { value: '' }, 'All lessons')); const fType = h('select', { 'aria-label': 'Filter by type' }, h('option', { value: '' }, 'All types'), ...['n', 'name', 'v', 'adj', 'adv', 'prep', 'phrase', 'interj', 'pron', 'conj', 'part', 'q', 'num'].map(t => h('option', { value: t }, TYPE_LABEL[t].replace(/^[a-z ]+/, m => m + 's'))));
   const fStr = h('select', { 'aria-label': 'Filter by strength' }, h('option', { value: '' }, 'Any strength'), h('option', { value: 'weak' }, 'Weak (missed twice or more)'), h('option', { value: 'new' }, 'New (0–3 days)'), h('option', { value: 'strong' }, 'Strong (30+ days)'));
   const grid = h('div', { class: 'bank' });
   const entries = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, cd]) => cd.learned && !cd.sent);
