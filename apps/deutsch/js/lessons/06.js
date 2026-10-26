@@ -1,6 +1,6 @@
 /* Lesson 6 */
 LESSONS.push({
-  n: 6, title: 'Verbs for doing', theme: 'Tun und spielen',
+  n: 6, title: 'Verbs for doing', theme: 'Was machst du?',
   scene: { id: 'cafe', plate: 'plate.cafe', cast: [{ id: 'cast.barista', x: 1220 }, { id: 'cast.lena', x: 760 }], place: 'Café neben der Volkshochschule', time: 'Thursday, 10:30', cap: 'Pause · Donnerstag, 10:30',
     intro: [
       'Thursday, 10:30. On Tuesday you left the café without a coffee. Today the man behind the counter sees you coming.',

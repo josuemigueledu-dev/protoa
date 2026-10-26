@@ -28,6 +28,8 @@ A lesson is shown the same way on every screen: its German title as the name (*J
 
 The station (*Südstern*) names the stop on the line, not the lesson: it appears where the line itself is shown (Today's stop line, the Done ticket's "Station erreicht", the "Next station" panel) and as the place in the lesson preview. The scene's place and time (*Café neben der Volkshochschule*, *Pause · Donnerstag, 10:30*) belong to the scene itself.
 
-Anything German gets `lang="de"` (for the voice and screen readers); English chrome around it does not.
+Anything German gets `lang="de"` (for the voice and screen readers); English chrome around it does not. A generated lesson with no German title shows its English title instead, without `lang="de"` (`deLang()` in core.js), so the German voice doesn't read "Greetings" as German.
+
+The exam is "A1 exam" outside it. Inside it the header names it both ways, *Prüfung A1* with "A1 exam · *Aufgabe 3 von 62*" under it, like a lesson's German title with its English line.
 
 A German-chrome setting for immersion can come later (`visual-direction.md`); until then, this is the rule.

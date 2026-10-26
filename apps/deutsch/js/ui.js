@@ -344,7 +344,7 @@ function todayLessonCard(L, resume) {
   const ph = h('div', { class: 'pic' + (pic ? '' : ' none') }, h('span', { class: 'tag' }, 'Lesson ' + L.n), who && typeof bustEl === 'function' ? bustEl(who, 'neutral', 52) : '');
   if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('article', { class: 'card primary tlesson', 'aria-label': 'Lesson ' + L.n + ': ' + L.title }, ph,
-    h('div', { class: 'in' }, h('div', { class: 'k' }, L.title + ' · ' + L.words.length + '\u00a0words'), h('h2', { lang: 'de' }, L.theme || L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
+    h('div', { class: 'in' }, h('div', { class: 'k' }, L.title + ' · ' + L.words.length + '\u00a0words'), h('h2', deLang(L.theme), L.theme || L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
       h('button', { class: 'btn wide go', onclick: () => startLesson(L.n) }, resume ? 'Continue lesson' : 'Start lesson')));
 }
 /* The stop line: the current chapter as a U-Bahn line, a window of stops around yours and the chapter's end.
@@ -408,7 +408,7 @@ function todayDuo(due, L) {
     g.m + g.f + g.n ? h('span', { class: 'gchips', lang: 'de' }, ...[['m', 'der'], ['f', 'die'], ['n', 'das']].filter(([k]) => g[k]).map(([k, a]) => h('span', { class: 'g-' + k }, g[k] + ' ' + a))) : '');
   const N = L && lessonById(L.n + 1), pic = N && typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[N.scene.plate || 'plate.' + N.scene.id];
   if (!pic) return h('div', { class: 'tduo one' }, left);
-  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lesson ' + N.n, h('b', { lang: 'de' }, N.theme || N.title)));
+  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lesson ' + N.n, h('b', deLang(N.theme), N.theme || N.title)));
   right.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('div', { class: 'tduo' }, left, right);
 }

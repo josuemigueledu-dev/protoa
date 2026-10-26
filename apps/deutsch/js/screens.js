@@ -81,7 +81,7 @@ function stationListWidget() {
   const { items } = mapModel(); const list = h('div', { class: 'stlist' });
   items.filter(i => i.kind === 'lesson').forEach(it => {
     const row = it.state === 'soon' ? h('div', { class: 'soonrow' }) : h('button', { onclick: () => openStation(it) });
-    row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.L ? it.L.theme || it.L.title : it.c.station), h('small', {}, 'Lesson ' + it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
+    row.append(sigEl(it.c.icon), h('div', {}, h('span', deLang(it.L ? it.L.theme : it.c.station), it.L ? it.L.theme || it.L.title : it.c.station), h('small', {}, 'Lesson ' + it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
     list.append(row);
   });
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All lessons'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' of ' + COURSE.length)), list);

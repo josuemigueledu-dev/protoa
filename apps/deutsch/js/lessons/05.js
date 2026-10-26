@@ -1,6 +1,6 @@
 /* Lesson 5 */
 LESSONS.push({
-  n: 5, title: 'Verbs for living', theme: 'Wohnen und arbeiten',
+  n: 5, title: 'Verbs for living', theme: 'Wohnen und Arbeiten',
   scene: { id: 'cafe', plate: 'plate.cafe', cast: [{ id: 'cast.barista', x: 1220 }, { id: 'cast.ana', x: 760 }], place: 'Café neben der Volkshochschule', time: 'Tuesday, 10:30', cap: 'Pause · Dienstag, 10:30',
     intro: [
       'Tuesday, 10:30. Herr Weber has called a break, and Ana wants coffee. The café on the corner is full of people from the course, and the queue is long.',
