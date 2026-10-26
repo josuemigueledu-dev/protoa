@@ -23,8 +23,10 @@ function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { c
 let grammarFrom = 'profile';
 // the unit on show, or null for the list: a unit is a screen of its own, drawn by render() at the top of the page
 let grammarOpen = null;
+// how far the list was scrolled when a unit opened, and the scroll "‹ Grammar" brings back (0: the top, as any other way in)
+let grammarListY = 0, grammarBackY = 0;
 const tabOf = r => r === 'grammar' ? grammarFrom : TABS.some(([id]) => id === r) ? r : 'profile';
-function go(r) { if (r === 'grammar') grammarFrom = tabOf(route); grammarOpen = null; if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
+function go(r) { if (r === 'grammar') grammarFrom = tabOf(route); grammarOpen = null; grammarBackY = 0; if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
 function newView() { const dir = DIRS[NAV]; view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); if (dir) setTimeout(() => v.classList.remove('in-' + dir), 1200); return v; }
@@ -881,12 +883,12 @@ function drillMiss(d) {
 }
 function renderGrammar(v, openId) {
   // from a lesson's Notice: Grammar opens on that unit, sliding in like any screen
-  if (!v) { grammarFrom = tabOf(route); route = 'grammar'; grammarOpen = openId || null; NAV = 'fwd'; render(); return; }
+  if (!v) { grammarFrom = tabOf(route); route = 'grammar'; grammarOpen = openId || null; grammarListY = grammarBackY = 0; NAV = 'fwd'; render(); return; }
   const u = grammarOpen && GRAMMAR.find(g => g.id === grammarOpen);
   if (u) { grammarUnit(v, u); return; }
   v.append(backGrammar(), h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Each rule in short, with examples you can hear and a few drills. Lessons open the one you need; nothing here is required.'));
   // Night Glass: the rule of the lesson you are on comes first, as a dark slab with its table
-  const open = u => { grammarOpen = u.id; NAV = 'fwd'; render(); };
+  const open = u => { grammarListY = PANE.scrollTop; grammarOpen = u.id; NAV = 'fwd'; render(); };
   const done = new Set(S.progress.lessonsDone), ff = featuredGrammar();
   if (ff) {
     const feat = ff.unit;
@@ -895,9 +897,23 @@ function renderGrammar(v, openId) {
     f.append(h('span', { class: 'go' }, 'Open the unit →')); v.append(f);
   }
   const list = h('div', { class: 'stack' }); GRAMMAR.forEach(u => list.append(h('button', { class: 'card listrow' + (u.stub ? ' soon' : ''), onclick: () => open(u) }, h('span', { class: 'gnum' + (done.has(u.lesson) ? ' done' : '') }, 'L' + u.lesson), h('div', { class: 'grow' }, h('b', {}, u.title), h('div', { class: 'faint' }, u.stub ? 'Outline · full unit arrives with lesson ' + u.lesson : done.has(u.lesson) ? 'From lesson ' + u.lesson + ' · done' : 'From lesson ' + u.lesson)), h('span', { class: 'muted' }, '›')))); v.append(list);
+  if (grammarBackY) listBackTo(v, grammarBackY);
+  grammarBackY = 0;
+}
+/* "‹ Grammar" lands on the row the learner left. From the next frame on: a screen drawn straight from a tap gets here
+   before the browser has sized the slabs that only lay out on screen (content-visibility, night-glass.css), so the pane
+   may not scroll that far at first; it goes as far as it can and on the next frames the rest of the way. The old
+   screen, still leaving, moves down with the scroll so it stays where it was on screen. */
+function listBackTo(v, y, tries = 10) {
+  requestAnimationFrame(() => {
+    if (!v.isConnected || v.classList.contains('leaving') || route !== 'grammar') return;
+    const dy = Math.min(y, PANE.scrollHeight - PANE.clientHeight) - PANE.scrollTop;
+    if (dy > 0) { view.querySelectorAll(':scope > .leaving').forEach(e => { e.style.top = (parseFloat(e.style.top) || 0) + dy + 'px'; }); PANE.scrollTop += dy; }
+    if (PANE.scrollTop < y - 1 && tries) listBackTo(v, y, tries - 1);
+  });
 }
 function grammarUnit(v, u) {
-  v.append(h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { NAV = 'back'; go('grammar'); } }, '‹ Grammar')), h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, u.title)));
+  v.append(h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { grammarOpen = null; grammarBackY = grammarListY; NAV = 'back'; render(); } }, '‹ Grammar')), h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, u.title)));
   if (u.stub) { v.append(h('div', { class: 'card', html: u.stub })); return; }
   const c = h('div', { class: 'card stack', html: u.body }); if (u.table) { const g = h('div', { class: 'conj' }); u.table.forEach(([p, f]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, f)))); c.append(g); } v.append(c);
   const ex = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Examples')); u.examples.forEach(e => { const ul = glossEl(e.de, e.g); ex.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', html: ICONS.play, 'aria-label': 'Play', onclick: () => speak(e.de, { el: ul }) })), h('div', { class: 'muted small' }, e.en))); }); v.append(ex);
