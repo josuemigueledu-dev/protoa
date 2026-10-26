@@ -56,8 +56,8 @@ test('practice AI: exam marks follow the items, an empty answer scores 0', noKey
 
 test('practice AI: lesson writing says it is not available instead of returning a broken lesson', noKey(async () => {
   const res = await post(createApp(fakeAI()), 'generateLesson', INPUT.generateLesson);
-  assert.equal(res.status, 503);
-  assert.equal((await res.json()).error.code, 'unavailable');
+  assert.equal(res.status, 501);
+  assert.equal((await res.json()).error.code, 'unsupported');
 }));
 
 test('practice AI: input caps still apply', noKey(async () => {
