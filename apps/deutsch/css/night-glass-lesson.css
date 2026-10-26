@@ -112,7 +112,7 @@
 /* the completion ticket: a dark glass slab with the station as the hero */
 .ticket .top{background:var(--night);color:var(--nink);font-family:var(--text)}
 .ticket .top b{font-family:var(--hero);font-weight:400;letter-spacing:-.03em}
-.ticket h1{font-size:2rem}
+.ticket h1{font-size:var(--t-hero);line-height:1.02}
 .ticket h1,.preview h1{-webkit-hyphens:manual;hyphens:manual} /* station names break at map.js's soft hyphen only (stationBreak) */
 .ticket .stat .n{color:var(--ink)}
 .ticket .stat:nth-child(1) .n{color:var(--magenta)}

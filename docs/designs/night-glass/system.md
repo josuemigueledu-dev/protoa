@@ -43,7 +43,8 @@ Two families: **Krona One** for display (titles, big numbers), letter-spacing �
 
 | role | size | font | token |
 |---|---|---|---|
-| hero title (one per screen at most) | 27–40, scales with the width | Krona One | |
+| hero title (one per screen at most) | 32 at 390 px, 40 from 490 px | Krona One | `--t-hero` |
+| in-slab hero (Today's lesson card) | 27 at 390 px, 30 at desktop | Krona One | |
 | page title | 26 | Krona One | `--t-title` |
 | slab title | 22 | Krona One | (h2) |
 | small slab title | 17 | Krona One | (`.widget h2`) |
@@ -57,7 +58,11 @@ Two families: **Krona One** for display (titles, big numbers), letter-spacing �
 - **Page title, 26:** the head of every screen that is not a lesson, the course map's *Lessons* included (it was 24).
 - **Slab title, 22:** the title of a content slab (24 px padding): Practice's sets, Profile's slabs, Grammar's rule of the day (`.gfeat .t`, was 24), the exam card at the A1 gate (`.nextcard h2`, was 20).
 - **Small slab title, 17:** the title of a small slab (20 px padding) and of a row on the course map: the rail widgets, the map's current-lesson card (`.kcard h2`, was 20; at 22 five lesson names ran to three lines in its 150 px column at 390 px, at 17 every name fits in two) and the chapter rows on the map line (`.kst.kchap .ktx b`, was 18).
-- **Hero title:** the one big display line a screen may have: Today's lesson card (`.tlesson h2`, 27 at 390 px, 30 at desktop), the map's chapter header (`.khead h2`, 35 / 40) and the Done ticket (`.ticket h1`, 32). The mock-ups set these large on purpose (`screens/1-today.jpg`, `2-course-map.jpg`). *Still differs:* the three use three different clamps; one shared clamp is a later PR.
+- **Hero title (done: `[design]` hero titles), `--t-hero` = `clamp(1.75rem, 8.2vw, 2.5rem)`:** the one big display line a screen may have: the map's chapter header (`.khead h2`, was 35 at 390 px), the Done ticket's station (`.ticket h1`, was a fixed 32, so 32 on a desktop too) and the review card's word (`.rv-de`, was 32.8). All three are now 32 at 390 px and 40 on a desktop. At 390 every station name breaks the same as before (only *Görlitzer Bahnhof* and *Schönleinstraße* take two lines); at 360, *Hermannplatz*, *Mehringdamm* and *Kottbusser Tor* now fit on one line.
+- **In-slab hero:** Today's lesson card (`.tlesson h2`, 27 at 390 px, 30 at desktop) stays one step smaller: it sits inside a content slab under a picture, as in `screens/1-today.jpg`.
+
+![Hero titles before / after, 390 px Night Glass: the map head, a review word, the Done ticket](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-hero-titles-1.png)
+![The Done ticket at 1280, before / after](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-hero-titles-3.png)
 - Big numbers (`.kpi .n`, `.lv b`, `.big`) are 26 like a page title; Today's due count is 32.
 
 ![Slab titles before / after, 390 px Night Glass: the map card, Grammar's rule of the day, the map head](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-slab-titles-1.png)
@@ -107,6 +112,7 @@ In this order, one per `[design]` PR:
 2. ~~Arrow button size (56, 40 px chip).~~ Done.
 3. ~~Slab title sizes (22 / 17), with the map's cards.~~ Done.
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
-5. One clamp for the three hero titles.
+5. ~~One clamp for the hero titles (`--t-hero`).~~ Done.
+6. One result row: the Done screen's cards and the review summary draw a result two ways (#146); after ux's Done fix from the #204 review.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.
