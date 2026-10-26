@@ -2,11 +2,11 @@
 
 Owner, Oct 26 04:59 UTC: a placement test offered on the first run, up to 3 minutes. It samples words and patterns from lessons 1–14, then unlocks up to the first lesson the learner missed. It reuses the exam's item types.
 
-This spec says what the test asks, when it stops, what it changes, and how it is tested. The engine (`startPlacement`, `answerPlacement`, `applyPlacement` in `js/levels.js`) is built with this spec and tested in `server/test/placement.test.js`. The screens are the next PR.
+This spec says what the test asks, when it stops, what it changes, and how it is tested. The engine (`startPlacement`, `answerPlacement`, `applyPlacement` in `js/levels.js`) is tested in `server/test/placement.test.js`; the screens (`openPlacementIntro`, `renderPlacement`, route `place`) in `npm run smoke`.
 
 ## Who sees it, and where
 
-- **First run.** The "About you" sheet (`onboarding()`, ui.js) gets a second way out under "Save and start": a ghost button **"Not a beginner? Find your lesson · 3 min"**. It saves the profile like "Save and start", then opens the test.
+- **First run.** The "About you" sheet (`onboarding()`, ui.js) gets a second way out under "Save and start": a ghost button **"Not a beginner? Find your lesson · 3 min"**. It saves the profile like "Save and start", then opens the intro sheet below.
 - **Until lesson 1 is done.** Lesson 1's preview sheet on the map shows one quiet line under Start: "Know some German already? Find your lesson (3 min)". It goes once the learner finishes any lesson, or after one placement.
 - **Not in a lesson, and not offered again** after a placement. A learner who places low can still go ahead with "Start anyway" on any lesson, as today.
 - **Works without the AI.** Every item is marked in the page. No Claude call, no network.
@@ -44,6 +44,7 @@ No partial credit, no AI. Placing someone too low costs them a few easy lessons.
 - Every built-in lesson before `place` is added to `S.progress.lessonsDone`. The map, Today's line and Grammar's featured unit all follow from that (`currentLessonN`).
 - Every word of those lessons becomes the learner's (`learned: true`, `placed: true`). These are words they already knew, so:
   - Their first reviews spread over the next **14 days** (due 1–14 days from today, an interval to match, reps 1). With 14 lessons placed that is about 13 reviews a day for two weeks, not 178 on the first day.
+  - Their English → German cards follow the same spread two weeks later (days 15–28). Left empty, `dueCards()` would create them due today for every word with an interval of 4 days or more: placing at Lesson 6 made 49 reviews due on day one.
   - None of them counts as "new today" (`S.progress.days` is not touched), so pace, streaks and the daily goal are not inflated.
   - A word already the learner's (an import, a lesson started) keeps its history.
 - `S.progress.placement = { date, place, lessons }` records it, so the offer is not shown again and Profile can say "Placed at Lesson N on <date>".
@@ -54,12 +55,12 @@ What it does not do:
 - Never passes an exam or skips an exam gate. Placing out of all 14 lessons gives 178 words, far below the A1 gate (600). A test checks this stays true.
 - Lesson 0 · Sounds is left as it is (optional either way).
 
-## Screens (next PR)
+## Screens
 
 Night Glass, built from the exam's parts, so it costs little new CSS:
 - **Intro sheet:** "Let's find your lesson." / "About 3 minutes. Answer what you know; tap *I don't know* when you don't. Nothing here is graded." Start · Not now.
 - **Item screen:** the exam's item card (`.examword`, `deInput`, umlaut row), with the lesson's station as the eyebrow ("Lesson 5 · " and its station), Check and *I don't know*. A wrong answer shows the right one for 1.2 s, with no shake and no red screen, then the next item.
-- **Result sheet:** "Start at Lesson N · <station>", one line on what that means ("Lessons 1–N−1 are marked done. Their <count> words join your reviews over the next two weeks."), and the items missed with their answers. Buttons: **Start at Lesson N** (applies the placement and opens the map on that stop) and **Start from Lesson 1** (applies nothing).
+- **Result screen** (a screen, like the exam's result, so the missed items have room): "Start at Lesson N · <station>", one line on what that means ("Lessons 1–N−1 are marked done. Their <count> words join your reviews over the next two weeks."), and the items missed with their answers. Buttons: **Start at Lesson N** (applies the placement and opens the map on that stop) and **Start from Lesson 1** (applies nothing).
 - Leaving mid-test (✕ or the tab bar) drops it, with nothing applied. It is 3 minutes, so it is not saved.
 
 ## Tests

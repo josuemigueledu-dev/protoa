@@ -60,6 +60,7 @@ test('placement: "I don\'t know" ends the test at that lesson, without a second 
   assert.equal(items, 4);
   assert.equal(P.log.at(-1).answer, null);
   assert.ok(P.log.at(-1).expected, 'the right answer is kept for the result screen');
+  assert.match(P.log.at(-1).prompt, /_____/, 'and the gap sentence it was asked in');
 });
 
 test('placement: a miss, then the second item right, passes the lesson', () => {
@@ -68,9 +69,10 @@ test('placement: a miss, then the second item right, passes the lesson', () => {
   get('answerPlacement(__P, "xyz", 1000)');
   assert.equal(ctx.__P.at, 0); assert.equal(ctx.__P.item.type, 'out'); assert.equal(ctx.__P.item.lesson, order[0]);
   assert.notEqual(ctx.__P.item.de, ctx.__P.used[0], 'the second item asks another word');
-  ctx.__a = ctx.__P.item.de;
+  ctx.__a = ctx.__P.item.de; const en = ctx.__P.item.en.join(', ');
   get('answerPlacement(__P, __a, 2000)');
   assert.equal(ctx.__P.at, 1); assert.equal(ctx.__P.miss, 0); assert.equal(ctx.__P.item.type, 'gap'); assert.equal(ctx.__P.done, false);
+  assert.equal(ctx.__P.log[1].prompt, en, 'an English → German item keeps its English as the prompt');
 });
 
 test('placement: it stops at 3 minutes, at the lesson it is on', () => {
@@ -100,6 +102,8 @@ test('placement: placing at a lesson marks the ones before it done and their wor
     if (de === 'ich') { assert.deepEqual([...c.r], ['2030-01-01', 30, 260, 5, 0], 'a word already yours keeps its history'); continue; }
     assert.ok(c.placed);
     assert.ok(c.r[0] > today && c.r[0] <= soon, `${de} is due ${c.r[0]}`);
+    // dueCards() (ui.js) makes a missing English → German card due today once the interval is 4 days or more
+    assert.ok(c.p && c.p[0] > soon, `${de}'s English → German card is due ${c.p && c.p[0]}, inside the first two weeks`);
   }
   for (const de of lessons.filter(L => L.n >= 5).flatMap(L => L.words.map(w => w.de))) assert.equal(get(`cardOf(${JSON.stringify(de)})`), null, `${de} is from a lesson not placed out of`);
   assert.equal(get('learnedCount()'), before.length);
