@@ -207,8 +207,9 @@ body.lay-desktop .rail .widget,.today-hero,.talkhero{animation:none}
 
 /* conversation: the plate is a band at the top, partners keep their bust beside each line */
 .conv.has-band{overflow:clip}
-.conv-band{--h:200px;--h-small:120px;position:sticky;top:calc(var(--lt-h,0px) + env(safe-area-inset-top,0px));z-index:3;height:var(--h);background:var(--il-mist);box-shadow:0 1px 0 var(--line);transition:height .3s var(--spring)}
+.conv-band{--h:200px;--h-small:120px;position:sticky;top:calc(var(--lt-h,0px) + env(safe-area-inset-top,0px));z-index:3;height:var(--h);background:var(--il-mist);box-shadow:0 1px 0 var(--line);transition:height .3s var(--spring),translate .3s var(--ease),opacity .2s var(--ease)}
 .conv-band.small{height:var(--h-small)}   /* showAbove (ui.js) reads both heights */
+.conv-band.tuck{translate:0 -100%;opacity:0;pointer-events:none}   /* behind the header while a long line and its turn need the room (showAbove) */
 .conv-band svg{display:block;width:100%;height:100%}
 /* the learner's lines: words are buttons and do not inherit colour, so they were navy on the pane. Done lines sit on green: text takes the status ink */
 .bub.l .box .gl .w:not(.speaking){color:inherit}

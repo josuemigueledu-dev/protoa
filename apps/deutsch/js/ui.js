@@ -269,8 +269,9 @@ function actionBar(opts) {
    just added can land under them. Scroll just far enough that el clears the bar, without sliding keep (what
    el answers: the line spoken to you, the card's word; el itself by default) under the sticky header and band.
    When both don't fit, keep's top goes as high as the band and el shows its first line, or all of need when given
-   (what must not hide under the bar: the newest help after a miss, the tiles to answer with); keep then slides under
-   the band as far as that takes. One read, one scroll, a frame later. */
+   (what must not hide under the bar: the newest help after a miss, the tiles to answer with). In that squeeze the
+   conversation's picture band first tucks up behind the header (translate, no layout), so the line spoken to you
+   keeps its top in view; only then does keep slide under the header. One read, one scroll, a frame later. */
 const BAND_SMALL_AT = 80;   // the conversation's picture band is smaller once the lesson has scrolled this far (lessonConv)
 function showAbove(el, keep = el, need) {
   requestAnimationFrame(() => {
@@ -281,14 +282,16 @@ function showAbove(el, keep = el, need) {
     const head = Math.max(0, ...[...document.querySelectorAll('.lesson-top')].map(e => e.getBoundingClientRect().bottom));
     const r = el.getBoundingClientRect(), k = keep.getBoundingClientRect().top, must = need && need.isConnected ? need.getBoundingClientRect().bottom : r.top + 36;
     // the band sticks under the header; when a scroll changes its size, everything below it moves by as much
-    const band = document.querySelector('.conv-band'), cs = band && getComputedStyle(band), bandH = small => band ? parseFloat(cs.getPropertyValue(small ? '--h-small' : '--h')) : 0;
-    const plan = small => {
-      const shift = bandH(band && band.classList.contains('small')) - bandH(small), ceil = head + bandH(small) + 12;
+    const band = document.querySelector('.view:not(.leaving) .conv-band'), cs = band && getComputedStyle(band), bandH = small => band ? parseFloat(cs.getPropertyValue(small ? '--h-small' : '--h')) : 0;
+    const plan = (small, tuck) => {
+      const shift = bandH(band && band.classList.contains('small')) - bandH(small), ceil = head + (tuck ? 0 : bandH(small)) + 12;
       const down = r.bottom - shift - floor, most = k - shift - ceil;   // scroll at least down, at most most
       const dy = down <= most ? (down > 0 ? down : Math.min(most, 0)) : Math.max(most + 12, must - shift - floor);   // a squeeze: no gaps, el shows its first line (or need)
-      return { dy, fits: !band || (PANE.scrollTop + dy > BAND_SMALL_AT) === small };
+      return { dy, tuck, squeeze: down > most, fits: !band || (PANE.scrollTop + dy > BAND_SMALL_AT) === small };
     };
     let p = plan(true); if (!p.fits) { const q = plan(false); if (q.fits) p = q; }
+    if (p.squeeze && band) { const t = plan(true, true); if (t.fits) p = t; }
+    if (band) { band.classList.toggle('tuck', !!p.tuck); band.dataset.tuckAt = PANE.scrollTop + p.dy; }   // lessonConv brings it back when the learner scrolls up from here
     if (Math.abs(p.dy) > 1) PANE.scrollBy({ top: p.dy, behavior: reduced() ? 'auto' : 'smooth' });
   });
 }
@@ -626,7 +629,8 @@ function lessonConv(v, L, ls) {
     // the band sticks under the lesson header and shrinks once the learner scrolls
     // kept current: measured once, the header could still be mid-way into the screen (272 px, not 125, with reduced motion) and the band stuck that low
     const lt = v.querySelector('.lesson-top'); if (lt) new ResizeObserver(() => conv.style.setProperty('--lt-h', lt.offsetHeight + 'px')).observe(lt);
-    const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); band.classList.toggle('small', PANE.scrollTop > BAND_SMALL_AT); };
+    // and comes back from behind the header (showAbove tucks it) once the learner scrolls up: only up, so the scroll down to a turn never brings it back
+    let lastY = 0; const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); const y = PANE.scrollTop; band.classList.toggle('small', y > BAND_SMALL_AT); if (y < lastY && y < band.dataset.tuckAt - 40) band.classList.remove('tuck'); lastY = y; };
     PANE.addEventListener('scroll', shrink, { passive: true });
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
   const log = h('div', { class: 'log', role: 'log' }); conv.append(log);
@@ -642,7 +646,8 @@ function lessonConv(v, L, ls) {
     const b = h('div', { class: 'bub ' + m.who + (m.done ? ' done' : '') });
     if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && (NIGHT_CAST[speaker(m)] || ART[speaker(m)])) b.append(bustEl(speaker(m), m.mood, 40)); }
     const box = h('div', { class: 'box' });
-    const ul = glossEl(m.de, m.g); box.append(h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } })));
+    // the play button rides after the last word, not on a row of its own: a shorter line keeps the turn below it in view
+    const ul = glossEl(m.de, m.g); ul.append(h('li', { class: 'play', lang: 'en' }, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } }))); box.append(ul);
     if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'Show English')); }
     if (m.react) box.append(h('div', { class: 'reaction' }, m.react));
     b.append(box); return b;
