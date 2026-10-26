@@ -112,7 +112,7 @@ b,strong{font-weight:700}
 @keyframes ng-breathe{50%{transform:scale(1.12);opacity:.75}}
 
 /* ---------- type ---------- */
-h1,h2,.big,.stat .n,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
+h1,h2,.big,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
 h1,h2{line-height:1.08;overflow-wrap:break-word;hyphens:auto}
 h2{font-size:1.375rem}
 .nextcard h2{font-size:1.375rem!important}
