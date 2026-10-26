@@ -142,7 +142,7 @@
 .perfect p{margin:4px 0 0}
 .pstamp{position:relative;flex:none;width:84px;height:84px;border-radius:50%;border:2.5px solid var(--red);color:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transform:rotate(-8deg);opacity:0}
 .pstamp::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid currentColor;opacity:.7}
-.pstamp b{font-family:var(--hero);font-weight:400;font-size:.75rem;letter-spacing:.02em;text-transform:uppercase}
+.pstamp b{font-family:var(--hero);font-weight:400;font-size:.625rem;letter-spacing:0;text-transform:uppercase}   /* "PERFEKT" in Krona One stays inside the inner ring */
 .pstamp span{font-size:.6875rem;font-weight:700}
 .perfect.still .pstamp{opacity:1}
 .perfect.in .pstamp{animation:stamp-press .5s var(--ease) both}
