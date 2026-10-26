@@ -241,6 +241,8 @@ function progressHeader() {
 function fbEl(kind, html) { return h('div', { class: 'fb ' + kind, role: 'status' }, h('span', { html })); }
 // Check with nothing given yet: say so and keep the turn (the exam says the same); a real check clears it
 function isBlank(w) { return w.inputs ? w.inputs.every(i => !i.value.trim()) : !String(w.value()).trim(); }
+/* a check of the very answer just missed: say so, and don't spend a try on it */
+function sameAsMiss(fb, missed, now) { const tidy = a => String(a).replace(/\s+/g, ' ').trim(); if (missed == null || tidy(missed) !== tidy(now)) return false; fb.querySelector('.first')?.remove(); fb.append(fbEl('note first', 'Same answer as before. Change something, then check again.')); showAbove(fb); return true; }
 function answerFirst(fb, tiles) { fb.querySelector('.first')?.remove(); fb.append(fbEl('note first', (tiles ? 'Put the tiles in order first.' : 'Type your answer first.') + ' A best guess is fine.')); showAbove(fb); }
 function confetti() { const c = h('div', { class: 'confetti', 'aria-hidden': 'true' }); const cs = getComputedStyle(document.documentElement), cols = ['--ice', '--yellow', '--paper', '--seq-2'].map(k => cs.getPropertyValue(k).trim()); for (let i = 0; i < 60; i++) c.append(h('i', { style: `left:${Math.random() * 100}vw;background:${cols[i % 4]};animation-delay:${Math.random() * .6}s;transform:rotate(${Math.random() * 360}deg)` })); document.body.append(c); setTimeout(() => c.remove(), 2600); }
 function ringEl(frac, size = 44) { const r = (size - 6) / 2, c = 2 * Math.PI * r; const d = h('div', { html: `<svg class="ring" viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px" aria-hidden="true"><circle class="bg" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - Math.max(0, Math.min(1, frac)))}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>` }); return d.firstElementChild; }
@@ -589,13 +591,13 @@ function lessonBuild(v, L, ls) {
   v.append(lessonTop(L, ls, ls.bi / L.build.length));
   const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, `Build it · ${ls.bi + 1} of ${L.build.length}`), h('p', { style: 'font-size:1.15rem' }, item.type === 'tiles' ? 'Put the tiles in order: ' : 'Fill the gap: ', h('b', {}, fill(item.en))));
   const widget = item.type === 'tiles' ? tilesWidget(fill(item.de).split(/\s+/), (item.extra || []).map(fill), () => { }) : gapWidget(item.de, item.gaps);
-  const fb = h('div', { class: 'ladder' }); let done = false;
+  const fb = h('div', { class: 'ladder' }); let done = false, missed = null;
   const next = () => setStep('build', { bi: ls.bi + 1, battempts: 0 });
   const check = () => {
-    if (done) return; if (isBlank(widget)) return answerFirst(fb, item.type === 'tiles'); const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g); tallyFirst(ls, 'b' + ls.bi, r.ok);
+    if (done) return; if (isBlank(widget)) return answerFirst(fb, item.type === 'tiles'); if (sameAsMiss(fb, missed, widget.value())) return; const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g); tallyFirst(ls, 'b' + ls.bi, r.ok);
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
-    else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>' + (/[.?!]$/.test(fill(item.de)) ? ' ' : '. ') + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
+    else { ls.battempts++; missed = widget.value(); save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>' + fullStop(fill(item.de)) + ' ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
     castCheer('L' + L.n, r.ok, L.scene && L.scene.cast); showAbove(c);
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
@@ -675,9 +677,10 @@ function lessonConv(v, L, ls) {
     const checkBtn = h('button', { class: 'btn', onclick: () => check() }, 'Check');
     actionBar({ buttons: [checkBtn] });
     KEYS = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); } };
-    let busy = false;
+    let busy = false, missed = null;
     async function check() {
       if (busy) return; if (isBlank(widget)) return answerFirst(ladder, type === 'tiles'); ladder.querySelector('.first')?.remove(); const ans = widget.value().trim(); if (!ans) return;
+      if (sameAsMiss(ladder, missed, ans)) return;
       busy = true; checkBtn.disabled = true;
       let r;
       if (type === 'free') {
@@ -704,7 +707,7 @@ function lessonConv(v, L, ls) {
         log.append(bubble(C.log[C.log.length - 1])); if (r.note) log.append(h('div', { class: 'fb ok', style: 'align-self:flex-end;max-width:90%' }, h('span', { html: '✓ ' + r.note })));
         turnbox.innerHTML = ''; document.querySelector('.actionbar')?.remove(); setTimeout(advance, r.note ? 1200 : 500);
       } else {
-        attempts.n++; C.attempts = attempts.n; save('progress'); uiSound('bad', r);
+        attempts.n++; C.attempts = attempts.n; missed = ans; save('progress'); uiSound('bad', r);
         prompt.querySelector('.faint')?.remove();
         if (attempts.n === 1) { ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>')); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
         else if (attempts.n === 2) { ladder.append(fbEl('hint', r.hint)); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
@@ -789,7 +792,7 @@ function renderReview(v) {
   const meta = () => h('div', { class: 'rv-meta' }, h('span', {}, def && def.lesson ? 'Lesson ' + def.lesson + ' · ' + courseOf(def.lesson).topic : it.c.sent ? 'Conversation' : 'Your words'), h('span', {}, 'Box ' + box));
   v.append(h('div', { class: 'rv-boxes', role: 'img', 'aria-label': `Box ${box} of 5. You know ${learnedCount()} words.` }, h('span', {}, 'Boxes 1–5'),
     h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
-  const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null, wrong = false;
+  const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null, wrong = false, missed = null;
   // a card whose answer was wrong is not recalled, even when the learner grades it Good afterwards (grading yourself stays allowed)
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2 && !wrong) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
   const showGrades = (pre, state, msg) => { wrong = state === 'bad'; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); castCheer('practice', state === 'ok' && pre === 2); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub, .pic-ask')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
@@ -832,9 +835,9 @@ function renderReview(v) {
     const widget = useGap ? gapWidget(s.de, s.gaps) : typeWidget({}, () => check());
     const L = lessonById(it.c.lesson) || LESSONS[0];
     const check = () => {
-      if (result) return; if (isBlank(widget)) return answerFirst(fb); const a = widget.value().trim(); const r = diagnose(a, s.de, mergedLex(L.lex), s.g, s.alts || []); fb.innerHTML = '';
+      if (result) return; if (isBlank(widget)) return answerFirst(fb); const a = widget.value().trim(); if (sameAsMiss(fb, missed, a)) return; const r = diagnose(a, s.de, mergedLex(L.lex), s.g, s.alts || []); fb.innerHTML = '';
       if (r.ok) { result = r; uiSound('ok'); fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); showGrades(attempts ? 1 : 2, 'ok', '✓ ' + (r.note || 'Richtig.')); }
-      else { attempts++; uiSound('bad', r); if (attempts === 1) { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); showAbove(card); } else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
+      else { attempts++; missed = a; uiSound('bad', r); if (attempts === 1) { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); showAbove(card); } else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
     };
     card.append(widget.el, fb); if (widget.focus) setTimeout(() => widget.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   }
