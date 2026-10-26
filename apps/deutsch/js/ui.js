@@ -526,7 +526,7 @@ function lessonPicCheck(v, L, ls, w, others) {
   const cont = () => { NAV = 'fwd'; render(); };
   const pc = picChoice(w, others, right => {
     if (right) { uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: 'This is <em lang="de">' + esc(w.de) + '</em> (' + esc(w.en[0]) + '). It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
+    else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     save('progress'); showAbove(pc.grid, pc.ask); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   });
   c.append(h('div', { class: 'coach' }, h('div', { class: 'say' }, 'Welches Bild passt?', h('span', { class: 'faint', style: 'font-weight:500' }, ' · which picture is it?'))), pc.ask, pc.grid); v.append(c);
