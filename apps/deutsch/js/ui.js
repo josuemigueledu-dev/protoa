@@ -637,6 +637,8 @@ function lessonConv(v, L, ls) {
   const conv = h('div', { class: 'conv' }); const plate = L.scene.plate, cast = L.scene.cast || [], banded = !!(plate && typeof ART !== 'undefined' && (ART[plate] || NIGHT_SCENE[plate]));
   let band; const moods = {}, twist = L.twist; let popped = false;
   const speaker = m => m.sp || 'cast.weber';
+  // who answers a learner line: its rwho, else the partner who spoke last (content.js, SPEAKERS)
+  const reactBy = m => { const i = C.log.indexOf(m), w = C.log.slice(0, i < 0 ? C.log.length : i).reverse().find(x => x.who === 'w'); return w ? speaker(w) : 'cast.weber'; };
   const drawBand = () => { band.innerHTML = sceneArt({ plate, cast: cast.map(c => ({ ...c, mood: moods[c.id] })), event: popped && twist && twist.event, band: true }); };
   const track = m => { if (m.who !== 'w') return; moods[speaker(m)] = m.mood || 'neutral'; if (twist && m.i === twist.at) popped = true; };
   if (banded) {
@@ -665,7 +667,8 @@ function lessonConv(v, L, ls) {
     // the play button rides after the last word, not on a row of its own: a shorter line keeps the turn below it in view
     const ul = glossEl(m.de, m.g); ul.append(h('li', { class: 'play', lang: 'en' }, h('button', { class: 'icon-btn sm', 'aria-label': 'Play line', html: ICONS.play, onclick: () => { if (m.who === 'w') Voice.mood(m.mood); speak(m.de, { el: ul }); } }))); box.append(ul);
     if (m.who === 'l') { if (m.done) box.append(h('span', { class: 'check', 'aria-label': 'correct' }, '✓')); const en = h('div', { class: 'en-after', hidden: !m.showEn }, fill(m.en)); box.append(en); if (!m.showEn) box.append(h('button', { class: 'faint', style: 'font-size:.8rem;text-decoration:underline', onclick: e => { en.hidden = false; e.target.remove(); } }, 'Show English')); }
-    if (m.react) box.append(h('div', { class: 'reaction' }, m.react));
+    // the other speaker's answer to your line: named, so it doesn't read as something you said
+    if (m.react) { const by = nightCastName(m.rsp || reactBy(m)); box.append(h('div', { class: 'reaction' }, by ? h('b', {}, by.charAt(0).toUpperCase() + by.slice(1) + ': ') : '', m.react)); }
     b.append(box); return b;
   }
   function advance() {
@@ -716,7 +719,7 @@ function lessonConv(v, L, ls) {
         C.firstTry.push(first ? 1 : 0); S.progress.recent = S.progress.recent.concat(first ? 1 : 0).slice(-40);
         if (!first && !q.again) C.missed.push(q.i);
         const [rde, ren] = t.react ? fill(t.react).split('=') : ['', '']; const react = rde ? rde + (ren ? ' · ' + ren : '') : '';
-        C.log.push({ who: 'l', de: ans.replace(/\s+/g, ' '), g: null, en: t.en, done: true, showEn: !first, react, note: r.note });
+        C.log.push({ who: 'l', de: ans.replace(/\s+/g, ' '), g: null, en: t.en, done: true, showEn: !first, react, rsp: t.rwho || reactBy({}), note: r.note });
         C.pos++; C.attempts = 0; save('progress');
         log.append(bubble(C.log[C.log.length - 1])); if (r.note) log.append(h('div', { class: 'fb ok', style: 'align-self:flex-end;max-width:90%' }, h('span', { html: '✓ ' + r.note })));
         turnbox.innerHTML = ''; document.querySelector('.actionbar')?.remove(); setTimeout(advance, r.note ? 1200 : 500);
