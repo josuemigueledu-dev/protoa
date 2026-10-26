@@ -2,7 +2,7 @@
 // dark, with no console errors and no sideways scrolling, and lesson 1 can be
 // clicked from its scene to its first word check. Left open overnight, it shows
 // the new day without disturbing a lesson in progress. Every built-in lesson can be
-// played to its end with its own model answers (Done → Continue lands on the new stop), and lesson 1 with misses and a reload.
+// played to its end with its own model answers (Done → Continue lands on the new stop, after the last lesson too), and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
@@ -145,6 +145,12 @@ const stopInView = (page, label) => page.waitForFunction(() => {
   const mk = document.querySelector('#view > .view:not(.leaving) .kst.here .kmk'), r = mk?.getBoundingClientRect();
   return r && r.top >= 0 && r.bottom <= innerHeight - 128;
 }, null, { timeout: 2000 }).catch(async () => fail(`${label}: Done → Continue left the map at scroll ${await page.evaluate(() => document.getElementById('app').scrollTop)}, with the new stop off the screen`));
+// and that stop follows every lesson done: past the last written lesson it is the stop after it, not the
+// optional Lesson 0 at the top (map.js, stopIndex)
+const stopAfterDone = async (page, label) => {
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#view > .view:not(.leaving) .kst')].map(r => r.classList.contains('here') ? 'here' : r.classList.contains('lesson') && r.classList.contains('done') ? 'done' : ''));
+  if (rows.lastIndexOf('done') > rows.indexOf('here')) fail(`${label}: the map's stop (row ${rows.indexOf('here')}) is above lessons already done`);
+};
 
 // Every built-in lesson, in course order, played to its Done screen by a learner who
 // answers right the first time: the lesson's own lines must be accepted at every check,
@@ -189,6 +195,7 @@ async function playEveryLesson(browser) {
     if (after.learned <= learned) fail(`${label}: finished with no new words in the word bank`);
     await btn(page, 'Continue').click();
     await stopInView(page, label);
+    await stopAfterDone(page, label);
   }
   console.log(`played lessons ${ns.join(', ')}`);
   await ctx.close();
