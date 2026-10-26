@@ -473,6 +473,25 @@ function wordCard(w, opts = {}) {
 }
 /* the Done screen's first-try accuracy: each checked word and built line counts once, at its first answer */
 function tallyFirst(ls, key, right) { const t = ls.tally; if (!t || t.seen.includes(key)) return; t.seen.push(key); t.n++; if (right) t.ok++; }
+/* cast reactions (owner, Oct 26): after 5 right in a row in a lesson's check and build, or in Practice, someone from
+   the scene (Weber in Practice and by default) says one dry line from CAST_CHEERS, German over English, for about 2 s.
+   The bubble rides on the action bar, so it leaves with it, and takes no tap or focus. A recorded line plays when
+   nothing else is. key: the lesson or 'practice'; the run starts again when it changes, and after every cheer. */
+let cheerRun = { key: null, n: 0 }, cheerLast = { who: null, line: {} };
+function castCheer(key, right, cast) {
+  if (cheerRun.key !== key) cheerRun = { key, n: 0 };
+  if (!right) { cheerRun.n = 0; return; }
+  if (++cheerRun.n < 5) return; cheerRun.n = 0;
+  const bar = document.querySelector('.actionbar'); if (!bar) return;
+  const ids = [...new Set((cast || []).map(c => c.id).filter(id => CAST_CHEERS[NIGHT_CAST[id]]))];
+  const pool = ids.length > 1 ? ids.filter(id => id !== cheerLast.who) : ids, id = pool.length ? shuffle(pool)[0] : 'cast.weber', who = NIGHT_CAST[id];
+  const [de, en] = shuffle(CAST_CHEERS[who].filter(l => l[0] !== cheerLast.line[who]))[0];
+  cheerLast.who = id; cheerLast.line[who] = de;
+  const name = nightCastName(id), b = h('div', { class: 'cheer', role: 'status' }, h('div', { class: 'cheer-in' }, bustEl(id, 'neutral', 44),
+    h('div', { class: 'box' }, h('span', { class: 'who' }, name.charAt(0).toUpperCase() + name.slice(1)), h('b', { lang: 'de' }, de), h('span', { class: 'en' }, en))));
+  b.querySelector('.bust').setAttribute('aria-hidden', 'true'); bar.append(b); setTimeout(() => b.remove(), 2400);
+  if (VOX_URL[de]) setTimeout(() => { if (b.isConnected && !curSource && !curUtter) speak(de); }, 450);
+}
 function lessonCheck(v, L, ls) {
   if (!ls.checkQ) { ls.checkQ = shuffle(L.words.filter(w => !isLearned(w.de)).map(w => w.de)); ls.checkYours = L.words.filter(w => isLearned(w.de)).map(w => w.de); ls.checkTotal = ls.checkQ.length; save('progress'); }
   v.append(lessonTop(L, ls, ls.checkTotal ? 1 - ls.checkQ.length / ls.checkTotal : 1));
@@ -501,7 +520,7 @@ function lessonCheck(v, L, ls) {
     if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true); tallyFirst(ls, 'c' + w.de, ch === w.en[0]);
     if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { e.currentTarget.classList.add('bad'); [...grid.children].find(b => b.textContent.endsWith(w.en[0]))?.classList.add('ok'); uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    save('progress'); showAbove(grid, head); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+    castCheer('L' + L.n, ch === w.en[0], L.scene && L.scene.cast); save('progress'); showAbove(grid, head); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   } }, h('kbd', {}, i + 1), ch)));
   c.append(grid); v.append(c);
   if (S.settings.autoWord) setTimeout(() => speak(w.de.replace(/^(der|die|das) /, '')), 200);
@@ -532,7 +551,7 @@ function lessonPicCheck(v, L, ls, w, others) {
     tallyFirst(ls, 'c' + w.de, right);
     if (right) { uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    save('progress'); showAbove(pc.grid, pc.ask, pc.grid.querySelector('.choice.ok')); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+    castCheer('L' + L.n, right, L.scene && L.scene.cast); save('progress'); showAbove(pc.grid, pc.ask, pc.grid.querySelector('.choice.ok')); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   });
   c.append(h('div', { class: 'coach' }, h('div', { class: 'say' }, 'Welches Bild passt?', h('span', { class: 'faint', style: 'font-weight:500' }, ' · which picture is it?'))), pc.ask, pc.grid); v.append(c);
   KEYS = pc.keys;
@@ -566,7 +585,7 @@ function lessonBuild(v, L, ls) {
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
     else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
-    showAbove(c);
+    castCheer('L' + L.n, r.ok, L.scene && L.scene.cast); showAbove(c);
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
   actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] });
@@ -760,7 +779,7 @@ function renderReview(v) {
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null, wrong = false;
   // a card whose answer was wrong is not recalled, even when the learner grades it Good afterwards (grading yourself stays allowed)
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2 && !wrong) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
-  const showGrades = (pre, state, msg) => { wrong = state === 'bad'; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub, .pic-ask')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
+  const showGrades = (pre, state, msg) => { wrong = state === 'bad'; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); castCheer('practice', state === 'ok' && pre === 2); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub, .pic-ask')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
   const bare = def ? it.id.replace(/^(der|die|das) /, '') : '';
   const exRow = () => def && def.ex ? h('div', { class: 'row' }, glossEl(def.ex.replace(/[\[\]]/g, ''), def.exG || null), playBtn(def.ex.replace(/[\[\]]/g, ''))) : '';
   if (it.kind === 'r' || it.kind === 'li' || it.kind === 'ls') {

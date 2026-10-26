@@ -277,3 +277,18 @@ body.lay-mobile.in-lesson main{padding-bottom:max(112px,var(--bar-room,0px))}
 .choice.pic kbd{position:absolute;top:16px;left:16px;min-width:24px;padding:1px 6px;background:color-mix(in srgb,var(--photo-scrim) 60%,transparent);color:var(--on-status);box-shadow:none} /* the key sits on the picture's corner so the word keeps the full width */
 .choice.pic.ok .pic-de [class^="g-"],.choice.pic.bad .pic-de [class^="g-"]{color:inherit}
 .choice.pic:disabled:not(.ok):not(.bad){opacity:.7}
+
+/* cast reactions (castCheer in ui.js): after 5 right in a row, a paper slip with the speaker's bust rises out of the
+   action bar, holds for about 2 s and fades. It takes no taps. Its chamfered corner points at the bust. The ink is
+   set here because the bar flips the reading colours for what sits inside it. */
+.cheer{position:absolute;left:0;right:0;bottom:calc(100% + 10px);padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));pointer-events:none;animation:cheer 2.4s var(--ease) both}
+.cheer-in{max-width:600px;margin:0 auto;display:flex;align-items:flex-end;gap:10px;filter:drop-shadow(0 10px 18px var(--slab-sh-2))}
+.cheer .bust.photo{box-shadow:0 0 0 2px var(--card-solid)}
+.cheer .box{min-width:0;display:flex;flex-direction:column;gap:1px;padding:10px 18px 11px 16px;background:var(--card-solid);color:#11151b;border-radius:var(--r);
+  clip-path:polygon(0 0,100% 0,100% 100%,var(--cut-btn) 100%,0 calc(100% - var(--cut-btn)))}
+.cheer .who{font-size:.8125rem;color:#47505d}
+.cheer b{font-size:1.0625rem;line-height:1.3}
+.cheer .en{font-size:.9375rem;line-height:1.3;color:#47505d}
+@keyframes cheer{0%{opacity:0;translate:0 12px;scale:.96}12%{opacity:1;translate:0 0;scale:1}84%{opacity:1;translate:0 0}100%{opacity:0;translate:0 -6px}}
+@keyframes cheerfade{0%,100%{opacity:0}10%,86%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cheer{animation-name:cheerfade}}
