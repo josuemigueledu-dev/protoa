@@ -235,7 +235,7 @@ function progressHeader() {
 function fbEl(kind, html) { return h('div', { class: 'fb ' + kind, role: 'status' }, h('span', { html })); }
 // Check with nothing given yet: say so and keep the turn (the exam says the same); a real check clears it
 function isBlank(w) { return w.inputs ? w.inputs.every(i => !i.value.trim()) : !String(w.value()).trim(); }
-function answerFirst(fb, tiles) { fb.querySelector('.first')?.remove(); fb.append(fbEl('note first', (tiles ? 'Put the tiles in order first.' : 'Type your answer first.') + ' A best guess is fine.')); }
+function answerFirst(fb, tiles) { fb.querySelector('.first')?.remove(); fb.append(fbEl('note first', (tiles ? 'Put the tiles in order first.' : 'Type your answer first.') + ' A best guess is fine.')); showAbove(fb); }
 function confetti() { const c = h('div', { class: 'confetti', 'aria-hidden': 'true' }); const cs = getComputedStyle(document.documentElement), cols = ['--ice', '--yellow', '--paper', '--seq-2'].map(k => cs.getPropertyValue(k).trim()); for (let i = 0; i < 60; i++) c.append(h('i', { style: `left:${Math.random() * 100}vw;background:${cols[i % 4]};animation-delay:${Math.random() * .6}s;transform:rotate(${Math.random() * 360}deg)` })); document.body.append(c); setTimeout(() => c.remove(), 2600); }
 function ringEl(frac, size = 44) { const r = (size - 6) / 2, c = 2 * Math.PI * r; const d = h('div', { html: `<svg class="ring" viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px" aria-hidden="true"><circle class="bg" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - Math.max(0, Math.min(1, frac)))}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>` }); return d.firstElementChild; }
 function difficultyMode() {
@@ -258,6 +258,19 @@ function actionBar(opts) {
   const bar = h('div', { class: 'actionbar ' + (opts.state || '') });
   if (opts.msg) { const m = h('div', { class: 'msg' }); const title = opts.title || (opts.state === 'ok' ? 'Richtig.' : opts.state === 'bad' ? 'Nicht ganz.' : ''); m.innerHTML = (opts.state ? `<span class="ico">${opts.state === 'ok' ? '✓' : '✕'}</span>` : '') + `<div class="grow">${title ? `<span class="ttl">${title}</span>` : ''}<span>${opts.state === 'ok' ? opts.msg.replace(/^✓\s*/, '') : opts.msg}</span></div>`; bar.append(m); }
   const inner = h('div', { class: 'in' }); (opts.buttons || []).forEach(b => inner.append(b)); bar.append(inner); document.body.append(bar); return bar;
+}
+/* The action bar and the phone's tab bar float over the one scroller, so what a turn, a miss or a result
+   just added can land under them. Scroll just far enough that el clears the bar; if el is too tall for
+   the space left, its top stays below the sticky header and band instead. One read, one scroll, a frame later. */
+function showAbove(el) {
+  requestAnimationFrame(() => {
+    if (!el || !el.isConnected) return;
+    const bar = document.querySelector('.actionbar'), mob = document.body.classList.contains('lay-mobile');
+    const floor = (bar ? innerHeight - bar.offsetHeight : mob && tabsEl.offsetHeight ? tabsEl.getBoundingClientRect().top : innerHeight) - 16;   // offsetHeight: the bar's spring-up transform must not count
+    const ceil = Math.max(0, ...[...document.querySelectorAll('.lesson-top, .conv-band')].map(e => e.getBoundingClientRect().bottom)) + 12;
+    const r = el.getBoundingClientRect(), dy = Math.min(r.bottom - floor, r.top - ceil);
+    if (dy > 1) PANE.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' });
+  });
 }
 
 /* ---------- TODAY ---------- */
@@ -462,7 +475,7 @@ function lessonCheck(v, L, ls) {
     if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true);
     if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { e.currentTarget.classList.add('bad'); [...grid.children].find(b => b.textContent.endsWith(w.en[0]))?.classList.add('ok'); uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    save('progress'); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+    save('progress'); showAbove(grid); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   } }, h('kbd', {}, i + 1), ch)));
   c.append(grid); v.append(c);
   if (S.settings.autoWord) setTimeout(() => speak(w.de.replace(/^(der|die|das) /, '')), 200);
@@ -497,6 +510,7 @@ function lessonBuild(v, L, ls) {
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
     else { ls.battempts++; save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>. ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
+    showAbove(c);
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
   actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] });
@@ -549,7 +563,7 @@ function lessonConv(v, L, ls) {
   }
   function advance() {
     turnbox.innerHTML = ''; KEYS = null;
-    if (C.pos >= C.queue.length) { C.finished = true; save('progress'); turnbox.append(h('p', { class: 'muted small' }, 'End of the conversation.')); actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => playWhole() }, 'Play it all'), h('button', { class: 'btn', onclick: () => finishLesson(L, ls) }, 'Finish the lesson')] }); KEYS = e => { if (e.key === 'Enter') finishLesson(L, ls); }; return; }
+    if (C.pos >= C.queue.length) { C.finished = true; save('progress'); turnbox.append(h('p', { class: 'muted small' }, 'End of the conversation.')); actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => playWhole() }, 'Play it all'), h('button', { class: 'btn', onclick: () => finishLesson(L, ls) }, 'Finish the lesson')] }); showAbove(turnbox); KEYS = e => { if (e.key === 'Enter') finishLesson(L, ls); }; return; }
     const q = C.queue[C.pos], t = L.conv[q.i];
     if (!t.l) { const m = { who: 'w', de: fill(t.w), g: t.g, mood: t.mood, sp: t.who || 'cast.weber', i: q.i }; C.log.push(m); C.pos++; save('progress'); log.append(bubble(m)); if (banded) { track(m); drawBand(); } Voice.mood(t.mood); advance(); return; }
     learnerTurn(q, t);
@@ -564,7 +578,8 @@ function lessonConv(v, L, ls) {
     else if (type === 'gap') widget = gapWidget(t.de, t.gaps);
     else widget = typeWidget({}, () => check());
     turnbox.append(widget.el, ladder);
-    if (widget.focus) setTimeout(() => widget.focus(), 50);
+    // the cursor first (a focus may scroll on its own), then the whole turn above the action bar
+    setTimeout(() => { if (widget.focus) widget.focus(); showAbove(turnbox); }, 50);
     if (attempts.n >= 1) ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>'));
     const checkBtn = h('button', { class: 'btn', onclick: () => check() }, 'Check');
     actionBar({ buttons: [checkBtn] });
@@ -583,7 +598,7 @@ function lessonConv(v, L, ls) {
     }
     function selfJudge(ans) { // Claude unavailable: show the model answer and let him judge (Right / Close / Wrong)
       ladder.innerHTML = ''; const ul = glossEl(t.de, t.g);
-      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?')));
+      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?'))); showAbove(ladder);
       actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => settle({ ok: false, hint: 'Compare your line with the model answer, then try once more.' }, ans) }, 'Wrong'), h('button', { class: 'btn ghost', onclick: () => settle({ ok: true, exact: false, note: 'Close enough to be understood.' }, ans) }, 'Close'), h('button', { class: 'btn', onclick: () => settle({ ok: true, exact: true }, ans) }, 'Right')] });
       KEYS = null;
     }
@@ -610,6 +625,7 @@ function lessonConv(v, L, ls) {
           const cont = () => { log.append(bubble(C.log[C.log.length - 1])); advance(); };
           actionBar({ state: 'bad', msg: 'It comes back in a few turns.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') cont(); };
         }
+        showAbove(ladder);
       }
     }
   }
@@ -676,7 +692,7 @@ function renderReview(v) {
     h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null;
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
-  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
+  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
   const bare = def ? it.id.replace(/^(der|die|das) /, '') : '';
   const exRow = () => def && def.ex ? h('div', { class: 'row' }, glossEl(def.ex.replace(/[\[\]]/g, ''), def.exG || null), playBtn(def.ex.replace(/[\[\]]/g, ''))) : '';
   if (it.kind === 'r' || it.kind === 'li' || it.kind === 'ls') {
@@ -718,7 +734,7 @@ function renderReview(v) {
     const check = () => {
       if (result) return; if (isBlank(widget)) return answerFirst(fb); const a = widget.value().trim(); const r = diagnose(a, s.de, mergedLex(L.lex), s.g, s.alts || []); fb.innerHTML = '';
       if (r.ok) { result = r; uiSound('ok'); fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); showGrades(attempts ? 1 : 2, 'ok', '✓ ' + (r.note || 'Richtig.')); }
-      else { attempts++; uiSound('bad', r); if (attempts === 1) actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
+      else { attempts++; uiSound('bad', r); if (attempts === 1) { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); showAbove(card); } else { result = r; fb.append(h('div', { class: 'row' }, glossEl(s.de, s.g), playBtn(s.de))); speak(s.de); showGrades(0, 'bad', 'The line is <em lang="de">' + esc(s.de) + '</em>'); } }
     };
     card.append(widget.el, fb); if (widget.focus) setTimeout(() => widget.focus(), 50); actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
   }
@@ -783,7 +799,7 @@ function grammarUnit(v, u) {
   const c = h('div', { class: 'card stack', html: u.body }); if (u.table) { const g = h('div', { class: 'conj' }); u.table.forEach(([p, f]) => g.append(h('span', {}, p), h('span', { lang: 'de' }, h('b', {}, f)))); c.append(g); } v.append(c);
   const ex = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Examples')); u.examples.forEach(e => { const ul = glossEl(e.de, e.g); ex.append(h('div', { class: 'stack', style: 'gap:4px' }, h('div', { class: 'row' }, ul, h('button', { class: 'icon-btn sm', html: ICONS.play, 'aria-label': 'Play', onclick: () => speak(e.de, { el: ul }) })), h('div', { class: 'muted small' }, e.en))); }); v.append(ex);
   const dr = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'Drills'));
-  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (!a) return answerFirst(fb); if (d.a.some(x => fold(stripPunct(x).trim()) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓ Richtig.')); } else { uiSound('bad'); fb.append(fbEl('hint', drillMiss(d))); } }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
+  u.drills.forEach((d, i) => { const inp = deInput({ placeholder: '…', 'aria-label': 'Drill ' + (i + 1) }); const fb = h('div', {}); const chk = () => { const a = stripPunct(applyShortcuts(inp.value)).trim().toLowerCase().replace(/\s+/g, ' '); fb.innerHTML = ''; if (!a) return answerFirst(fb); if (d.a.some(x => fold(stripPunct(x).trim()) === fold(a))) { uiSound('ok'); fb.append(fbEl('ok', '✓ Richtig.')); } else { uiSound('bad'); fb.append(fbEl('hint', drillMiss(d))); } showAbove(fb); }; inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk(); }); dr.append(h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, h('b', { lang: 'de' }, d.q), h('span', { class: 'faint' }, ' — ' + d.en)), h('div', { class: 'row' }, h('div', { class: 'grow' }, inp), h('button', { class: 'btn sm', onclick: chk }, 'Check')), umlautRow(inp), fb)); });
   v.append(dr);
 }
 
