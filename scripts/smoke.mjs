@@ -5,6 +5,7 @@
 // played to its end with its own model answers, and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
+// Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -377,6 +378,46 @@ async function examPauseKeepsAnswer(browser) {
   await ctx.close();
 }
 
+// Grammar has no tab on a phone: opened from Practice, Profile or a lesson's Notice, that tab stays lit and
+// Grammar's back button leads back there (into the lesson, at the same step).
+async function grammarKeepsItsTab(browser) {
+  const label = 'grammar back';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { LESSONS[0].words.forEach(w => markLearned(w, 1)); S.progress.lessonsDone = [1]; S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); });
+  const cur = (sel, opts) => page.locator(`#view > .view:not(.leaving) ${sel}`, opts);
+  const lit = () => page.evaluate(() => document.querySelector('#tabs .tab[aria-current="page"] span')?.textContent || 'none');
+  const back = cur('.btn.ghost.sm', { hasText: '‹' }).first();
+  // off-screen slabs skip layout until they come near (content-visibility), so scroll to the link and let it settle first
+  const tap = async el => { await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(300); await el.click(); };
+  for (const [from, tab, open] of [['practice', 'Practice', () => tap(cur('.mode', { hasText: 'Grammar' }))], ['profile', 'Profile', () => tap(cur('.listrow', { hasText: 'Grammar reference' }))]]) {
+    await page.evaluate(r => go(r), from); await drawn(page); await page.waitForTimeout(300);
+    await open(); await drawn(page); await page.waitForTimeout(300);
+    if (await page.evaluate(() => route) !== 'grammar') { fail(`${label}: Grammar did not open from ${tab}`); continue; }
+    if (await lit() !== tab) fail(`${label}: Grammar opened from ${tab} lights the ${await lit()} tab`);
+    const say = (await back.textContent()).trim();
+    if (say !== '‹ ' + tab) fail(`${label}: Grammar opened from ${tab} has the back button "${say}"`);
+    await back.click(); await drawn(page); await page.waitForTimeout(300);
+    if (await page.evaluate(() => route) !== from) fail(`${label}: Grammar's back button went to ${await page.evaluate(() => route)}, not ${from}`);
+  }
+  // from a lesson's Notice step: "Open in Grammar", then back into the lesson where it was
+  const L = await page.evaluate(() => { const L = LESSONS.find(L => L.notice && L.notice.grammar && GRAMMAR.some(g => g.id === L.notice.grammar)); startLesson(L.n, true); S.progress.lessonState.step = 'notice'; render(); return L.n; });
+  await drawn(page); await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelectorAll('#view > .view:not(.leaving) [hidden]').forEach(e => e.hidden = false));
+  await cur('.btn', { hasText: 'Open in Grammar' }).click(); await page.waitForTimeout(300);
+  if (await lit() !== 'Lessons') fail(`${label}: Grammar opened from lesson ${L} lights the ${await lit()} tab`);
+  await cur('.btn', { hasText: '‹ Grammar' }).click(); await drawn(page); await page.waitForTimeout(300);
+  const say = (await back.textContent()).trim();
+  if (say !== '‹ Back to the lesson') fail(`${label}: Grammar opened from lesson ${L} has the back button "${say}"`);
+  await back.click(); await drawn(page); await page.waitForTimeout(300);
+  const at = await page.evaluate(() => ({ route, n: S.progress.lessonState?.n, step: S.progress.lessonState?.step, inLesson: document.body.classList.contains('in-lesson') }));
+  if (at.route !== 'learn' || at.n !== L || at.step !== 'notice' || !at.inLesson) fail(`${label}: back from Grammar did not return to lesson ${L}'s Notice step (${JSON.stringify(at)})`);
+  await ctx.close();
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -410,6 +451,7 @@ try {
   await sheetsOwnKeys(browser);
   await stepPassesOn(browser);
   await examPauseKeepsAnswer(browser);
+  await grammarKeepsItsTab(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
