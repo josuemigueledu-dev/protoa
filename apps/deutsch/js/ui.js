@@ -260,16 +260,27 @@ function actionBar(opts) {
   const inner = h('div', { class: 'in' }); (opts.buttons || []).forEach(b => inner.append(b)); bar.append(inner); document.body.append(bar); return bar;
 }
 /* The action bar and the phone's tab bar float over the one scroller, so what a turn, a miss or a result
-   just added can land under them. Scroll just far enough that el clears the bar; if el is too tall for
-   the space left, its top stays below the sticky header and band instead. One read, one scroll, a frame later. */
-function showAbove(el) {
+   just added can land under them. Scroll just far enough that el clears the bar, without sliding keep (what
+   el answers: the line spoken to you, the card's word; el itself by default) under the sticky header and band.
+   When both don't fit, keep's top goes as high as the band and el shows its first line. One read, one scroll, a frame later. */
+const BAND_SMALL_AT = 80;   // the conversation's picture band is smaller once the lesson has scrolled this far (lessonConv)
+function showAbove(el, keep = el) {
   requestAnimationFrame(() => {
-    if (!el || !el.isConnected) return;
+    if (!el || !el.isConnected) return; if (!keep || !keep.isConnected) keep = el;
     const bar = document.querySelector('.actionbar'), mob = document.body.classList.contains('lay-mobile');
     const floor = (bar ? innerHeight - bar.offsetHeight : mob && tabsEl.offsetHeight ? tabsEl.getBoundingClientRect().top : innerHeight) - 16;   // offsetHeight: the bar's spring-up transform must not count
-    const ceil = Math.max(0, ...[...document.querySelectorAll('.lesson-top, .conv-band')].map(e => e.getBoundingClientRect().bottom)) + 12;
-    const r = el.getBoundingClientRect(), dy = Math.min(r.bottom - floor, r.top - ceil);
-    if (dy > 1) PANE.scrollBy({ top: dy, behavior: reduced() ? 'auto' : 'smooth' });
+    const head = Math.max(0, ...[...document.querySelectorAll('.lesson-top')].map(e => e.getBoundingClientRect().bottom));
+    const r = el.getBoundingClientRect(), k = keep.getBoundingClientRect().top;
+    // the band sticks under the header; when a scroll changes its size, everything below it moves by as much
+    const band = document.querySelector('.conv-band'), cs = band && getComputedStyle(band), bandH = small => band ? parseFloat(cs.getPropertyValue(small ? '--h-small' : '--h')) : 0;
+    const plan = small => {
+      const shift = bandH(band && band.classList.contains('small')) - bandH(small), ceil = head + bandH(small) + 12;
+      const down = r.bottom - shift - floor, most = k - shift - ceil;   // scroll at least down, at most most
+      const dy = down <= most ? (down > 0 ? down : Math.min(most, 0)) : Math.max(most + 12, r.top - shift - floor + 36);   // a squeeze: no gaps, el shows its first line
+      return { dy, fits: !band || (PANE.scrollTop + dy > BAND_SMALL_AT) === small };
+    };
+    let p = plan(true); if (!p.fits) { const q = plan(false); if (q.fits) p = q; }
+    if (Math.abs(p.dy) > 1) PANE.scrollBy({ top: p.dy, behavior: reduced() ? 'auto' : 'smooth' });
   });
 }
 
@@ -475,7 +486,7 @@ function lessonCheck(v, L, ls) {
     if (locked) return; locked = true; [...grid.children].forEach(b => b.disabled = true);
     if (ch === w.en[0]) { e.currentTarget.classList.add('ok'); uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { e.currentTarget.classList.add('bad'); [...grid.children].find(b => b.textContent.endsWith(w.en[0]))?.classList.add('ok'); uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    save('progress'); showAbove(grid); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+    save('progress'); showAbove(grid, head); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   } }, h('kbd', {}, i + 1), ch)));
   c.append(grid); v.append(c);
   if (S.settings.autoWord) setTimeout(() => speak(w.de.replace(/^(der|die|das) /, '')), 200);
@@ -494,9 +505,9 @@ function gapWidget(de, gaps) {
   const toks = fill(de).split(/\s+/); const line = h('div', { class: 'gapline', lang: 'de' }); const inputs = [], at = new Map(); // at: token index -> its input, so gaps may come in any order
   toks.forEach((t, i) => { if (gaps.includes(i)) { const core = stripPunct(t), punct = t.slice(core.length); const inp = deInput({ 'aria-label': 'gap ' + (inputs.length + 1) }); inp.style.width = Math.max(5, core.length + 1) + 'ch'; inputs.push(inp); at.set(i, inp); line.append(inp, punct ? h('span', {}, punct) : ''); } else line.append(h('span', {}, t)); });
   const value = () => toks.map((t, i) => { if (!at.has(i)) return t; const core = stripPunct(t); return at.get(i).value.trim() + t.slice(core.length); }).join(' ');
-  return { el: h('div', { class: 'stack' }, line, umlautRow(inputs[0])), value, inputs, focus: () => inputs[0].focus(), disable: () => inputs.forEach(i => i.disabled = true) };
+  return { el: h('div', { class: 'stack' }, line, umlautRow(inputs[0])), value, inputs, focus: o => inputs[0].focus(o), disable: () => inputs.forEach(i => i.disabled = true) };
 }
-function typeWidget(attrs = {}, onDictated) { const inp = deInput(Object.assign({ placeholder: 'Auf Deutsch …', 'aria-label': 'Your line in German' }, attrs)); return { el: h('div', { class: 'stack' }, inp, h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, onDictated))), value: () => inp.value, focus: () => inp.focus(), inputs: [inp], disable: () => inp.disabled = true }; }
+function typeWidget(attrs = {}, onDictated) { const inp = deInput(Object.assign({ placeholder: 'Auf Deutsch …', 'aria-label': 'Your line in German' }, attrs)); return { el: h('div', { class: 'stack' }, inp, h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, onDictated))), value: () => inp.value, focus: o => inp.focus(o), inputs: [inp], disable: () => inp.disabled = true }; }
 function lessonBuild(v, L, ls) {
   const item = L.build[ls.bi];
   if (!item) { setStep('conv', { conv: null }); return; }
@@ -542,7 +553,7 @@ function lessonConv(v, L, ls) {
     C.log.forEach(track); drawBand();
     // the band sticks under the lesson header and shrinks once the learner scrolls
     requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) conv.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
-    const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); band.classList.toggle('small', PANE.scrollTop > 80); };
+    const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); band.classList.toggle('small', PANE.scrollTop > BAND_SMALL_AT); };
     PANE.addEventListener('scroll', shrink, { passive: true });
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
   const log = h('div', { class: 'log', role: 'log' }); conv.append(log);
@@ -552,6 +563,8 @@ function lessonConv(v, L, ls) {
   v.append(conv);
   const turnbox = h('div', { class: 'turnbox' }); conv.append(turnbox);
   advance();
+  // the line the learner is replying to, when it is the newest in the log: it stays in view while they answer
+  function answering() { const b = log.lastElementChild; return b && b.matches('.bub.w') ? b : null; }
   function bubble(m) {
     const b = h('div', { class: 'bub ' + m.who + (m.done ? ' done' : '') });
     if (m.who === 'w') { b.dataset.mood = m.mood || 'neutral'; if (banded && (NIGHT_CAST[speaker(m)] || ART[speaker(m)])) b.append(bustEl(speaker(m), m.mood, 40)); }
@@ -571,15 +584,15 @@ function lessonConv(v, L, ls) {
   function learnerTurn(q, t) {
     const type = q.type; const attempts = { n: C.attempts || 0 }; const ladder = h('div', { class: 'ladder' });
     const prompt = h('div', { class: 'prompt' }, q.again ? 'Once more. ' : '', type === 'tiles' ? 'Build your line from the tiles.' : type === 'gap' ? 'Fill the gap' + (t.gaps.length > 1 ? 's' : '') + ' in your line.' : type === 'translate' ? h('span', {}, 'Say it in German: ', h('b', {}, fill(t.en))) : h('span', {}, 'Answer truthfully, in German.'));
-    if (type === 'tiles' || type === 'gap') prompt.append(h('div', { class: 'faint', style: 'font-weight:400' }, 'The English appears if you miss.'));
+    if ((type === 'tiles' || type === 'gap') && !attempts.n) prompt.append(h('div', { class: 'faint', style: 'font-weight:400' }, 'The English appears if you miss.'));   // gone once it has: room for the line above
     turnbox.append(prompt);
     let widget;
     if (type === 'tiles') widget = tilesWidget(fill(t.de).split(/\s+/), (t.extra || []).map(fill), () => { });
     else if (type === 'gap') widget = gapWidget(t.de, t.gaps);
     else widget = typeWidget({}, () => check());
     turnbox.append(widget.el, ladder);
-    // the cursor first (a focus may scroll on its own), then the whole turn above the action bar
-    setTimeout(() => { if (widget.focus) widget.focus(); showAbove(turnbox); }, 50);
+    // the cursor without the browser's own scroll, then the turn above the action bar and its line below the band
+    setTimeout(() => { if (widget.focus) widget.focus({ preventScroll: true }); showAbove(turnbox, answering()); }, 50);
     if (attempts.n >= 1) ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>'));
     const checkBtn = h('button', { class: 'btn', onclick: () => check() }, 'Check');
     actionBar({ buttons: [checkBtn] });
@@ -598,7 +611,7 @@ function lessonConv(v, L, ls) {
     }
     function selfJudge(ans) { // Claude unavailable: show the model answer and let him judge (Right / Close / Wrong)
       ladder.innerHTML = ''; const ul = glossEl(t.de, t.g);
-      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?'))); showAbove(ladder);
+      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?'))); showAbove(ladder, answering());
       actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => settle({ ok: false, hint: 'Compare your line with the model answer, then try once more.' }, ans) }, 'Wrong'), h('button', { class: 'btn ghost', onclick: () => settle({ ok: true, exact: false, note: 'Close enough to be understood.' }, ans) }, 'Close'), h('button', { class: 'btn', onclick: () => settle({ ok: true, exact: true }, ans) }, 'Right')] });
       KEYS = null;
     }
@@ -614,6 +627,7 @@ function lessonConv(v, L, ls) {
         turnbox.innerHTML = ''; document.querySelector('.actionbar')?.remove(); setTimeout(advance, r.note ? 1200 : 500);
       } else {
         attempts.n++; C.attempts = attempts.n; save('progress'); uiSound('bad', r);
+        prompt.querySelector('.faint')?.remove();
         if (attempts.n === 1) { ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>')); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
         else if (attempts.n === 2) { ladder.append(fbEl('hint', r.hint)); Voice.mood('thinking'); actionBar({ buttons: [checkBtn] }); }
         else {
@@ -625,7 +639,7 @@ function lessonConv(v, L, ls) {
           const cont = () => { log.append(bubble(C.log[C.log.length - 1])); advance(); };
           actionBar({ state: 'bad', msg: 'It comes back in a few turns.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') cont(); };
         }
-        showAbove(ladder);
+        showAbove(ladder, answering());
       }
     }
   }
@@ -694,7 +708,7 @@ function renderReview(v) {
     h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null;
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
-  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
+  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
   const bare = def ? it.id.replace(/^(der|die|das) /, '') : '';
   const exRow = () => def && def.ex ? h('div', { class: 'row' }, glossEl(def.ex.replace(/[\[\]]/g, ''), def.exG || null), playBtn(def.ex.replace(/[\[\]]/g, ''))) : '';
   if (it.kind === 'r' || it.kind === 'li' || it.kind === 'ls') {
