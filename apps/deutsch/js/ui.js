@@ -287,7 +287,7 @@ function renderToday(v) {
   else if (!gateT) v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map')));
   v.append(todayLine(due.length));
   v.append(todayDuo(due, L));
-  if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0: Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
+  if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0 · Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
   v.append(h('button', { class: 'card listrow', onclick: () => go('talk') }, h('span', { class: 'sig talkico', html: ICONS.talk }), h('div', { class: 'grow' }, h('b', { lang: 'de' }, 'Sprechen'), h('div', { class: 'faint' }, 'Talk with Protoa at your level. Every line you write is corrected.')), h('span', { class: 'muted', 'aria-hidden': 'true' }, '›')));
   v.append(progressHeader());
   if (!document.body.classList.contains('lay-desktop')) { v.append(weekWidget()); /* the pace forecast lives on Profile: Today keeps to the day */ const sz = satzDesTages(); if (sz) v.append(sz); }
@@ -656,6 +656,8 @@ function finishReviewSession() {
   if (stop) { S.progress.reviewStops = [...new Set([...(S.progress.reviewStops || []), stop])]; save('progress'); }
   REVIEW_SUMMARY = Object.assign({ stop }, stats); route = 'practice'; NAV = 'fwd'; render();
 }
+// one pace for every time estimate on a review: about 12 seconds a card
+function reviewMinutes(n) { return Math.max(1, Math.round(n * .2)); }
 function summarize(due) { const k = {}; due.forEach(d => k[d.kind] = (k[d.kind] || 0) + 1); return Object.entries(k).map(([t, n]) => n + ' ' + ({ r: 'word → meaning', p: 'meaning → word', sent: 'conversation line', li: 'listening' }[t])).join(', ') + '.'; }
 function startReview(items, title) { // every 3rd recognition card with interval ≥7 becomes a listening card (word or its sentence)
   // daily reviews mix in every exercise type once a word is settling in (interval in days): listening ≥7, gap ≥4, sentence order ≥7, translation ≥10
@@ -807,12 +809,12 @@ function grammarUnit(v, u) {
 function openMore(fn) { route = 'profile'; lastLayout = applyLayout(); renderTabs(); document.getElementById('rail') && (document.getElementById('rail').innerHTML = ''); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); fn(newView()); PANE.scrollTo({ top: 0 }); }
 function renderMore(v) {
   v.append(h('h1', {}, 'More'));
-  const items = [['Sounds (Lesson 0)', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, layout, import & export', renderSettings]];
+  const items = [['Lesson 0 · Sounds', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, layout, import & export', renderSettings]];
   items.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: () => openMore(fn) }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted' }, '›'))));
 }
 function backMore() { return h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { NAV = 'back'; route = 'profile'; render(); } }, '‹ Profile')); }
 function renderSounds(v) {
-  v.append(backMore(), h('div', { class: 'hero' }, teacherSlot(56, 'neutral'), h('div', { class: 'grow' }, h('h1', {}, 'Lesson 0: Sounds'), h('p', { class: 'muted' }, 'German spelling is regular. Learn these pairings once and you can read any new word aloud. Tap a word to hear it.'))));
+  v.append(backMore(), h('div', { class: 'hero' }, teacherSlot(56, 'neutral'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, 'Lesson 0 · Sounds'), h('h1', { lang: 'de' }, 'Laute'), h('p', { class: 'muted' }, 'German spelling is regular. Learn these pairings once and you can read any new word aloud. Tap a word to hear it.'))));
   const c = h('div', { class: 'card stack', style: 'gap:18px' });
   SOUNDS.forEach(r => c.append(h('div', { class: 'rule' }, h('div', { class: 'k', lang: 'de' }, r.k), h('div', { class: 'stack', style: 'gap:6px' }, h('div', {}, r.say), h('div', { class: 'ex' }, r.ex.map(([w, m]) => h('button', { type: 'button', lang: 'de', onclick: () => speak(w) }, w, h('small', {}, m))))))));
   v.append(c, h('div', { class: 'card row', style: 'justify-content:space-between' }, h('span', {}, S.progress.sounds ? 'Done. Come back any time.' : 'Mark as done when you have been through the list.'), h('button', { class: 'btn' + (S.progress.sounds ? ' ghost' : ''), onclick: () => { S.progress.sounds = true; save('progress'); toast('Lesson 0 done'); go('learn'); } }, S.progress.sounds ? 'Done ✓' : 'Mark done')));
@@ -820,7 +822,7 @@ function renderSounds(v) {
 function renderMethod(v) {
   v.append(backMore(), h('h1', {}, 'Method'), h('p', { class: 'muted' }, 'Why the app works the way it does. Each note says how solid the evidence is: established, inferred from related evidence, or our own speculation.'));
   METHOD.forEach(m => v.append(h('div', { class: 'card stack', style: 'gap:6px' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, m.f), h('span', { class: 'srclabel ' + m.lab }, { est: 'established', inf: 'inferred', spec: 'speculative' }[m.lab])), h('p', {}, m.why), h('p', { class: 'faint' }, 'Source: ' + m.src))));
-  v.append(h('div', { class: 'card stack', style: 'gap:6px' }, h('b', {}, 'Audio'), h('p', { class: 'small muted' }, 'All German is meant to be read by one voice (the open Piper model de_DE-thorsten-high) pre-rendered as audio sprites. Until those are rendered, the browser\'s own German voice reads the text at a slightly slower rate. Sentences never play on their own; word audio follows your setting.')));
+  v.append(h('div', { class: 'card stack', style: 'gap:6px' }, h('b', {}, 'Audio'), h('p', { class: 'small muted' }, 'German is read by the best German voice on your device (Settings → Protoa’s voice). Recorded voices for Protoa and the cast are on the way; where a line has one, it plays instead. New words play as they appear (Settings can turn that off), and Listening cards play their line. Every other sentence waits for your tap.')));
 }
 function voiceCard(s) {
   const card = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, "Protoa's voice"),
