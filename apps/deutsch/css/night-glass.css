@@ -538,7 +538,10 @@ body:not(.lay-mobile) .rv-pic .haze{display:block;position:absolute;inset:0;z-in
 .rv-ex .en{color:var(--muted);font-size:.8125rem;margin-top:4px}
 .rv-ex.open .en{color:var(--ink);font-size:.9375rem}
 .rv-card .umlauts{flex-wrap:nowrap}
-body.lay-mobile .rv-card .umlauts button:nth-child(n+5){display:none}   /* phones: ä ö ü ß fit beside the mic; capitals by typing A: O: U: */
+/* phones: one row of ä ö ü ß wherever there are keys (lesson turns, Practice, Grammar, Sprechen), so a turn fits
+   under the line it answers and the keys fit beside the mic; capitals by typing A: O: U: */
+body.lay-mobile .umlauts{flex-wrap:nowrap}
+body.lay-mobile .umlauts button:nth-child(n+5){display:none}
 .rv-boxes{display:flex;align-items:center;gap:14px;padding:0 4px;color:var(--ink);font-size:.8125rem}
 .rv-boxes>span{white-space:nowrap}
 .rv-boxes .bx{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end;height:26px;max-width:260px;margin:0 auto}
@@ -549,8 +552,6 @@ body.lay-mobile .rv-card .umlauts button:nth-child(n+5){display:none}   /* phone
 body.lay-mobile .actionbar .in .kbd{display:none}
 /* Sprechen on a phone: ä ö ü ß and "How do I say…?" on one row, so the bar takes less of the chat (capitals by typing A: O: U:) */
 body.lay-mobile .actionbar .tools{flex-wrap:nowrap}
-body.lay-mobile .actionbar .tools .umlauts{flex-wrap:nowrap}
-body.lay-mobile .actionbar .tools .umlauts button:nth-child(n+5){display:none}
 body.lay-mobile .actionbar .tools .btn{flex:none;margin-left:auto}
 /* the reply row lines up with the keys above it and the conversation header (both 680 px wide) */
 .actionbar .tools+.in{max-width:680px}
