@@ -111,7 +111,18 @@ How a finished lesson or review shows its numbers: `resultRow()` in `map.js`, st
 
 ![Result row before / after, 390 px: Done and the review summary](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-result-row-1.png)
 
-*Still differs:* the word slab under it. Done's is "Your new words" as a 13 px eyebrow over chips; the review's is "Coming back soon" as a 22 px slab title over magenta chips.
+### Word slab (done: `[design]` word slab)
+
+The words under a result row: `wordSlab(title, words)` in `map.js`, styled by `.wordslab` in `night-glass-lesson.css`. Done's "Your new words" and the review's "Coming back soon" both use it (before, Done had a 13 px eyebrow over grey word chips and the review a 22 px slab title over small magenta chips with white 11 px text, the "yours" chip, below AA).
+
+- **The slab:** a small slab, 20 px padding, 20 px under the result row (the lesson rhythm).
+- **The title:** a small slab title, Krona One 17 px (`.widget h2`, `.kcard h2`), then 12 px to the chips. Short, sentence case, no count.
+- **The chips:** word chips (`wordChip()`, `.wchip`), 8 px apart: the word in Krona One 600 at body size, with its 28 px picture or type glyph when it has one, 36 px tall. One chip for every list of words a learner owns; the magenta "yours" chip stays for marking words inside a lesson step, not for a list.
+- **Tap:** a chip whose word has a card is a button and opens the word sheet, with the 150 ms press (`scale(.96)`). A missed sentence has no card, so it is a plain chip (on main it opened a "No card yet" toast).
+
+![Word slab before / after, 390 px dark: Done and the review summary](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-word-slab-1.png)
+![The same in light](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-word-slab-2.png)
+![At 1280](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-word-slab-3.png)
 
 ### Settings rows
 
@@ -131,6 +142,8 @@ In this order, one per `[design]` PR:
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
 5. ~~One clamp for the hero titles (`--t-hero`).~~ Done.
 6. ~~One result row: the Done screen's cards and the review summary.~~ Done.
-7. The word slab under a result: one heading style for Done's "Your new words" and the review's "Coming back soon".
+7. ~~The word slab under a result: one heading and one chip for Done's "Your new words" and the review's "Coming back soon".~~ Done.
+8. The intro line under a page title: Practice's "Every word you know, kept strong." and the Sprechen intro sit about 4 px under their titles, against the 8 px of the page head rule (tester, #146).
+9. The cast reaction slip (#213): its padding, gaps and name weight onto the speech bubble's (`.bub .box`, 12/16), and its colours onto tokens (review on #213, merged before the fixes).
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.

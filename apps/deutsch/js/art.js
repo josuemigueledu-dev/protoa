@@ -49,9 +49,10 @@ function wordArt(w, size) {
   const t = document.createElement('div'); t.className = 'wtile'; t.style.width = t.style.height = size + 'px'; t.lang = 'de';
   t.innerHTML = `<b>${w.de}</b>` + (w.type ? `<span>${w.type}</span>` : ''); return t;
 }
-/* a learned word as a chip: a 28 px picture when it has one, else the word with a small type glyph */
-function wordChip(w) {
-  const c = document.createElement('span'); c.className = 'wchip'; c.lang = 'de';
+/* a learned word as a chip: a 28 px picture when it has one, else the word with a small type glyph; with tap, a button */
+function wordChip(w, tap) {
+  const c = document.createElement(tap ? 'button' : 'span'); c.className = 'wchip'; c.lang = 'de';
+  if (tap) { c.type = 'button'; c.onclick = tap; }
   const pic = wordPic(w);
   if (pic) { const i = illusEl('', 28); i.innerHTML = pic; c.append(i); }
   else if (GLYPH[w.type]) c.insertAdjacentHTML('beforeend', `<i class="gl-t" aria-hidden="true">${GLYPH[w.type]}</i>`);
