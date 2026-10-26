@@ -476,7 +476,7 @@ function wordCard(w, opts = {}) {
   if (w.pic && PICS[w.pic] && !wordPic(w)) { const i = h('div', { class: 'illus ' + (w.g || '') }); i.innerHTML = PICS[w.pic]; c.append(i); }
   else if (wordPic(w)) c.append(wordArt(w, 168)); // no picture: the word below is the headline, so no tile here
   c.append(h('div', { class: 'de' }, artEl(w.de)), h('div', { class: 'en' }, w.en.join(', ')));
-  if (isLearned(w.de) && opts.showYours) c.append(h('span', { class: 'chip yours' }, 'already yours'));
+  if (isLearned(w.de) && opts.showYours) c.append(h('span', { class: 'chip accent' }, 'already yours'));
   if (!w.parts || w.pl) { const kind = h('div', { class: 'kind' }, TYPE_LABEL[w.type] || w.type); if (w.pl) kind.append(' · pl. ', artEl(w.pl)); c.append(kind); }
   if (w.parts) c.append(h('div', { class: 'parts' }, h('span', { class: 'eyebrow' }, 'Built from'), w.parts));
   const more = [w.ipa && '/' + w.ipa + '/', w.syl && w.syl.includes('·') && w.syl].filter(Boolean);

@@ -226,7 +226,7 @@ function openLessonPreview(n) {
   openSheet((inner, close) => {
     const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + L.title), h('h1', deLang(L.theme), L.theme || L.title), h('p', { class: 'muted', lang: 'de' }, c.station + ' · ' + L.scene.place));
     p.append(h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'By the end you can'), h('p', {}, L.can)));
-    p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip yours' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
+    p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
     const go_ = fresh_ => { close(); startLesson(n, fresh_); };
     const blk = lessonBlocked(n);
     if (blk) { p.append(h('div', { class: 'fb note' }, `You have reached ${blk.words.toLocaleString('en')} words: the ${blk.code} milestone. Pass the ${blk.code} exam with 90% to continue the line.`), h('button', { class: 'btn', onclick: () => { close(); openExamPreview(blk.code); } }, 'Go to the ' + blk.code + ' exam')); inner.append(p); return; }
@@ -291,7 +291,7 @@ function lessonWords(v, L, ls) {
   if (!ls.newWords) { ls.newWords = L.words.filter(w => !isLearned(w.de)).map(w => w.de); save('progress'); }
   const ids = ls.newWords, yours = L.words.filter(w => !ids.includes(w.de));
   const w = L.words.find(x => x.de === ids[ls.wi]);
-  const yoursRow = () => yours.length ? h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'eyebrow' }, 'Already yours · tap to look again'), h('div', { class: 'row' }, ...yours.map(y => h('button', { class: 'chip yours', style: 'cursor:pointer;min-height:36px', onclick: () => openWordSheet(y.de.replace(/^(der|die|das) /, '')) }, y.de)))) : '';
+  const yoursRow = () => yours.length ? h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'eyebrow' }, 'Already yours · tap to look again'), h('div', { class: 'row' }, ...yours.map(y => h('button', { class: 'chip accent', style: 'cursor:pointer;min-height:36px', onclick: () => openWordSheet(y.de.replace(/^(der|die|das) /, '')) }, y.de)))) : '';
   if (!w) {
     if (!ids.length) {
       v.append(lessonTop(L, ls, 1), h('div', { class: 'card stack center' }, h('h1', {}, 'You know them all'), h('p', { class: 'muted' }, 'Every word in this lesson is already yours. They still come up in Build it and the conversation.')), yoursRow());

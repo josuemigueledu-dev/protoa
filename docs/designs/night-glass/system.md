@@ -150,6 +150,21 @@ One table (`.conj`) in three places: Grammar's rule of the day (`.gfeat`), a Gra
 ![Rule of the day and a unit, 390 dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-grammar-tables-1.png)
 ![Word card at 390 and a unit at 1280, light: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-grammar-tables-2.png)
 
+### Chip (done: `[design]` chips)
+
+One family, in three weights, everywhere a chip appears (a preview sheet's facts, a review stop, the exam sheet, the Tempo rows, a word card). Every chip has **the same glass body**: `var(--chip)`, a 1 px hairline, 13 px/700, 4/10 padding, 28 px tall, `--r-xs`. What changes is the ink and the colour of that hairline:
+
+- **A fact** — "13 new words", "≈ 17 min", "already yours: 14", "20 of 46 cards", "pass mark 90%", an exam score: muted ink, `--line` hairline. A count of words you own is a fact like the rest, not a state.
+- **Finished** (`.ok`) — "done", "passed": `--chip-ok-ink` with a `--chip-ok` hairline.
+- **About you** (`.accent`) — "exam ready", "already yours" on a word card: `--chip-accent-ink` with a `--chip-accent` hairline.
+
+Both state inks flip inside the dark panels (topbar, page heads, Profile), beside the `--green`/`--red` flip, so a chip reads on whatever it sits on. Measured against the composited background at 390 px in both themes: facts 7.1–7.9:1, done 6.5–7.2:1, exam ready 5.4–6.7:1 — before, "done" was 3.3–3.9:1 and the solid magenta chip 3.5:1 (white on `--magenta`), both under AA.
+
+**Solid magenta is not a chip.** It belongs to the map's test stop, the chapter number and the ring. A chip that shouts pulls the eye off the sheet's title and its button.
+
+![Lesson preview, 390 light and dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-chips-1.png)
+![The Tempo rows, light and dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-chips-2.png)
+
 ### Settings rows
 
 A label is one short line; anything that explains it goes under the control as a `.faint` line (as the microphone note does). Labels with a bracketed explanation wrap to two lines and make the rows uneven.
@@ -173,6 +188,7 @@ In this order, one per `[design]` PR:
 9. ~~The cast reaction slip (#213) onto the bubble's padding and tokens.~~ Done by ux in #218.
 10. ~~Sheet heads.~~ Done.
 11. ~~Grammar tables (`.conj`).~~ Done.
-12. Chips: the lesson preview's "already yours: 12" is white text on magenta (the old "yours" chip, below AA) and its "done" chip drops to a line of its own; the facts under a preview sheet, a review stop and the exam should be one chip style.
+12. ~~Chips: the lesson preview's "already yours: 12" is white text on magenta, its "done" chip is pale green.~~ Done.
+13. Empty states: Practice with nothing due, Grammar before any unit is open, the Stempelheft with no stamps, Sprechen before the first chat — one slab, one line, one action.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.
