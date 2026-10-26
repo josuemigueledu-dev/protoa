@@ -17,8 +17,12 @@ const ICONS = {
 const TYPE_LABEL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', prep: 'preposition', phrase: 'phrase', interj: 'interjection', conj: 'conjunction', pron: 'pronoun', part: 'particle', q: 'question word', num: 'number' };
 const TABS = [['today', 'Today'], ['learn', 'Lessons'], ['practice', 'Practice'], ['talk', 'Sprechen'], ['profile', 'Profile']];
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { const b = h('button', { class: 'tab', 'aria-current': (route === id || (id === 'profile' && (route === 'more' || route === 'grammar'))) ? 'page' : null, onclick: () => go(id), html: ICONS[id] + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); }); renderSidebar(); }
-function go(r) { if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
+function renderTabs() { tabsEl.innerHTML = ''; TABS.forEach(([id, label]) => { const b = h('button', { class: 'tab', 'aria-current': (route === id || (id === 'profile' && route === 'more') || (route === 'grammar' && id === grammarFrom)) ? 'page' : null, onclick: () => go(id), html: ICONS[id] + '<span>' + label + '</span>' }); const bd = navBadge(id); if (bd) b.append(bd); tabsEl.append(b); }); renderSidebar(); }
+// Grammar has no tab of its own on a phone: it belongs to the tab it was opened from (Practice, Profile, a lesson),
+// which stays lit, and its back button and swipes lead there
+let grammarFrom = 'profile';
+const tabOf = r => r === 'grammar' ? grammarFrom : TABS.some(([id]) => id === r) ? r : 'profile';
+function go(r) { if (r === 'grammar') grammarFrom = tabOf(route); if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
 function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
 function newView() { const dir = DIRS[NAV]; view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); if (dir) setTimeout(() => v.classList.remove('in-' + dir), 1200); return v; }
@@ -26,7 +30,7 @@ function newView() { const dir = DIRS[NAV]; view.querySelectorAll(':scope > :not
    the new screen's slabs come in from the other side. Tabs to the right push the screen left (and back), opening a
    lesson, review or talk goes left too, a tab opened from nowhere rises up, leaving a lesson sinks down. ---------- */
 const DIRS = { fwd: 'left', back: 'right', rise: 'up', left: 'left', right: 'right', up: 'up', down: 'down' };
-const tabIndex = r => TABS.findIndex(([id]) => id === (r === 'more' || r === 'grammar' ? 'profile' : r));
+const tabIndex = r => TABS.findIndex(([id]) => id === tabOf(r));
 function tabDir(from, to) { const i = tabIndex(from), j = tabIndex(to); return i < 0 || j < 0 || i === j ? 'up' : j > i ? 'left' : 'right'; }
 function leave(old, dir, keepTop) {
   view.querySelectorAll(':scope > .leaving').forEach(e => e.remove());
@@ -781,9 +785,9 @@ function drillMiss(d) {
   return 'Nicht ganz. ' + (/[.?!]$/.test(line) ? 'The line is' : 'It is') + ' <em lang="de">' + esc(line).replace('___', '<b>' + esc(a) + '</b>') + '</em>' + stop(line);
 }
 function renderGrammar(v, openId) {
-  if (!v) { route = 'grammar'; renderTabs(); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); v = newView(); }
+  if (!v) { grammarFrom = tabOf(route); route = 'grammar'; renderTabs(); document.body.classList.remove('in-lesson'); document.querySelector('.actionbar')?.remove(); v = newView(); }
   if (openId) { const u = GRAMMAR.find(g => g.id === openId); if (u) { grammarUnit(v, u); return; } }
-  v.append(h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Each rule in short, with examples you can hear and a few drills. Lessons open the one you need; nothing here is required.'));
+  v.append(backGrammar(), h('div', { class: 'pagehead' }, teacherSlot(52, 'neutral'), h('h1', {}, 'Grammar')), h('p', { class: 'muted' }, 'Each rule in short, with examples you can hear and a few drills. Lessons open the one you need; nothing here is required.'));
   // Night Glass: the rule of the lesson you are on comes first, as a dark slab with its table
   const open = u => { const vv = newView(); grammarUnit(vv, u); };
   const done = new Set(S.progress.lessonsDone), ff = featuredGrammar();
@@ -811,6 +815,11 @@ function renderMore(v) {
   v.append(h('h1', {}, 'More'));
   const items = [['Lesson 0 · Sounds', 'German spelling to sound, once', renderSounds], ['Method', 'Why each feature exists, with sources', renderMethod], ['Settings', 'Goal, about me, audio, theme, layout, import & export', renderSettings]];
   items.forEach(([t, d, fn]) => v.append(h('button', { class: 'card listrow', onclick: () => openMore(fn) }, h('div', { class: 'grow' }, h('b', {}, t), h('div', { class: 'faint' }, d)), h('span', { class: 'muted' }, '›'))));
+}
+// back to where Grammar was opened from: a lesson left open for it carries on where it was
+function backGrammar() {
+  const from = grammarFrom, ls = S.progress.lessonState, inLesson = from === 'learn' && ls && !ls.paused;
+  return h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { NAV = 'back'; route = from; render(); } }, '‹ ' + (inLesson ? 'Back to the lesson' : TABS.find(([id]) => id === from)[1])));
 }
 function backMore() { return h('div', { class: 'row' }, h('button', { class: 'btn ghost sm', onclick: () => { NAV = 'back'; route = 'profile'; render(); } }, '‹ Profile')); }
 function renderSounds(v) {
