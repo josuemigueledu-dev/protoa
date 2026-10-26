@@ -290,7 +290,7 @@ function showAbove(el, keep = el) {
 
 /* ---------- TODAY ---------- */
 function renderToday(v) {
-  const name = S.profile.name; const hour = new Date().getHours(); const greet = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
+  const name = S.profile.name; const hour = new Date().getHours(); const greet = hour < 5 ? 'Hallo' : hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
   const g0 = goalInfo(), due = dueCards(), ls = S.progress.lessonState;
   const gateT = examGate();
   const curN = gateT ? (ls && ls.n != null && !lessonBlocked(ls.n) ? ls.n : null) : currentLessonN(); const L = lessonById(curN);
