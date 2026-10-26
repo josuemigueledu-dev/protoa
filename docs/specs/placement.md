@@ -7,7 +7,7 @@ This spec says what the test asks, when it stops, what it changes, and how it is
 ## Who sees it, and where
 
 - **First run.** The "About you" sheet (`onboarding()`, ui.js) gets a second way out under "Save and start": a ghost button **"Not a beginner? Find your lesson · 3 min"**. It saves the profile like "Save and start", then opens the intro sheet below.
-- **Until lesson 1 is done.** Lesson 1's preview sheet on the map shows one quiet line under Start: "Know some German already? Find your lesson (3 min)". It goes once the learner finishes any lesson, or after one placement.
+- **Until lesson 1 is done.** Lesson 1's preview sheet on the map shows one quiet line under Start: "Not a beginner? Find your lesson · 3 min", the same words as on the first run. It goes once the learner finishes any lesson, or after one placement.
 - **Not in a lesson, and not offered again** after a placement. A learner who places low can still go ahead with "Start anyway" on any lesson, as today.
 - **Works without the AI.** Every item is marked in the page. No Claude call, no network.
 
@@ -60,7 +60,7 @@ What it does not do:
 Night Glass, built from the exam's parts, so it costs little new CSS:
 - **Intro sheet:** "Let's find your lesson." / "About 3 minutes. Answer what you know; tap *I don't know* when you don't. Nothing here is graded." Start · Not now.
 - **Item screen:** the exam's item card (`.examword`, `deInput`, umlaut row), with the lesson's station as the eyebrow ("Lesson 5 · " and its station), Check and *I don't know*. A wrong answer shows the right one for 1.2 s, with no shake and no red screen, then the next item.
-- **Result screen** (a screen, like the exam's result, so the missed items have room): "Start at Lesson N · <station>", one line on what that means ("Lessons 1–N−1 are marked done. Their <count> words join your reviews over the next two weeks."), and the items missed with their answers. Buttons: **Start at Lesson N** (applies the placement and opens the map on that stop) and **Start from Lesson 1** (applies nothing).
+- **Result screen** (a screen, like the exam's result, so the missed items have room): "Start at Lesson N · <station>", one line on what that means ("Lessons 1–N−1 are marked done. Their <count> words join your reviews over the next two weeks."), and the items missed with their answers. Buttons: **Start at Lesson N** (applies the placement and opens the map on that stop) and **From Lesson 1** (applies nothing; short, so the main button keeps its width at 390 px).
 - Leaving mid-test (✕ or the tab bar) drops it, with nothing applied. It is 3 minutes, so it is not saved.
 
 ## Tests

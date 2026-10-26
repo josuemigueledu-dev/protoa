@@ -232,7 +232,7 @@ function openLessonPreview(n) {
     if (blk) { p.append(h('div', { class: 'fb note' }, `You have reached ${blk.words.toLocaleString('en')} words: the ${blk.code} milestone. Pass the ${blk.code} exam with 90% to continue the line.`), h('button', { class: 'btn', onclick: () => { close(); openExamPreview(blk.code); } }, 'Go to the ' + blk.code + ' exam')); inner.append(p); return; }
     if (done) p.append(h('button', { class: 'btn', onclick: () => go_(true) }, 'Review again'));
     else if (inProg) p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Continue · ' + (stepName(ls.step) || 'where you left off')));
-    else if (n === cur) { p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Start')); if (n === LESSONS[0].n && placementOffered()) p.append(h('button', { class: 'btn quiet', style: 'white-space:normal;line-height:1.25', onclick: () => { close(); openPlacementIntro(); } }, 'Know some German already? Find your lesson (3\u00a0min)')); }
+    else if (n === cur) { p.append(h('button', { class: 'btn', onclick: () => go_(false) }, 'Start')); if (n === LESSONS[0].n && placementOffered()) p.append(h('button', { class: 'btn quiet', style: 'white-space:normal;line-height:1.25', onclick: () => { close(); openPlacementIntro(); } }, 'Not a beginner? Find your lesson\u00a0·\u00a03\u00a0min')); }
     else { p.append(h('p', { class: 'faint' }, 'Comes after ' + prevName((cur || n - 1) + 1, n) + '. You can still go ahead.')); p.append(h('button', { class: 'btn ghost', onclick: () => go_(false) }, 'Start anyway')); }
     inner.append(p);
   }, 'station');
