@@ -51,17 +51,19 @@ Against revenue: $59.99/year is $5.00/month; after a 15 to 30% store fee that is
 
 ## 5. Quotas
 
-The owner picked "free with limits, a little more generous than Duolingo" (`market.md` records Duolingo's practice limits; I did not research Duolingo's AI limits here). Course practice with no AI is free and unlimited in cost to us. AI is the only variable cost, so quotas are on AI calls. **Proposed numbers, on the hybrid setup (quick on Haiku, rest on Sonnet 5.5):**
+The owner picked "free with limits, a little more generous than Duolingo" (`market.md` records Duolingo's practice limits; I did not research Duolingo's AI limits here). Course practice with no AI is free and unlimited in cost to us. AI is the only variable cost, so quotas are on AI calls. **Numbers, on the hybrid setup (quick on Haiku, rest on Sonnet 5.5).** Revised 2026-10-25 after the owner found the first proposal (40 quick checks a day, 25 conversation turns a week) "too lenient": free is a taste of the AI tutor, Plus is the daily habit. The side-by-side with Duolingo is in `market.md` section 7.
 
 | Allowance | Free | Plus |
 |---|---|---|
-| Quick checks, corrections, explanations (combined) | 40 a day | 200 a day |
-| Conversation turns | 25 a week (about 3 conversations) | 240 a month (about 30 conversations) |
-| Exam marking | 3 exams a day | 3 exams a day |
-| Generated lessons | 0 | 4 a month |
-| Worst-case cost per user per month | about $1.60 | about $3.90 (typical use $1.25 to $1.50) |
+| Explanations of mistakes and checks of free replies (`explainMistake`, `checkFree`) | 15 a day | 100 a day |
+| Tools: "Correct my sentence", "How do I say…?" (`correctSentence`, `talkHelp`) | 5 a day | 50 a day |
+| Conversation turns (`talkTurn`) | 10 a week (one short conversation) | 240 a month (a conversation every day) |
+| Exam marking (`gradeExam`) | 2 exams a day | 2 exams a day |
+| Generated lessons (`generateLesson`) | 0 | 4 a month |
+| Worst-case cost per user per month | about $2.30 ($0.80 without exams) | about $7.00 |
+| Typical cost per user per month | about $0.50 | about $2.20 |
 
-Why: a free learner who maxes every quota every month costs under $2, which a modest conversion rate pays for. A Plus learner's worst case stays under the $4 net revenue on the cheaper plans, and typical use is a third of it. Mistakes must not cost the learner anything in AI terms: a call that fails for server reasons does not count against the quota. Exams and the course itself are never locked.
+Worst case, month of 30 days: free is 450 explanations ($0.14), 150 tools ($0.03), 43 turns ($0.64) and 60 exams ($1.50); Plus is 3,000 explanations ($0.90), 1,500 tools ($0.30), 240 turns ($3.50), 60 exams ($1.50) and 4 lessons ($0.76). Nobody sits 60 exams a month (a failed exam has a 30-minute cooldown, `EXAM_COOLDOWN_MIN` in levels.js), so the realistic ceiling is lower, but a Plus learner who maxes conversation alone ($3.50) uses most of the annual plan's $3.50–4.80 net. Typical Plus: 15 conversations of 8 turns, 5 explanations a day on 20 days, two generated lessons, one exam. Mistakes must not cost the learner anything in AI terms: a call that fails for server reasons does not count against the quota. Exams and the course itself are never locked: when an allowance runs out, lessons and exams fall back to the app's own marking, as they do today with no key, and Sprechen and the tools say when the allowance comes back (the server's 429 carries `resetsAt`, PR #59).
 
 Add a global daily spend ceiling (circuit breaker) so a bug or abuse cannot run up a bill: when the day's estimated spend passes a set dollar amount, AI answers "unavailable" and the app degrades as it does today with no key.
 
