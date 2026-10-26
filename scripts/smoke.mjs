@@ -262,6 +262,7 @@ async function missAndRetry(browser) {
   }
   await bad('a wrong second try', 'The line is');
   if ((await hintText(page)).includes('..')) fail(`${label}: the line shown after two misses ends in two full stops (${await hintText(page)})`);
+  if ((await hintText(page)).includes('it starts with')) fail(`${label}: after showing the whole line, the build still gives the first-letter clue (${await hintText(page)})`);
   await btn(page, 'Next').click();
   if ((await ls()).bi !== s.at + 1) fail(`${label}: Next after two misses did not move to the next line`);
   while ((s = await lessonStep(page)).step === 'build' && s.type && guard++ < 100) { await answerRight(page, s); await btn(page, 'Check').click(); await btn(page, 'Next').click(); }

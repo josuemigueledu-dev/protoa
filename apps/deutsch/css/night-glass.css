@@ -116,6 +116,7 @@ h1,h2,.big,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:v
 h1,h2{line-height:1.08;overflow-wrap:break-word;hyphens:auto}
 h2{font-size:1.375rem}
 .nextcard h2{font-size:1.375rem!important}
+.nextcard b{display:block;line-height:1.25}   /* a German lesson title that wraps reads as one title */
 .widget h2,.widget h3{font-size:1.0625rem}
 h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .today-hero h1{font-family:var(--hero);font-weight:400}
@@ -164,6 +165,7 @@ h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .chip{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r-xs)}
 .chip.yours{background:var(--magenta);color:#fff;box-shadow:none}
 .readtext,.preview .can,details,.kbd,.jumble span,.lvrow .lvcode{background:var(--chip)}
+.preview .bigicon.test{display:grid;place-items:center;color:var(--magenta-ink);font:400 2.5rem var(--hero);letter-spacing:-.04em}   /* the Kapiteltest sheet shows the K1 mark of its map stop */
 .nextcard .sig,.listrow>.sig,.scen .sig,.preview .bigicon,.illus,.examcard .sig,.map-head .sig,.wcard .illus,.wcard .illus.m,.wcard .illus.f,.wcard .illus.n{background:var(--chip);box-shadow:inset 0 0 0 1px var(--line)}
 .hubhero .sig,.avatar{background:var(--night2);color:var(--nink);box-shadow:none}
 .badge{background:var(--magenta);color:#fff;box-shadow:0 0 0 2px var(--card-solid)}

@@ -587,6 +587,8 @@ function gapWidget(de, gaps) {
   return { el: h('div', { class: 'stack' }, line, umlautRow(inputs[0])), value, inputs, focus: o => inputs[0].focus(o), disable: () => inputs.forEach(i => i.disabled = true) };
 }
 function typeWidget(attrs = {}, onDictated) { const inp = deInput(Object.assign({ placeholder: 'Auf Deutsch …', 'aria-label': 'Your line in German' }, attrs)); return { el: h('div', { class: 'stack' }, inp, h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, onDictated))), value: () => inp.value, focus: o => inp.focus(o), inputs: [inp], disable: () => inp.disabled = true }; }
+// hints that only point toward the answer ("it starts with I"); once the whole line is shown they say nothing new
+const CLUE_HINTS = ['empty', 'missing', 'other'];
 function lessonBuild(v, L, ls) {
   const item = L.build[ls.bi];
   if (!item) { setStep('conv', { conv: null }); return; }
@@ -599,7 +601,7 @@ function lessonBuild(v, L, ls) {
     if (done) return; if (isBlank(widget)) return answerFirst(fb, item.type === 'tiles'); if (sameAsMiss(fb, missed, widget.value())) return; const r = diagnose(widget.value(), item.de, mergedLex(L.lex), item.g); tallyFirst(ls, 'b' + ls.bi, r.ok);
     fb.innerHTML = '';
     if (r.ok) { done = true; uiSound('ok'); widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'ok', msg: r.note || esc(item.en || ''), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; }
-    else { ls.battempts++; missed = widget.value(); save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>' + fullStop(fill(item.de)) + ' ' + r.hint, buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
+    else { ls.battempts++; missed = widget.value(); save('progress'); uiSound('bad', r); if (ls.battempts >= 2) { done = true; widget.disable(); fb.append(h('div', { class: 'row' }, glossEl(item.de, item.g), playBtn(item.de))); actionBar({ state: 'bad', msg: 'The line is <em lang="de">' + esc(fill(item.de)) + '</em>' + fullStop(fill(item.de)) + (CLUE_HINTS.includes(r.kind) ? '' : ' ' + r.hint), buttons: [h('button', { class: 'btn', onclick: next }, 'Next')] }); KEYS = e => { if (e.key === 'Enter') next(); }; } else { actionBar({ state: 'bad', msg: r.hint, buttons: [h('button', { class: 'btn', onclick: check }, 'Check again')] }); } }
     castCheer('L' + L.n, r.ok, L.scene && L.scene.cast); showAbove(c);
   };
   c.append(widget.el, fb); v.append(c); if (widget.focus) widget.focus();
@@ -989,7 +991,7 @@ function renderSettings(v) {
   const calc = h('p', { class: 'small muted' }, calcText());
   goal.append(h('p', { class: 'faint' }, 'The course runs to B1 or further. A1 (600 words) and A2 (1,200) are stops on the way: each ends with an exam, and the line continues once you pass it with 90%.'));
   [target, perDay, date, minutes].forEach(i => i.addEventListener('change', persist));
-  goal.append(h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'Target level', level), h('label', { class: 'f' }, 'Target words', target)), h('div', { class: 'stack', style: 'gap:6px' }, h('span', { class: 'small muted' }, 'Plan by'), fixedSeg), h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'New words per day', perDay), h('label', { class: 'f' }, 'Target date', date)), h('label', { class: 'f' }, 'Minutes per day', minutes), calc);
+  goal.append(h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'Target level', level), h('label', { class: 'f' }, 'Target words', target)), h('div', { class: 'f' }, 'Plan by', fixedSeg), h('div', { class: 'grid2' }, h('label', { class: 'f' }, 'New words per day', perDay), h('label', { class: 'f' }, 'Target date', date)), h('label', { class: 'f' }, 'Minutes per day', minutes), calc);
   perDay.disabled = s.fixed === 'date'; date.disabled = s.fixed === 'perDay';
   v.append(goal);
   const about = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, 'About me'));
