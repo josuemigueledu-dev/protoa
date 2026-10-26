@@ -175,7 +175,7 @@ function mapRow(it) {
     const fresh = L.words.filter(w => !isLearned(w.de)).length;
     const ph = h('button', { class: 'kpic' + (pic ? '' : ' none'), 'aria-label': `About lesson ${it.n}`, onclick: () => openLessonPreview(it.n) }); if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
     li.append(h('div', { class: 'card primary kcard', 'aria-label': aria }, ph,
-      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.scene.place} · ${estMinutes(L, fresh)}\u00a0min`),
+      h('div', { class: 'ktx' }, h('h2', { lang: 'de' }, title), h('span', {}, `Lesson ${it.n} · ${L.title} · ${estMinutes(L, fresh)}\u00a0min`),
         h('button', { class: 'btn go', onclick: () => startLesson(it.n) }, resume ? 'Continue' : 'Start'))));
     return li;
   }
@@ -224,7 +224,7 @@ function openLessonPreview(n) {
   const done = S.progress.lessonsDone.includes(n), cur = currentLessonN(), inProg = ls && ls.n === n && !done && (ls.step !== 'scene' || ls.wi);
   const yours = L.words.filter(w => isLearned(w.de)).length, fresh = L.words.length - yours;
   openSheet((inner, close) => {
-    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + c.topic), h('h1', { lang: 'de' }, stationBreak(c.station)), h('p', { class: 'muted' }, L.title + ' · ' + L.scene.place));
+    const p = h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl(c.icon)), h('div', { class: 'eyebrow' }, 'Lesson ' + n + ' · ' + L.title), h('h1', { lang: 'de' }, L.theme || L.title), h('p', { class: 'muted', lang: 'de' }, c.station + ' · ' + L.scene.place));
     p.append(h('div', { class: 'can' }, h('div', { class: 'eyebrow' }, 'By the end you can'), h('p', {}, L.can)));
     p.append(h('div', { class: 'facts' }, h('span', { class: 'chip' }, fresh + ' new word' + (fresh === 1 ? '' : 's')), yours ? h('span', { class: 'chip yours' }, 'already yours: ' + yours) : '', h('span', { class: 'chip' }, '≈ ' + estMinutes(L, fresh) + ' min'), done ? h('span', { class: 'chip ok' }, 'done') : ''));
     const go_ = fresh_ => { close(); startLesson(n, fresh_); };
@@ -253,14 +253,14 @@ function openReviewPreview(it) {
 
 /* ---------- lesson screens: one idea per screen ---------- */
 function lessonTop(L, ls, within = 0) {
-  const c = courseOf(L.n), idx = STEP_SEG[ls.step], w = ls.step === 'notice' ? .5 : Math.max(0, Math.min(1, within));
+  const idx = STEP_SEG[ls.step], w = ls.step === 'notice' ? .5 : Math.max(0, Math.min(1, within));
   const widths = SEG_NAMES.map((_, i) => i < idx ? 100 : i === idx ? Math.round(w * 100) : 0);
   const prev = lastSegs && lastSegs.n === L.n ? lastSegs.widths : widths; lastSegs = { n: L.n, widths };
   const segs = h('div', { class: 'segs', role: 'progressbar', 'aria-label': 'Lesson progress', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round((idx + w) / 5 * 100)) });
   const bars = SEG_NAMES.map((nm, i) => { const b = h('b', { style: `width:${prev[i]}%` }); segs.append(h('i', { title: nm }, b)); return b; });
   requestAnimationFrame(() => requestAnimationFrame(() => bars.forEach((b, i) => b.style.width = widths[i] + '%')));
   return h('div', { class: 'lesson-top' },
-    h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, c.station), h('span', {}, 'Lesson ' + L.n + ' · ' + L.title))),
+    h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', { lang: 'de' }, L.theme || L.title), h('span', {}, 'Lesson ' + L.n + ' · ' + L.title))),
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave lesson', html: ICONS.x, onclick: () => pauseLesson() }),
     segs, h('div', { class: 'steplbl' }, idx >= 5 ? 'Angekommen · arrived' : stepName(ls.step)));
 }

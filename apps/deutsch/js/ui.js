@@ -340,11 +340,11 @@ function protoaLine(L, resume, due) {
   return h('div', { class: 'say quiet' }, h('div', {}, p, h('small', {}, en)));
 }
 function todayLessonCard(L, resume) {
-  const c = courseOf(L.n), pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id], who = newcomer(L) || leadOf(L);
+  const pic = typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[L.scene.plate || 'plate.' + L.scene.id], who = newcomer(L) || leadOf(L);
   const ph = h('div', { class: 'pic' + (pic ? '' : ' none') }, h('span', { class: 'tag' }, 'Lesson ' + L.n), who && typeof bustEl === 'function' ? bustEl(who, 'neutral', 52) : '');
   if (pic) ph.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('article', { class: 'card primary tlesson', 'aria-label': 'Lesson ' + L.n + ': ' + L.title }, ph,
-    h('div', { class: 'in' }, h('div', { class: 'k' }, c.station + ' · ' + L.words.length + ' words'), h('h2', {}, L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
+    h('div', { class: 'in' }, h('div', { class: 'k' }, L.title + ' · ' + L.words.length + '\u00a0words'), h('h2', { lang: 'de' }, L.theme || L.title), L.can ? h('p', {}, 'You will ' + L.can) : '',
       h('button', { class: 'btn wide go', onclick: () => startLesson(L.n) }, resume ? 'Continue lesson' : 'Start lesson')));
 }
 /* The stop line: the current chapter as a U-Bahn line, a window of stops around yours and the chapter's end.
@@ -408,7 +408,7 @@ function todayDuo(due, L) {
     g.m + g.f + g.n ? h('span', { class: 'gchips', lang: 'de' }, ...[['m', 'der'], ['f', 'die'], ['n', 'das']].filter(([k]) => g[k]).map(([k, a]) => h('span', { class: 'g-' + k }, g[k] + ' ' + a))) : '');
   const N = L && lessonById(L.n + 1), pic = N && typeof NIGHT_SCENE !== 'undefined' && NIGHT_SCENE[N.scene.plate || 'plate.' + N.scene.id];
   if (!pic) return h('div', { class: 'tduo one' }, left);
-  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lesson ' + N.n, h('b', { lang: 'de' }, N.scene.cap || courseOf(N.n).station)));
+  const right = h('button', { class: 'card tnext', onclick: () => go('learn'), 'aria-label': `After that: lesson ${N.n}, ${N.title}. Open the course map` }, h('span', { class: 't' }, 'After that · Lesson ' + N.n, h('b', { lang: 'de' }, N.theme || N.title)));
   right.style.backgroundImage = `url(art/night/scenes/${pic}.jpg)`;
   return h('div', { class: 'tduo' }, left, right);
 }
@@ -821,7 +821,7 @@ function wordBank() {
   const grid = h('div', { class: 'bank' });
   const entries = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, cd]) => cd.learned && !cd.sent);
   const groupKey = cd => cd.lesson ? 'L' + cd.lesson : (cd.v1 ? 'V' + cd.v1 : 'imp');
-  const groupLabel = k => k[0] === 'L' ? courseOf(+k.slice(1)).station + ' · Lesson ' + k.slice(1) : k === 'imp' ? 'Imported' : 'From Protoa v1 · ' + courseOf(+k.slice(1)).topic;
+  const groupLabel = k => k[0] === 'L' ? 'Lesson ' + k.slice(1) + ' · ' + courseOf(+k.slice(1)).topic : k === 'imp' ? 'Imported' : 'From Protoa v1 · ' + courseOf(+k.slice(1)).topic;
   const groupIcon = k => k === 'imp' ? 'question' : courseOf(+k.slice(1)).icon;
   const keys = [...new Set(entries.map(([id, cd]) => groupKey(cd)))].sort((a, b) => (a[0] === 'L' ? 0 : 1) - (b[0] === 'L' ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true })); keys.forEach(k => fLesson.append(h('option', { value: k }, groupLabel(k))));
   const draw = () => {
