@@ -164,7 +164,7 @@ function startPlacement(now = Date.now()) {
 // answer: the learner's text, or null for "I don't know"
 function answerPlacement(P, answer, now = Date.now()) {
   const it = P.item, dunno = answer === null || answer === undefined, ok = !dunno && markTyped(it, answer);
-  P.log.push({ lesson: it.lesson, type: it.type, ok, answer: dunno ? null : answer, expected: dunno ? (it.type === 'out' ? it.de : it.a[0]) : it.expected });
+  P.log.push({ lesson: it.lesson, type: it.type, ok, prompt: it.type === 'gap' ? it.shown : it.en.join(', '), answer: dunno ? null : answer, expected: dunno ? (it.type === 'out' ? it.de : it.a[0]) : it.expected });
   if (ok) { P.at++; P.miss = 0; } else P.miss++;
   const n = P.order[P.at]; P.place = n ?? null;
   if (n === undefined || dunno || P.miss >= 2 || now - P.startedAt >= PLACE_MS) { P.done = true; P.item = null; return P; }
@@ -182,12 +182,74 @@ function applyPlacement(place) {
       const c = cardOf(w.de);
       if (c) { if (!c.learned) { c.learned = true; c.since = today; c.placed = true; save(null, cardShard(w.de)); } continue; }
       const d = 1 + (i++ % PLACE_SPREAD), sh = ensureShard(shardFor(L.n));
-      sh.w[w.de] = { r: [addDays(today, d), d, 250, 1, 0], p: null, learned: true, hist: [], lesson: L.n, since: today, placed: true };
+      // the English → German card comes after the two weeks: dueCards() would otherwise make it due today for every interval of 4 days or more
+      sh.w[w.de] = { r: [addDays(today, d), d, 250, 1, 0], p: newCard(addDays(today, d + PLACE_SPREAD)), learned: true, hist: [], lesson: L.n, since: today, placed: true };
       save(null, shardFor(L.n));
     }
   }
   S.progress.placement = { date: today, place, lessons }; save('progress');
   return lessons;
+}
+
+/* ---------- placement screens: the offer, one item at a time, the result ---------- */
+// not saved: leaving mid-test (✕ or a tab) drops it, with nothing applied
+let PLACE = null;
+// offered until the learner finishes a lesson or places once
+const placementOffered = () => !S.progress.placement && !S.progress.lessonsDone.length;
+// redraw: the screen behind is stale (the first-run sheet saved a profile without drawing), so "Not now" draws it
+function openPlacementIntro(redraw) {
+  openSheet((inner, close) => inner.append(h('div', { class: 'preview' }, h('div', { class: 'bigicon' }, sigEl('signpost')), h('div', { class: 'eyebrow' }, 'Not a beginner?'), h('h1', {}, 'Let’s find your lesson.'),
+    h('p', { class: 'muted' }, 'About 3 minutes. Answer what you know; tap “I don’t know” when you don’t. Nothing here is graded.'),
+    h('button', { class: 'btn', onclick: () => { close(); PLACE = startPlacement(); route = 'place'; NAV = 'fwd'; render(); } }, 'Start'),
+    h('button', { class: 'btn ghost', onclick: () => { close(); if (redraw) render(); } }, 'Not now'))), 'station');
+}
+function renderPlacement(v) {
+  const P = PLACE; if (!P) { route = 'learn'; render(); return; }
+  document.body.classList.add('in-lesson'); clearTimeout(P.timer);
+  const left = PLACE_MS - (Date.now() - P.startedAt);
+  if (!P.done && left <= 0) { P.done = true; P.item = null; }   // the time ran out while the last answer was showing
+  if (P.done) { renderPlacementResult(v, P); return; }
+  const it = P.item, c = courseOf(it.lesson), quit = () => { PLACE = null; route = 'learn'; NAV = 'back'; render(); };
+  // the time left, as a thin line that empties (no countdown number)
+  const time = h('b', { style: `width:100%;transform-origin:left;transform:scaleX(${(left / PLACE_MS).toFixed(4)})` });
+  if (!reduced()) requestAnimationFrame(() => requestAnimationFrame(() => { time.style.transition = `transform ${left}ms linear`; time.style.transform = 'scaleX(0)'; }));
+  v.append(h('div', { class: 'lesson-top' }, h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', {}, 'Find your lesson'), h('span', {}, `Lesson ${it.lesson} of ${P.order.length}`))),
+    h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave the placement test', html: ICONS.x, onclick: quit }),
+    h('div', { class: 'segs', style: 'grid-template-columns:1fr', 'aria-hidden': 'true' }, h('i', { style: 'height:4px' }, time))));
+  const inp = deInput({ id: 'place-input', placeholder: it.type === 'gap' ? 'fehlendes Wort' : 'Auf Deutsch …', 'aria-label': it.type === 'gap' ? 'Missing word' : 'German word' }), fb = h('div', {});
+  const card = h('div', { class: 'card stack exam-item' }, h('div', { class: 'eyebrow' }, 'Lesson ' + it.lesson + ' · ' + c.station));
+  if (it.type === 'gap') card.append(h('p', {}, 'Write the missing word in the right form.'), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en));
+  else card.append(h('p', {}, it.noun ? 'Write it in German, with its article.' : 'Write it in German.'), h('div', { class: 'examword' }, it.en.join(', ')));
+  card.append(h('div', { class: 'stack', style: 'gap:8px' }, inp, umlautRow(inp)), fb); v.append(card);
+  let sent = false;
+  // answer: the text typed, or null for "I don't know"; at the cap the answer in progress is still marked
+  const send = (answer, cap) => {
+    if (sent || PLACE !== P) return;
+    if (answer !== null && !answer.trim()) { if (!cap) { toast('Write your answer, or tap “I don’t know”.'); return; } answer = null; }
+    sent = true; clearTimeout(P.timer); inp.disabled = true;
+    answerPlacement(P, answer); const r = P.log[P.log.length - 1];
+    if (r.ok || answer === null || P.done) { NAV = 'fwd'; render(); return; }
+    // a miss shows the right answer for a moment, with no shake and no red, then the next item
+    fb.className = 'fb note'; fb.append(h('span', {}, 'It’s ', h('b', { lang: 'de' }, r.expected), '.'));
+    setTimeout(() => { if (PLACE === P && route === 'place') { NAV = 'fwd'; render(); } }, 1200);
+  };
+  P.timer = setTimeout(() => { if (PLACE === P && route === 'place') send(inp.value, true); }, left + 50);
+  actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => send(null) }, 'I don’t know'), h('button', { class: 'btn', onclick: () => send(inp.value) }, 'Check')] });
+  KEYS = e => { if (e.key === 'Enter') send(inp.value); };
+  setTimeout(() => inp.focus(), 60);
+}
+function renderPlacementResult(v, P) {
+  const place = P.place, first = P.order[0], last = P.order[P.order.length - 1], before = LESSONS.filter(L => place === null || L.n < place);
+  const words = before.reduce((a, L) => a + L.words.filter(w => !isLearned(w.de)).length, 0), upTo = place === null ? last : place - 1;
+  const what = !before.length ? 'Lesson 1 is the right place to begin, so nothing is skipped.' : (upTo === first ? `Lesson ${first} is marked done. Its` : `Lessons ${first}–${upTo} are marked done. Their`) + ` ${words} word${words === 1 ? '' : 's'} join your reviews over the next two weeks.` + (place === null ? ' New lessons follow on the map.' : '');
+  v.append(h('div', { class: 'pagehead', style: 'margin-top:16px' }, teacherSlot(52, before.length ? 'pleased' : 'neutral'), h('div', {}, h('h1', {}, 'Your lesson'), h('div', { class: 'faint' }, Date.now() - P.startedAt >= PLACE_MS ? 'Time’s up' : 'Placement'))));
+  v.append(h('div', { style: 'height:16px' }), h('div', { class: 'card summary' }, h('div', { class: 'eyebrow' }, place === null ? 'Every lesson so far' : 'Start at Lesson ' + place), h('h1', { lang: 'de' }, place === null ? 'Alles bekannt' : stationBreak(courseOf(place).station)), h('p', { class: 'muted' }, what)));
+  const missed = P.log.filter(r => !r.ok);
+  if (missed.length) { const c = h('div', { class: 'card stack' }, h('h2', {}, missed.length === 1 ? 'The one you missed' : 'The ones you missed'));
+    missed.forEach(r => c.append(h('div', { class: 'mistake' }, h('span', { class: 'eyebrow' }, 'Lesson ' + r.lesson), h('div', { class: 'faint', lang: r.type === 'gap' ? 'de' : null }, r.prompt), h('div', {}, h('span', { class: 'yours' }, 'You: ' + (r.answer === null ? 'I don’t know' : r.answer))), h('div', { lang: 'de' }, h('b', {}, 'Correct: '), r.expected))));
+    v.append(c); }
+  const finish = apply => { if (apply) { applyPlacement(place); checkStamps(); } PLACE = null; route = 'learn'; NAV = 'fade'; render(); };
+  actionBar({ buttons: before.length ? [h('button', { class: 'btn ghost', onclick: () => finish(false) }, 'Start from Lesson 1'), h('button', { class: 'btn', onclick: () => finish(true) }, place === null ? 'Mark them done' : 'Start at Lesson ' + place)] : [h('button', { class: 'btn', onclick: () => finish(true) }, 'Start Lesson 1')] });
 }
 
 /* ---------- exam flow ---------- */

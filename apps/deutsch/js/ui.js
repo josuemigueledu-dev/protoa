@@ -81,7 +81,7 @@ function drawScreen() {
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);
   const v = newView();
   PANE.scrollTo({ top: 0 });
-  try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam }[route] || renderToday)(v); }
+  try { ({ today: renderToday, learn: renderLearn, practice: renderPractice, grammar: renderGrammar, talk: renderTalk, profile: renderProfile, more: renderProfile, exam: renderExam, place: renderPlacement }[route] || renderToday)(v); }
   catch (err) { renderCrash(v, err); }
   try { renderRail(); } catch (e) { console.warn('rail', e); }
   document.body.classList.toggle('on-map', !!v.querySelector('.khead'));   // the map hides the navy stage (a class, not :has(), which makes WebKit recheck the page on every change)
@@ -960,8 +960,9 @@ function onboarding() {
   inner.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, h('h2', { lang: 'de' }, 'Hallo, ich bin Protoa.'), h('p', { class: 'muted small' }, 'Hello, I’m Protoa. Tell me a little about yourself, so our conversations fit your life. Skip it if you like: it’s also in Settings → About me.'))));
   const fields = [['name', 'Your name', 'Alex'], ['city', 'Where you live', 'Orlando'], ['field', 'What you study or do', 'computer science'], ['interests', 'Three to five interests', 'cycling, cinema, cooking…'], ['why', "Why you're learning German", '']];
   const inputs = {}; fields.forEach(([k, l, ph]) => { inputs[k] = k === 'interests' || k === 'why' ? h('textarea', { id: 'ob-' + k, placeholder: ph }, p[k] || '') : h('input', { type: 'text', id: 'ob-' + k, placeholder: ph, value: p[k] || '' }); inner.append(h('label', { class: 'f' }, l, inputs[k])); });
-  const close = saveIt => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); render(); };
+  const close = (saveIt, place) => { if (saveIt) Object.keys(inputs).forEach(k => p[k] = inputs[k].value.trim()); save('profile'); S.settings.onboarded = true; save('settings'); sheet.remove(); if (place) openPlacementIntro(true); else render(); };
   inner.append(h('div', { class: 'row' }, h('button', { class: 'btn', onclick: () => close(true) }, 'Save and start'), h('button', { class: 'btn ghost', onclick: () => close(false) }, 'Skip for now')));
+  inner.append(h('button', { class: 'btn ghost', style: 'white-space:normal;line-height:1.25', onclick: () => close(true, true) }, 'Not a beginner? Find your lesson\u00a0·\u00a03\u00a0min'));
   sheet.append(inner); document.body.append(sheet); setTimeout(() => inputs.name.focus(), 100);
 }
 

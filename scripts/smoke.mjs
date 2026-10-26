@@ -7,6 +7,7 @@
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // A Grammar unit opens at its top, however far the list or the lesson was scrolled.
+// "Not a beginner?" places a learner who knows lessons 1–5 at Lesson 6, on the map.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -470,6 +471,57 @@ async function grammarUnitOpensAtTop(browser) {
   await ctx.close();
 }
 
+// "Not a beginner?" on the first run: the placement test asks one item per lesson, stops after two misses on one
+// lesson, and "Start at Lesson N" marks the lessons before it done and opens the map on Lesson N. Lesson 1's
+// preview offers the test until then, and not after.
+async function placementFirstRun(browser) {
+  for (const [width, height] of [[390, 800], [1280, 800]]) {
+    const label = `placement ${width}px`;
+    const ctx = await browser.newContext({ viewport: { width, height }, serviceWorkers: 'block' });
+    const page = await ctx.newPage();
+    page.on('console', m => { if (m.type() === 'error') fail(`${label}: console error: ${m.text()}`); });
+    page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+    await page.goto(BASE);
+    await page.waitForSelector('.sheet .btn');
+    await page.locator('.sheet .btn', { hasText: 'Not a beginner?' }).click();
+    await page.locator('.sheet .btn', { hasText: /^Start$/ }).click();
+    await drawn(page);
+    const box = page.locator('#view > .view:not(.leaving) #place-input');   // the item before is still sliding out
+    const item = () => page.evaluate(() => PLACE && PLACE.item && { lesson: PLACE.item.lesson, a: PLACE.item.type === 'gap' ? PLACE.item.a[0] : PLACE.item.de });
+    for (let i = 0, it; i < 12 && (it = await item()); i++) {
+      await drawn(page);
+      if (await box.count() !== 1) { fail(`${label}: lesson ${it.lesson}'s item has no answer box`); break; }
+      await box.fill(it.lesson < 6 ? it.a : 'xyz');
+      await page.locator('.actionbar .btn', { hasText: 'Check' }).click();
+      if (it.lesson >= 6 && i === 5 && !await page.locator('.exam-item .fb.note', { hasText: 'It’s' }).count()) fail(`${label}: a miss did not show the right answer`);
+      await page.waitForFunction(i => !PLACE || PLACE.done || PLACE.log.length > i && document.querySelector('#view > .view:not(.leaving) #place-input:not([disabled])'), i, { timeout: 3000 }).catch(() => fail(`${label}: the test did not move on after item ${i + 1}`));
+    }
+    await drawn(page);
+    const btn = page.locator('.actionbar .btn', { hasText: 'Start at Lesson 6' });
+    if (!await btn.count()) { fail(`${label}: the result does not offer "Start at Lesson 6" (${await page.locator('.actionbar').textContent().catch(() => 'no action bar')})`); await ctx.close(); continue; }
+    if (await page.locator('.mistake').count() !== 2) fail(`${label}: the result lists ${await page.locator('.mistake').count()} misses, not 2`);
+    await noSidewaysScroll(page, label + ' result');
+    await btn.click(); await drawn(page);
+    const st = await page.evaluate(() => ({ route, done: [...S.progress.lessonsDone].sort((a, b) => a - b).join(','), here: document.querySelector('#view > .view:not(.leaving) .kst.here')?.textContent || '', due: dueCards().length }));
+    if (st.route !== 'learn' || st.done !== '1,2,3,4,5') fail(`${label}: after placing, route "${st.route}" and lessons done ${st.done}`);
+    if (!/Lesson 6\b/.test(st.here)) fail(`${label}: the map's stop is "${st.here.slice(0, 60)}", not Lesson 6`);
+    if (st.due) fail(`${label}: placing made ${st.due} reviews due today; they should start tomorrow`);
+    if (width === 390) await stopInView(page, label);   // clear of the tab bar; a desktop has none, so on screen is enough
+    else if (!await page.evaluate(() => { const r = document.querySelector('#view > .view:not(.leaving) .kst.here .kmk')?.getBoundingClientRect(); return r && r.top >= 0 && r.bottom <= innerHeight; })) fail(`${label}: the map opened with Lesson 6 off the screen`);
+    await noSidewaysScroll(page, label + ' map');
+    if (width === 390) {
+      // the offer on lesson 1's preview is gone once placed, and there for a new learner
+      await page.evaluate(() => openLessonPreview(1));
+      if (await page.locator('.sheet .btn', { hasText: 'Find your lesson' }).count()) fail(`${label}: lesson 1 still offers the placement test after placing`);
+      await page.evaluate(() => { S.progress = DEF_PROGRESS(); S.cards = {}; PLACE = null; render(); });
+      await drawn(page);
+      await page.evaluate(() => openLessonPreview(1));
+      if (!await page.locator('.sheet .btn', { hasText: 'Find your lesson' }).count()) fail(`${label}: lesson 1's preview does not offer the placement test to a new learner`);
+    }
+    await ctx.close();
+  }
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -505,6 +557,7 @@ try {
   await examPauseKeepsAnswer(browser);
   await grammarKeepsItsTab(browser);
   await grammarUnitOpensAtTop(browser);
+  await placementFirstRun(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
