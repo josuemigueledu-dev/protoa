@@ -122,7 +122,7 @@ function buildExam(code) {
       items.push(acc ? { sec: 'gram', type: 'art', prompt: `Ich brauche ___ ${bare}. (a / an)`, a: [{ m: 'einen', f: 'eine', n: 'ein' }[n.g]] } : i % 4 === 1 || MASS_NOUNS.has(n.de) ? { sec: 'gram', type: 'art', prompt: `___ ${bare} ist neu. (the)`, a: [{ m: 'der', f: 'die', n: 'das' }[n.g]] } : { sec: 'gram', type: 'art', prompt: `Das ist ___ ${bare}. (a / an)`, a: [{ m: 'ein', f: 'eine', n: 'ein' }[n.g]] }); }
   }
   // Lückentext: the exact word form missing from a sentence
-  take(withEx.filter(w => /\[[^\]]+\]/.test(w.ex)), plan.gap, usedS).forEach(w => { const m = w.ex.match(/\[([^\]]+)\]/); items.push({ sec: 'gap', type: 'gap', de: w.ex.replace(/[\[\]]/g, ''), shown: w.ex.replace(/\[[^\]]+\]/, '_____'), a: [m[1]], en: w.exEn }); });
+  take(withEx.filter(w => /\[[^\]]+\]/.test(w.ex)), plan.gap, usedS).forEach(w => items.push(gapItem(w)));
   // Satzbau: unambiguous sentences of 4+ words, words shown jumbled, typed in order
   take(withEx.filter(w => { const t = deTokens(w.ex.replace(/[\[\]]/g, '')); return t.length >= 4 && t.length <= 8 && !t.some(x => MOVABLE.has(x.toLowerCase())); }), plan.order, usedS).forEach(w => { const de = w.ex.replace(/[\[\]]/g, ''); items.push({ sec: 'order', type: 'order', de, en: w.exEn, jumble: shuffle(deTokens(de).map(t => t.toLowerCase() === t ? t : t)) }); });
   // Übersetzung: English → German full sentences
@@ -136,6 +136,14 @@ function buildExam(code) {
   return { code, items, idx: 0, startedAt: Date.now(), claude, version: 1 };
 }
 
+// a gap item from an example: one blank per missing word, so "[Guten Morgen]" shows two; a gap of article and noun
+// also takes the noun alone ("Herr Weber ist [der Lehrer]." → "Lehrer": "Herr Weber ist Lehrer." is right too)
+function gapItem(w) {
+  const m = w.ex.match(/\[([^\]]+)\]/)[1], noun = m.match(/^[Dd](?:er|ie|as) ([A-ZÄÖÜ]\S*)$/);
+  return { sec: 'gap', type: 'gap', de: w.ex.replace(/[\[\]]/g, ''), shown: w.ex.replace(/\[[^\]]+\]/, m.split(' ').map(() => '_____').join(' ')), a: noun ? [m, noun[1]] : [m], en: w.exEn };
+}
+// the gap's prompt, placeholder and label, in the singular or plural
+const gapText = it => it.a[0].includes(' ') ? { ask: 'Write the missing words in the right form.', hint: 'fehlende Wörter', label: 'Missing words' } : { ask: 'Write the missing word in the right form.', hint: 'fehlendes Wort', label: 'Missing word' };
 // the exam's strict marking for typed answers (dictation, words, grammar, gaps); the placement test marks the same way
 const TYPED = ['dict', 'in', 'out', 'conj', 'art', 'gap'];
 const sameTokens = (a, b) => deTokens(a).map(fold).join(' ') === deTokens(b).map(fold).join(' ');
@@ -153,7 +161,7 @@ const PLACE_MS = 180000, PLACE_SPREAD = 14; // test length; placed words' first 
 function placementItem(n, kind, used) {
   const L = LESSONS.find(l => l.n === n); if (!L) return null;
   const ws = shuffle(L.words.filter(w => !used.includes(w.de))), g = kind === 'gap' && ws.find(w => w.exEn && /\[[^\]]+\]/.test(w.ex));
-  if (g) { used.push(g.de); return { sec: 'gap', type: 'gap', lesson: n, de: g.ex.replace(/[\[\]]/g, ''), shown: g.ex.replace(/\[[^\]]+\]/, '_____'), a: [g.ex.match(/\[([^\]]+)\]/)[1]], en: g.exEn }; }
+  if (g) { used.push(g.de); return Object.assign(gapItem(g), { lesson: n }); }
   const w = ws[0]; if (!w) return null; used.push(w.de);
   return { sec: 'wort', type: 'out', lesson: n, de: w.de, en: w.en, noun: w.type === 'n' };
 }
@@ -216,9 +224,9 @@ function renderPlacement(v) {
   v.append(h('div', { class: 'lesson-top' }, h('div', { class: 'who' }, teacherSlot(44, 'neutral'), h('div', { style: 'min-width:0;display:flex;flex-direction:column' }, h('b', {}, 'Find your lesson'), h('span', {}, `Lesson ${it.lesson} of ${P.order.length}`))),
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave the placement test', html: ICONS.x, onclick: quit }),
     h('div', { class: 'segs', style: 'grid-template-columns:1fr', 'aria-hidden': 'true' }, h('i', { style: 'height:4px' }, time))));
-  const inp = deInput({ id: 'place-input', placeholder: it.type === 'gap' ? 'fehlendes Wort' : 'Auf Deutsch …', 'aria-label': it.type === 'gap' ? 'Missing word' : 'German word' }), fb = h('div', {});
+  const inp = deInput({ id: 'place-input', placeholder: it.type === 'gap' ? gapText(it).hint : 'Auf Deutsch …', 'aria-label': it.type === 'gap' ? gapText(it).label : 'German word' }), fb = h('div', {});
   const card = h('div', { class: 'card stack exam-item' }, h('div', { class: 'eyebrow' }, 'Lesson ' + it.lesson + ' · ' + c.station));
-  if (it.type === 'gap') card.append(h('p', {}, 'Write the missing word in the right form.'), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en));
+  if (it.type === 'gap') card.append(h('p', {}, gapText(it).ask), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en));
   else card.append(h('p', {}, it.noun ? 'Write it in German, with its article.' : 'Write it in German.'), h('div', { class: 'examword' }, it.en.join(', ')));
   card.append(h('div', { class: 'stack', style: 'gap:8px' }, inp, umlautRow(inp)), fb); v.append(card);
   let sent = false;
@@ -291,7 +299,7 @@ function renderExam(v) {
   else if (it.type === 'in') card.append(h('div', { class: 'eyebrow' }, 'Wortschatz · German → English'), h('div', { class: 'examword', lang: 'de' }, it.de), typed({ placeholder: 'In English …', 'aria-label': 'Meaning in English' }, false));
   else if (it.type === 'out') card.append(h('div', { class: 'eyebrow' }, 'Wortschatz · English → German'), h('div', { class: 'examword' }, it.en.join(', ')), h('p', { class: 'faint' }, it.noun ? 'A noun: write it with its article.' : 'Write the German word or phrase.'), typed({ placeholder: 'Auf Deutsch …', 'aria-label': 'German word' }));
   else if (it.sec === 'gram') card.append(h('div', { class: 'eyebrow' }, 'Grammatik'), h('p', {}, it.type === 'conj' ? 'Write the correct form of the verb.' : 'Write the correct article.'), h('div', { class: 'examword', lang: 'de' }, it.prompt), typed({ placeholder: '…', 'aria-label': 'Answer' }));
-  else if (it.type === 'gap') card.append(h('div', { class: 'eyebrow' }, 'Lückentext'), h('p', {}, 'Write the missing word in the right form.'), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en), typed({ placeholder: 'fehlendes Wort', 'aria-label': 'Missing word' }));
+  else if (it.type === 'gap') card.append(h('div', { class: 'eyebrow' }, 'Lückentext'), h('p', {}, gapText(it).ask), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en), typed({ placeholder: gapText(it).hint, 'aria-label': gapText(it).label }));
   else if (it.type === 'order') card.append(h('div', { class: 'eyebrow' }, 'Satzbau'), h('p', {}, 'Type the sentence: put these words in the right order.'), h('div', { class: 'jumble', lang: 'de' }, ...it.jumble.map(w => h('span', {}, w))), h('p', { class: 'faint' }, it.en), typed({ placeholder: 'Ihr Satz', 'aria-label': 'Your sentence' }));
   else if (it.type === 'trans') card.append(h('div', { class: 'eyebrow' }, 'Übersetzung · English → German'), h('div', { class: 'examword' }, it.en), typed({ placeholder: 'Auf Deutsch …', 'aria-label': 'German translation' }));
   else if (it.type === 'write') { const ta = h('textarea', { id: 'exam-write', lang: 'de', rows: 6, placeholder: 'Ihr Text …', 'aria-label': 'Your text' }); ta.value = it.answer || ''; const cnt = h('span', { class: 'faint' }); const upd = () => { const n = ta.value.trim().split(/\s+/).filter(Boolean).length; cnt.textContent = n + (n === 1 ? ' word' : ' words'); }; ta.addEventListener('input', upd); upd(); getAnswer = () => ta.value.trim(); card.append(h('div', { class: 'eyebrow' }, 'Schreiben'), h('p', { lang: 'de' }, it.task), it.taskEn ? h('p', { class: 'faint' }, it.taskEn) : '', ta, h('div', { class: 'row', style: 'justify-content:space-between' }, umlautRow(ta), cnt)); setTimeout(() => ta.focus(), 60); }
