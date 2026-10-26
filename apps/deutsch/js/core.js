@@ -301,15 +301,14 @@ async function loadVoxManifest() {
 let actx = null, voxBuffers = {}, curSource = null, curUtter = null, onWordCb = null;
 function ctx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; }
 /* ---------- Protoa's voice ----------
-   Protoa is a woman with a low, smooth, calm voice (owner, Oct 26); her lines and the cast's are pre-rendered (VOX_URL).
-   Anything not pre-rendered (lines with the learner's name, live replies) uses the best voice the device offers, ranked
-   toward a natural female German voice: Microsoft's neural de-DE voices first (Seraphina, Katja, Amala…, in Edge and
-   on Windows 11), then Apple's premium/enhanced Anna and Petra, then other female voices; male voices only as a last
-   resort. The pace is measured. */
+   The page cannot synthesise speech itself, so Protoa uses the best voice the device offers, ranked toward
+   a modern, educated, deep (not guttural) male German voice: Microsoft's neural de-DE voices first (Conrad,
+   Killian, Florian…, in Edge and on Windows 11), then Apple's premium/enhanced Markus and Yannick, then other
+   male voices; female voices only as a last resort. Pitch is lowered a touch and the pace is measured. */
 const VOICE_RANK = [
-  [/Seraphina/i, 100, 'f'], [/Katja/i, 96, 'f'], [/Amala/i, 93, 'f'], [/Louisa/i, 90, 'f'], [/Tanja|Maja|Elke|Klarissa|Ingrid/i, 86, 'f'],
-  [/Anna/i, 84, 'f'], [/Petra|Helena|Hedda/i, 80, 'f'], [/Google Deutsch/i, 72, 'f'], [/Gisela|Sandy|Shelley|Grandma|Flo/i, 50, 'f'],
-  [/Conrad|Killian|Florian|Christoph|Bernd|Ralf|Kasper|Klaus|Markus|Yannick|Viktor|Martin|Jonas|Lukas|Stefan|Eddy|Rocko|Reed|Grandpa/i, 40, 'm'], [/x-deg|x-nfh/i, 38, 'm'],
+  [/Conrad/i, 100, 'm'], [/Killian/i, 96, 'm'], [/Florian/i, 93, 'm'], [/Christoph/i, 90, 'm'], [/Bernd/i, 88, 'm'], [/Ralf/i, 87, 'm'], [/Kasper/i, 86, 'm'], [/Klaus/i, 85, 'm'],
+  [/Markus/i, 84, 'm'], [/Yannick/i, 82, 'm'], [/Viktor/i, 76, 'm'], [/Martin|Jonas|Lukas/i, 72, 'm'], [/x-deg|x-nfh/i, 70, 'm'], [/Stefan/i, 55, 'm'],
+  [/Katja|Amala|Seraphina|Tanja|Louisa|Maja|Elke|Gisela|Klarissa|Ingrid/i, 44, 'f'], [/Google Deutsch/i, 38, 'f'], [/Anna|Petra|Helena|Hedda|Sandy|Shelley|Eddy|Flo|Grandma|Grandpa|Rocko|Reed/i, 30, 'f'],
 ];
 function voiceInfo(v) {
   let score = 25, sex = '?';
@@ -325,7 +324,7 @@ function germanVoices() {
 function germanVoice() { const all = germanVoices(), pick = S.settings.voiceName && all.find(x => x.v.name === S.settings.voiceName); return (pick || all[0] || {}).v || null; }
 function voiceTuning(v) {
   const info = v ? voiceInfo(v) : { sex: '?', score: 0 }, depth = S.settings.voiceDepth == null ? .5 : +S.settings.voiceDepth;
-  const base = info.sex === 'f' ? .95 : info.sex === 'm' ? .97 : 1;   // a touch lower: Protoa's voice is low and calm
+  const base = info.sex === 'm' ? (info.score >= 80 ? .97 : .93) : 1;
   return { pitch: Math.max(.72, Math.min(1.15, base - (depth - .5) * .18)), rate: +S.settings.voiceRate || .92 };
 }
 let audioSeq = 0; // bumped by every stopAudio(), so a clip still being fetched is dropped
