@@ -102,7 +102,7 @@ const btn = (page, name) => page.locator('.actionbar .btn', { hasText: name });
 const reEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lessonStep = page => page.evaluate(() => {
   const ls = S.progress.lessonState, L = lessonById(ls.n), out = { step: ls.step, crash: !!document.querySelector('.crash') };
-  if (ls.step === 'check' && ls.checkQ?.length) Object.assign(out, { word: ls.checkQ[0], answer: L.words.find(w => w.de === ls.checkQ[0]).en[0] });
+  if (ls.step === 'check' && ls.checkQ?.length) Object.assign(out, { word: ls.checkQ[0], answer: document.querySelector('.choices.pics') ? ls.checkQ[0] : L.words.find(w => w.de === ls.checkQ[0]).en[0] }); // a picture choice is answered by its German word
   const t = ls.step === 'build' ? L.build[ls.bi] : ls.step === 'conv' && ls.conv && ls.conv.pos < ls.conv.queue.length ? L.conv[ls.conv.queue[ls.conv.pos].i] : null;
   if (t) Object.assign(out, { type: ls.step === 'build' ? t.type : ls.conv.queue[ls.conv.pos].type, de: fill(t.de), gaps: t.gaps, at: ls.step === 'build' ? ls.bi : ls.conv.pos });
   return out;

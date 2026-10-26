@@ -303,7 +303,7 @@ function renderExamResult(v) {
 }
 
 /* ---------- practice drills: meanings, fill the gaps, build sentences, translate ---------- */
-// called from renderReview for kinds mc | gap | order | trans; uses the same grading flow (showGrades) as other cards
+// called from renderReview for kinds mc | pic | gap | order | trans; uses the same grading flow (showGrades) as other cards
 function renderDrill(card, it, def, fb, showGrades, exRow) {
   const ex = def.ex ? def.ex.replace(/[\[\]]/g, '') : null; let done = false;
   if (it.kind === 'mc') {
@@ -314,6 +314,12 @@ function renderDrill(card, it, def, fb, showGrades, exRow) {
     opts.forEach((o, i) => grid.append(h('button', { class: 'choice', onclick: e => { if (done) return; done = true; const ok = o === def.en[0]; e.currentTarget.classList.add(ok ? 'ok' : 'bad'); if (!ok) [...grid.children].find(b => b.textContent.endsWith(def.en[0]))?.classList.add('ok'); uiSound(ok ? 'ok' : 'bad'); fb.append(exRow()); showGrades(ok ? 2 : 0, ok ? 'ok' : 'bad', ok ? '✓ ' + esc(def.en.join(', ')) : '<em lang="de">' + esc(def.de) + '</em> = ' + esc(def.en.join(', '))); } }, h('kbd', {}, i + 1), o)));
     card.append(h('div', { class: 'eyebrow' }, 'Word meaning'), head, grid, fb);
     KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4 && !done) grid.children[n - 1].click(); };
+    return;
+  }
+  if (it.kind === 'pic') {
+    const pc = picChoice(def, it.pics, right => { if (done) return; done = true; uiSound(right ? 'ok' : 'bad'); fb.append(exRow()); showGrades(right ? 2 : 0, right ? 'ok' : 'bad', (right ? '✓ ' : 'This is ') + '<em lang="de">' + esc(def.de) + '</em> = ' + esc(def.en.join(', '))); });
+    card.append(h('div', { class: 'eyebrow' }, 'Picture choice'), pc.ask, pc.grid, fb);
+    KEYS = pc.keys;
     return;
   }
   if (it.kind === 'gap') {
