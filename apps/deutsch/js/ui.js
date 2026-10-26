@@ -747,7 +747,7 @@ function countUp(el, n) { if (reduced() || n === 0) { el.textContent = n; return
 let PR = null; // review session
 /* a session is titled by the Practice mode that started it, so the header matches the button the learner tapped */
 const DRILL_TITLE = { mc: 'Word meanings', gap: 'Fill the gaps', order: 'Build sentences', trans: 'Translate' };
-function reviewTitle() { return PR.stop ? 'Wiederholung' : PR.title || 'Daily review'; }
+function reviewTitle() { return PR.title || (PR.stop ? 'Wiederholung' : 'Daily review'); }
 function renderPractice(v) {
   if (PR && PR.queue.length) { renderReview(v); return; }
   renderPracticeHub(v);
