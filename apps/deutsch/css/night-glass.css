@@ -224,7 +224,7 @@ body.lay-desktop .sidebar{background:var(--glass-dark);-webkit-backdrop-filter:n
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07);clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
 .nav{border-radius:var(--r-xs);font-weight:700}
 .nav[aria-current="page"]{background:var(--steel);color:var(--nink);box-shadow:inset 3px 0 0 var(--magenta)}
-.nav:hover,.stlist>button:hover,.searchres button:hover,.searchres button.sel{background:var(--bg-2)}
+.nav:not([aria-current="page"]):hover,.stlist>button:hover,.searchres button:hover,.searchres button.sel{background:var(--bg-2)}
 /* ---------- the app shell: the document never scrolls, #app is the one scroller ----------
    iOS Safari scrolls a document on its own thread and catches sticky and fixed bars up a frame later, worst inside
    an iframe (the claude.ai copy): the lesson header slid up with the page and snapped back, the bottom bar shifted.
