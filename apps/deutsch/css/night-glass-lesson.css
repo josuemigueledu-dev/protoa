@@ -139,7 +139,12 @@ body.lay-mobile .ticket .stamp{width:112px;height:112px}
 .kpis.result .num .n{font-size:inherit;font-variant-numeric:tabular-nums}
 .kpis.result .u{font-size:.875rem;margin-left:2px;letter-spacing:0}
 .kpis.result .hot .num{color:var(--red)}   /* the magenta of the ticket, deep enough to read on cream glass */
-.result-note{margin:0;text-align:center}
+/* the note under the cards ("The line you missed comes back…") sits on a strip of the same glass: loose on the ground it
+   read 2–3:1 in dark, where the lesson's blurred scene is dark behind it (#146) */
+.result-note{margin:-12px 0 0;padding:8px 16px;text-align:center;color:var(--ink);background:var(--card);border-radius:var(--r);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge)}
+/* a laptop's 800 px: the ticket as tight as on a phone, so the cards and the note clear the Continue bar */
+@media (max-height:860px){body.lay-desktop .ticket .body{gap:12px}}
 /* a lesson with no misses: the "Perfekt" stamp, pressed onto the ticket beside the station picture once the numbers
    have counted, overlapping its ring like a rubber stamp (only transform and opacity move) */
 .ticket .stampwrap{position:relative}

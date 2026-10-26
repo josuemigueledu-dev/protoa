@@ -108,6 +108,9 @@ b,strong{font-weight:700}
 /* a faint U-Bahn line drawn into the ground near the bottom */
 .aurora::after{content:"";display:block;position:absolute;left:0;right:0;top:auto;bottom:56px;height:140px;z-index:1;opacity:.3;-webkit-mask-image:none;mask-image:none;
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 430 140' fill='none' stroke='%2311151b' stroke-width='2'%3E%3Cpath d='M0 110H120Q140 110 150 95L180 50Q190 35 210 35H430'/%3E%3Cg fill='%238e9bab'%3E%3Ccircle cx='60' cy='110' r='5'/%3E%3Ccircle cx='165' cy='72' r='5'/%3E%3Ccircle cx='280' cy='35' r='5'/%3E%3Ccircle cx='380' cy='35' r='5'/%3E%3C/g%3E%3Cpath d='M0 130H430' stroke-dasharray='6 6' opacity='.6'/%3E%3C/svg%3E") left bottom/max(430px,100%) 140px no-repeat}
+/* not in a lesson, a review, a Sprechen chat or the exam: there the screen's bottom is the action bar, and the line ran
+   through the loose text just above it (a miss's help, the Done screen's cards and note; #146) */
+body.in-lesson .aurora::after{display:none}
 @keyframes ng-drift{to{transform:translateX(-6%) scale(1.05)}}
 @keyframes ng-breathe{50%{transform:scale(1.12);opacity:.75}}
 
