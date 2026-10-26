@@ -165,6 +165,17 @@ Both state inks flip inside the dark panels (topbar, page heads, Profile), besid
 ![Lesson preview, 390 light and dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-chips-1.png)
 ![The Tempo rows, light and dark: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-chips-2.png)
 
+### Empty data slab (done: `[design]` empty data slabs)
+
+A slab that shows the learner's data (a chart, a bar, a collection) and has nothing in it yet keeps its title, says **"no words yet"** in the `.faint` meta spot where its numbers go, and has **one `.faint` line** saying what will fill it. No empty axes, zero bars, legends or filters, and no button: the screen's one action is elsewhere (Practice's *Start lesson 1*, Today's lesson card). Tempo set the pattern; `emptyNote()` and `NO_WORDS` in `screens.js` are the pieces.
+
+- Profile: New words per day, Reviews ahead, Word strength.
+- The desktop rail and Today: Reviews ahead (`forecastWidget`), Word strength (`strengthWidget`).
+- Practice: Your words (no search box or filters until there is a word; "No words match" keeps its icon and *Clear filters*, since that one needs a way out).
+- Not empty states: Activity (a calendar that fills from the first day) and This week (a goal, 0 of 20 min).
+
+![Empty data slabs, 390: main / PR](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-empty-slabs-1.png)
+
 ### Settings rows
 
 A label is one short line; anything that explains it goes under the control as a `.faint` line (as the microphone note does). Labels with a bracketed explanation wrap to two lines and make the rows uneven.
@@ -189,6 +200,7 @@ In this order, one per `[design]` PR:
 10. ~~Sheet heads.~~ Done.
 11. ~~Grammar tables (`.conj`).~~ Done.
 12. ~~Chips: the lesson preview's "already yours: 12" is white text on magenta, its "done" chip is pale green.~~ Done.
-13. Empty states: Practice with nothing due, Grammar before any unit is open, the Stempelheft with no stamps, Sprechen before the first chat — one slab, one line, one action.
+13. ~~Empty states.~~ Done as empty data slabs (above). Re-checked on a new profile: Practice's daily review already says "No words yet" with *Start lesson 1*; Grammar, Sprechen and the Stempelheft are never empty (every unit, scene and stamp shows from the start, locked ones say when they open).
+14. Slab title sizes on Profile: its data slabs (New words per day, Reviews ahead, Word strength, Activity) set their `h2` at display size, while Tempo, a slab of the same kind beside them, uses the 22 px slab title.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.

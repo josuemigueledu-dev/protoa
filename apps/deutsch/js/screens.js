@@ -66,8 +66,13 @@ function forecast(days) {
   for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) { if (!c.learned) continue; for (const k of ['r', 'p']) { if (!c[k]) continue; const off = Math.max(0, daysBetween(t, c[k][0])); if (off < days) out[off]++; } }
   return out;
 }
+/* a data slab with nothing in it yet keeps its title, says "no words yet" where its numbers go and what will fill it
+   in one line (as Tempo does), and draws no empty axes or bars */
+const NO_WORDS = 'no words yet', emptyNote = t => h('p', { class: 'faint' }, t);
+function strengthWidget() { return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Word strength'), learnedCount() ? '' : h('span', { class: 'faint' }, NO_WORDS)), strengthBar()); }
 function forecastWidget() {
   const f = forecast(7), max = Math.max(1, ...f);
+  if (!learnedCount()) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, NO_WORDS)), emptyNote('After your first lesson, its words come back here a few each day.'));
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, f[0] + ' due today')),
     h('div', { class: 'minibars', role: 'img', 'aria-label': 'Reviews due over the next 7 days: ' + f.join(', ') }, ...f.map((n, i) => h('i', { class: n ? '' : 'zero', style: `height:${Math.max(3, n / max * 100)}%`, title: `${i === 0 ? 'today' : dayKey(i)}: ${n}` }))),
     h('div', { class: 'minilab' }, h('span', {}, 'today'), h('span', {}, 'in 6 days')));
@@ -92,7 +97,8 @@ function strengthCounts() {
   return b;
 }
 function strengthBar() {
-  const b = strengthCounts(), tot = Math.max(1, b.reduce((a, x) => a + x, 0)), names = ['New (0–3)', 'Learning (4–13)', 'Growing (14–29)', 'Strong (30+)'];
+  const b = strengthCounts(); if (!b.some(n => n)) return emptyNote('Each word you learn starts at New and moves to Strong as it sticks.');
+  const tot = Math.max(1, b.reduce((a, x) => a + x, 0)), names = ['New (0–3)', 'Learning (4–13)', 'Growing (14–29)', 'Strong (30+)'];
   return h('div', { class: 'stack', style: 'gap:8px' }, h('div', { class: 'strength', role: 'img', 'aria-label': 'Words by days until they come back. ' + names.map((n, i) => n + ': ' + b[i]).join(', ') }, ...b.map((n, i) => n ? h('i', { style: `width:${n / tot * 100}%;background:var(--seq-${i + 1})`, title: `${names[i]}: ${n}` }) : '')),
     h('div', { class: 'legend' }, ...b.map((n, i) => h('span', {}, h('i', { style: `background:var(--seq-${i + 1})` }), names[i] + ' ', h('b', {}, n)))), h('div', { class: 'faint small' }, 'In brackets: days until a word comes back.'));
 }
@@ -101,7 +107,7 @@ function renderRail() {
   if (!document.body.classList.contains('lay-desktop') || document.body.classList.contains('in-lesson')) return;
   const add = el => el && rail.append(el);
   if (route === 'learn') { add(paceWidget()); add(nextStationWidget()); add(stationListWidget()); add(weekWidget()); }
-  else if (route === 'practice') { add(forecastWidget()); add(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); add(weekWidget()); }
+  else if (route === 'practice') { add(forecastWidget()); add(strengthWidget()); add(weekWidget()); }
   else if (route === 'talk') { add(h('div', { class: 'widget' }, h('h2', {}, 'How Sprechen works'), h('p', { class: 'faint' }, 'Protoa keeps to words you know and asks one question at a time. Under each of your lines you see whether it worked and, if not, the corrected sentence with one note on the main error. Corrected lines can go into your reviews at the end.'))); add(satzDesTages()); }
   else if (route === 'profile' || route === 'more') { add(weekWidget()); add(nextStationWidget()); add(satzDesTages()); }
   else { add(paceWidget()); add(weekWidget()); add(forecastWidget()); add(satzDesTages()); }
@@ -181,14 +187,14 @@ function renderProfile(v) {
   v.append(paceWidget());
   // words per day (30)
   const last30 = Array.from({ length: 30 }, (_, i) => { const d = dayKey(i - 29), r = days[d] || {}; return { v: r.new || 0, tip: `${d}: ${r.new || 0} new words` }; });
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'New words per day'), h('span', { class: 'faint' }, 'last 30 days')), barChart(last30, { label: 'New words per day, last 30 days', xlabels: [[0, dayKey(-29).slice(5)], [29, 'today']] })));
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'New words per day'), h('span', { class: 'faint' }, words ? 'last 30 days' : NO_WORDS)), words ? barChart(last30, { label: 'New words per day, last 30 days', xlabels: [[0, dayKey(-29).slice(5)], [29, 'today']] }) : emptyNote('Each lesson adds its new words here, day by day.')));
   // accuracy + forecast
   let tot = 0, good = 0; const cut = dayKey(-30);
   for (const sh of Object.values(S.cards)) for (const c of Object.values(sh.w || {})) for (const [d, , g] of (c.hist || [])) if (d >= cut) { tot++; if (g >= 2) good++; }
   const f = forecast(14);
-  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, tot ? `${Math.round(100 * good / tot)}% recalled · ${tot} review${tot === 1 ? '' : 's'} in 30 days` : 'no reviews in the last 30 days')),
-    barChart(f.map((n, i) => ({ v: n, tip: `${i === 0 ? 'today (incl. overdue)' : dayKey(i)}: ${n} due` })), { label: 'Reviews due, next 14 days', h: 140, xlabels: [[0, 'today'], [13, '+13 days']] })));
-  v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Word strength'), strengthBar()));
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Reviews ahead'), h('span', { class: 'faint' }, tot ? `${Math.round(100 * good / tot)}% recalled · ${tot} review${tot === 1 ? '' : 's'} in 30 days` : words ? 'no reviews in the last 30 days' : NO_WORDS)),
+    !words ? emptyNote('After your first lesson, its words come back here a few each day.') : barChart(f.map((n, i) => ({ v: n, tip: `${i === 0 ? 'today (incl. overdue)' : dayKey(i)}: ${n} due` })), { label: 'Reviews due, next 14 days', h: 140, xlabels: [[0, 'today'], [13, '+13 days']] })));
+  v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Word strength'), words ? '' : h('span', { class: 'faint' }, NO_WORDS)), strengthBar()));
   v.append(h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Activity'), h('span', { class: 'faint' }, 'last 16 weeks')), heatmap(16), h('div', { class: 'legend' }, h('span', {}, 'less'), ...[0, 1, 2, 3, 4].map(i => h('i', { style: `background:var(--heat-${i})` })), h('span', {}, 'more'))));
   const stamps = computeStamps(), got = stamps.filter(s => s.on).length;
   const sorted = [...stamps.filter(s => s.on), ...stamps.filter(s => !s.on)];
@@ -235,7 +241,7 @@ function renderPracticeHub(v) {
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
   if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : 'Lesson ' + n + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? '\u00a0word' : '\u00a0words')); }))));
   // the forecast and strength charts are empty until the first words; Your words below says how to start
-  if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
+  if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(strengthWidget()); }
   v.append(wordBank());
 }
 function renderReviewSummary(v) {

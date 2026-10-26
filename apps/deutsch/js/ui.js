@@ -869,6 +869,8 @@ function wordBank() {
   const fStr = h('select', { 'aria-label': 'Filter by strength' }, h('option', { value: '' }, 'Any strength'), h('option', { value: 'weak' }, 'Weak (missed twice or more)'), h('option', { value: 'new' }, 'New (0–3 days)'), h('option', { value: 'strong' }, 'Strong (30+ days)'));
   const grid = h('div', { class: 'bank' });
   const entries = Object.values(S.cards).flatMap(sh => Object.entries(sh.w || {})).filter(([id, cd]) => cd.learned && !cd.sent);
+  // nothing to search or filter yet: an empty data slab (screens.js), and the screen's one action stays Practice's Start lesson
+  if (!entries.length) return h('div', { class: 'card stack' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Your words'), h('span', { class: 'faint' }, NO_WORDS)), emptyNote('Each word you learn becomes a tile here, with a picture and its strength. To bring words from another copy, import your progress in Profile → Settings.'));
   const groupKey = cd => cd.lesson ? 'L' + cd.lesson : (cd.v1 ? 'V' + cd.v1 : 'imp');
   const groupLabel = k => k[0] === 'L' ? 'Lesson ' + k.slice(1) + ' · ' + courseOf(+k.slice(1)).topic : k === 'imp' ? 'Imported' : 'From Protoa v1 · ' + courseOf(+k.slice(1)).topic;
   const groupIcon = k => k === 'imp' ? 'question' : courseOf(+k.slice(1)).icon;
@@ -876,7 +878,7 @@ function wordBank() {
   const draw = () => {
     grid.innerHTML = ''; const q = search.value.toLowerCase();
     let items = entries.filter(([id, cd]) => { const d = wordDef(id) || { en: [] }; if (q && !(id.toLowerCase().includes(q) || d.en.join(' ').toLowerCase().includes(q))) return false; if (fLesson.value !== '' && groupKey(cd) !== fLesson.value) return false; if (fType.value && d.type !== fType.value) return false; const iv = cd.r ? cd.r[1] : 0; if (fStr.value === 'weak' && !(cd.r && cd.r[4] >= 2)) return false; if (fStr.value === 'new' && iv >= 4) return false; if (fStr.value === 'strong' && iv < 30) return false; return true; });
-    if (!items.length) { grid.append(entries.length ? emptyState('question', 'No words match', 'Try a shorter search or clear a filter.', ['Clear filters', () => { search.value = ''; fLesson.value = fType.value = fStr.value = ''; draw(); }]) : emptyState('brezel', 'Your collection starts here', 'Each word you learn becomes a tile. Finish a lesson, or import your progress in Profile → Settings.', ['Go to Lessons', () => go('learn')])); return; }
+    if (!items.length) { grid.append(emptyState('question', 'No words match', 'Try a shorter search or clear a filter.', ['Clear filters', () => { search.value = ''; fLesson.value = fType.value = fStr.value = ''; draw(); }])); return; }
     items.sort((a, b) => keys.indexOf(groupKey(a[1])) - keys.indexOf(groupKey(b[1])) || a[0].localeCompare(b[0]));
     let last = null;
     items.forEach(([id, cd]) => { const d = wordDef(id) || { en: ['?'] }; const k = groupKey(cd); if (k !== last) { last = k; grid.append(h('div', { class: 'grp' }, sigEl(groupIcon(k)), h('span', { class: 'eyebrow' }, groupLabel(k)))); }
