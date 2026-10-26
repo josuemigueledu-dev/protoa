@@ -6,8 +6,8 @@ This spec says what the test asks, when it stops, what it changes, and how it is
 
 ## Who sees it, and where
 
-- **First run.** The "About you" sheet (`onboarding()`, ui.js) gets a second way out under "Save and start": a ghost button **"Not a beginner? Find your lesson · 3 min"**. It saves the profile like "Save and start", then opens the intro sheet below.
-- **Until lesson 1 is done.** Lesson 1's preview sheet on the map shows one quiet line under Start: "Not a beginner? Find your lesson · 3 min", the same words as on the first run. It goes once the learner finishes any lesson, or after one placement.
+- **First run.** The "About you" sheet (`onboarding()`, ui.js) gets a second way out under "Save and start": a ghost button **"Not a beginner? Find your lesson"** (the time is on the intro sheet: "About 3 minutes"). It saves the profile like "Save and start", then opens the intro sheet below.
+- **Until lesson 1 is done.** Lesson 1's preview sheet on the map shows one quiet line under Start: "Not a beginner? Find your lesson", the same words as on the first run. It goes once the learner finishes any lesson, or after one placement.
 - **Not in a lesson, and not offered again** after a placement. A learner who places low can still go ahead with "Start anyway" on any lesson, as today.
 - **Works without the AI.** Every item is marked in the page. No Claude call, no network.
 

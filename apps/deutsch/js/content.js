@@ -18,6 +18,9 @@
              alts:[...accepted alternatives], optional:true (dropped in short mode), react:"one-line German reaction=gloss"} ],
      lex:{verbs:{lemma:{ich,du,er,wir,ihr,Sie}}, nouns:{Noun:'m'|'f'|'n'}, related:{wrong:'right'}, sep:{aufstehen:['stehe','auf']}}
    }
+   Grammar unit: {id, title, lesson, body (HTML), table:[[label, German]...], examples:[{de, g, en}], drills:[{q, a:[...], en}]}.
+   The table's second cell is the German and is shown bold; the first is a small label (English, a person, a case),
+   so write ['yes / no', 'ja / nein'], never the other way round.
    GLOSS FORMAT: "Guten Tag=hello | Herr=Mr | Weber=Weber". Spans may cover several words
    (fixed phrases). Punctuation stays attached to the German span. Particles in parentheses.
    Meaning in context, never dictionary sense. Coverage check (checkGlosses) runs at load.

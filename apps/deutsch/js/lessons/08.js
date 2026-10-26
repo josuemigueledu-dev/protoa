@@ -65,7 +65,7 @@ LESSONS.push({
 
 GRAMMAR.push({ id: 'yn', title: 'Yes/no questions and short answers', lesson: 8,
     body: '<p>Without a question word, a question starts with the verb: <em>Du kommst heute</em> becomes <em>Kommst du heute?</em>. The words stay the same and the voice rises at the end. There is no <em>¿</em> in German.</p><p>Short answers sound more natural than a bare <em>ja</em> or <em>nein</em>. <em>Klar</em> and <em>natürlich</em> both mean yes, <em>vielleicht</em> means maybe, <em>leider nein</em> softens a no.</p>',
-    table: [['ja / nein', 'yes / no'], ['klar, natürlich', 'sure, of course'], ['vielleicht', 'maybe'], ['leider nein', 'unfortunately not'], ['Das stimmt. / Genau.', 'That is right. / Exactly.']],
+    table: [['yes / no', 'ja / nein'], ['sure, of course', 'klar, natürlich'], ['maybe', 'vielleicht'], ['unfortunately not', 'leider nein'], ['that is right, exactly', 'Das stimmt. / Genau.']],
     examples: [
       { de: 'Kommst du heute?', g: 'Kommst=are coming | du=you (informal) | heute?=today', en: 'Are you coming today?' },
       { de: 'Gehen wir Kaffee trinken? Klar.', g: 'Gehen=go | wir=we | Kaffee=coffee | trinken?=to drink | Klar.=sure', en: 'Shall we go for a coffee? Sure.' },

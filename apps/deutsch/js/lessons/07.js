@@ -67,7 +67,7 @@ LESSONS.push({
 
 GRAMMAR.push({ id: 'wq', title: 'Question words (W-Fragen)', lesson: 7,
     body: '<p>A question with a question word starts with that word, and the verb comes second, exactly as in a statement: <em>Wann gehen wir?</em> There is no <em>¿</em>, and the subject pronoun stays.</p><p>Three words do the work of Spanish <em>dónde</em>: <em>wo</em> asks for a place, <em>woher</em> for the origin, <em>wohin</em> for the destination.</p>',
-    table: [['wer', 'who: Wer ist das?'], ['was', 'what: Was machst du?'], ['wo', 'where: Wo wohnst du?'], ['woher', 'where from: Woher kommst du?'], ['wohin', 'where to: Wohin gehst du?'], ['wann', 'when: Wann gehen wir?'], ['warum', 'why: Warum lernst du Deutsch?'], ['wie', 'how: Wie heißen Sie?']],
+    table: [['who', 'Wer ist das?'], ['what', 'Was machst du?'], ['where', 'Wo wohnst du?'], ['where from', 'Woher kommst du?'], ['where to', 'Wohin gehst du?'], ['when', 'Wann gehen wir?'], ['why', 'Warum lernst du Deutsch?'], ['how', 'Wie heißen Sie?']],
     examples: [
       { de: 'Wer ist das?', g: 'Wer=who | ist=is | das?=that', en: 'Who is that?' },
       { de: 'Wohin gehst du?', g: 'Wohin=where to | gehst=are going | du?=you (informal)', en: 'Where are you going?' },

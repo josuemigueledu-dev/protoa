@@ -227,7 +227,7 @@ function renderPlacement(v) {
     h('button', { class: 'icon-btn sm close', 'aria-label': 'Leave the placement test', html: ICONS.x, onclick: quit }),
     h('div', { class: 'segs', style: 'grid-template-columns:1fr', 'aria-hidden': 'true' }, h('i', { style: 'height:4px' }, time))));
   const inp = deInput({ id: 'place-input', placeholder: it.type === 'gap' ? gapText(it).hint : 'Auf Deutsch …', 'aria-label': it.type === 'gap' ? gapText(it).label : 'German word' }), fb = h('div', {});
-  const card = h('div', { class: 'card stack exam-item' }, h('div', { class: 'eyebrow' }, 'Lesson ' + it.lesson + ' · ' + c.station));
+  const card = h('div', { class: 'card stack exam-item' }, h('div', { class: 'eyebrow' }, 'Lesson ' + it.lesson + ' · ' + c.topic));
   if (it.type === 'gap') card.append(h('p', {}, gapText(it).ask), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en));
   else card.append(h('p', {}, it.noun ? 'Write it in German, with its article.' : 'Write it in German.'), h('div', { class: 'examword' }, it.en.join(', ')));
   card.append(h('div', { class: 'stack', style: 'gap:8px' }, inp, umlautRow(inp)), fb); v.append(card);
