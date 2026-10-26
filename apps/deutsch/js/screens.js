@@ -75,13 +75,13 @@ function forecastWidget() {
 function nextStationWidget() {
   const g = examGate(); if (g) return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, g.code + ' exam')), h('p', { class: 'faint' }, 'You reached ' + g.words.toLocaleString('en') + ' words. Pass the exam with 90% to continue the line.'), h('button', { class: 'btn sm', onclick: () => openExamPreview(g.code) }, 'Open the exam'));
   const n = currentLessonN(); if (!n) return null; const c = courseOf(n), L = lessonById(n);
-  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Next station')), h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('b', { lang: 'de', style: 'font-family:var(--display)' }, c.station), h('div', { class: 'faint' }, 'Lesson ' + n + ' · ' + L.title))), h('button', { class: 'btn sm', onclick: () => openOnMap(n) }, 'Go to station'));
+  return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'Next lesson')), h('div', { class: 'nextcard' }, sigEl(c.icon), h('div', { class: 'grow' }, h('b', Object.assign(deLang(L.theme), { style: 'font-family:var(--display)' }), L.theme || L.title), h('div', { class: 'faint' }, 'Lesson ' + n + ' · ' + L.title))), h('button', { class: 'btn sm', onclick: () => openOnMap(n) }, 'Show on the map'));
 }
 function stationListWidget() {
   const { items } = mapModel(); const list = h('div', { class: 'stlist' });
   items.filter(i => i.kind === 'lesson').forEach(it => {
     const row = it.state === 'soon' ? h('div', { class: 'soonrow' }) : h('button', { onclick: () => openStation(it) });
-    row.append(sigEl(it.c.icon), h('div', {}, h('span', deLang(it.L ? it.L.theme : it.c.station), it.L ? it.L.theme || it.L.title : it.c.station), h('small', {}, 'Lesson ' + it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
+    row.append(sigEl(it.c.icon), h('div', {}, h('span', deLang(it.L && it.L.theme), it.L ? it.L.theme || it.L.title : it.c.topic), h('small', {}, 'Lesson ' + it.n + (it.L ? ' · ' + it.L.title : ''))), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
     list.append(row);
   });
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All lessons'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' of ' + COURSE.length)), list);
@@ -120,7 +120,7 @@ function computeStamps() {
   st.push({ id: 'd7', t: '7 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 7 }, { id: 'd30', t: '30 Tage', s: 'days practised', icon: 'calendar', on: activeDays >= 30 });
   st.push({ id: 'r100', t: '100 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 100 }, { id: 'r1000', t: '1000 Wiederholungen', s: 'reviews', icon: 'review', on: reviews >= 1000 });
   (S.progress.perfect || []).forEach(n => st.push({ id: 'pf' + n, t: 'Perfekt', s: 'Lesson ' + n + ' · no misses', icon: courseOf(n).icon, on: true, pf: true }));   // only once earned: no row of 60 empty ones
-  for (let n = REVIEW_EVERY; n <= COURSE.length; n += REVIEW_EVERY) st.push({ id: 'R' + n, t: 'Wiederholung', s: 'after ' + courseOf(n).station, icon: 'review', on: rv.has('R' + n) });
+  for (let n = REVIEW_EVERY; n <= COURSE.length; n += REVIEW_EVERY) st.push({ id: 'R' + n, t: CHAPTERS.some(c => c.from === n + 1) ? 'Kapiteltest' : 'Wiederholung', s: 'after ' + courseOf(n).station, icon: 'review', on: rv.has('R' + n) });
   return st;
 }
 function checkStamps() {
