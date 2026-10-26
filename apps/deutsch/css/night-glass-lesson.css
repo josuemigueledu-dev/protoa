@@ -14,6 +14,7 @@
     --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
     --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
     --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
+    --cyan-ink:#135a8a; --magenta-ink:#b0155a;
     --scrim:rgba(40,52,70,.5); --key-1:#cdd6e1; --key-2:#dfe6ee;
     --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
     --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
@@ -28,6 +29,7 @@
   --card:rgba(252,251,248,.74); --card-solid:#f7f6f2; --chip:rgba(255,255,255,.6);
   --glass-hi:rgba(255,255,255,.85); --glass-edge:rgba(17,21,27,.08);
   --cyan:#1f86c9; --pale:#5f86b8; --ice:var(--pale);
+  --cyan-ink:#135a8a; --magenta-ink:#b0155a;
   --scrim:rgba(40,52,70,.5); --key-1:#cdd6e1; --key-2:#dfe6ee;
   --pane-1:#dfe6ee; --pane-2:#cdd6e1; --pane-ink:#11151b; --pane-muted:#4d5867; --pane-glow:rgba(31,134,201,.12);
   --sky:#cdd6e1; --mk-shell:#dfe6ee; --mk-ring:#11151b;
@@ -158,10 +160,10 @@
   clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07);transition:transform .15s var(--ease)}
 .gfeat:active{transform:scale(.99)}
-.gfeat .k{color:var(--magenta);font-weight:700;font-size:.8125rem}
+.gfeat .k{color:var(--magenta-ink);font-weight:700;font-size:.8125rem}
 .gfeat .t{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.5rem;line-height:1.1}
 .gfeat .conj{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;min-width:0;overflow-wrap:anywhere;background:rgba(127,140,160,.14);border-radius:var(--r);padding:12px 14px;font-size:1.0625rem}
-.gfeat .conj span:nth-child(odd){color:var(--ngrey)} .gfeat .conj b{color:var(--cyan)}
+.gfeat .conj span:nth-child(odd){color:var(--ngrey)} .gfeat .conj b{color:var(--cyan-ink)}
 .gfeat .go{font-weight:700;font-size:.875rem;color:var(--ngrey)}
 .gnum{width:40px;height:40px;flex:none;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-family:var(--hero);font-size:.8125rem;background:rgba(44,74,116,.14);color:var(--steel)}
 .gnum.done{background:var(--steel);color:#eef1f4}
