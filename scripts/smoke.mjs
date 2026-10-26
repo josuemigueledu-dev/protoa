@@ -132,11 +132,12 @@ async function answerRight(page, s) {
   return '';
 }
 // one tile only (the line is incomplete), or a word that is in no lesson
-async function answerWrong(page, s) {
+// other: a different wrong answer from the one already given (a check of the same answer keeps the try)
+async function answerWrong(page, s, other) {
   await cursorIn(page, s);
-  if (s.type === 'tiles') { if (!await page.locator('.tiles.answer > .tile').count()) await page.locator('.tiles:not(.answer) > .tile').first().click(); }
-  else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill('Quatsch'); }
-  else await page.locator('.turnbox input, .turnbox textarea').first().fill('Quatsch Quatsch');
+  if (s.type === 'tiles') { const pool = page.locator('.tiles:not(.answer) > .tile'); if (other) await (await pool.count() ? pool : page.locator('.tiles.answer > .tile')).first().click(); else if (!await page.locator('.tiles.answer > .tile').count()) await pool.first().click(); }
+  else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill(other ? 'Unsinn' : 'Quatsch'); }
+  else await page.locator('.turnbox input, .turnbox textarea').first().fill(other ? 'Quatsch Unsinn' : 'Quatsch Quatsch');
 }
 const hintText = page => page.evaluate(() => [...document.querySelectorAll('.actionbar .msg, .ladder')].map(e => e.textContent.trim()).filter(Boolean).join(' / '));
 // a conversation turn is accepted when the next one comes up; a missed one stays put
@@ -248,14 +249,19 @@ async function missAndRetry(browser) {
   if (!askedAgain) fail(`${label}: the missed word "${missedWord}" never came back`);
   await btn(page, 'Build it').click();
 
-  // build: wrong twice, then the line is shown and Next moves on
+  // build: wrong twice, then the line is shown and Next moves on; checking the same wrong answer again doesn't count
   label = 'misses: build';
   s = await lessonStep(page);
   await answerWrong(page, s); await btn(page, 'Check').click();
   await bad('a wrong first try');
   if (!await btn(page, 'Check again').count()) fail(`${label}: no "Check again" after the first miss`);
-  else await btn(page, 'Check again').click();
+  else {
+    await btn(page, 'Check again').click();
+    if ((await ls()).battempts !== 1 || !(await hintText(page)).includes('Same answer')) fail(`${label}: checking the same wrong tiles again used up the second try (${await hintText(page)})`);
+    await answerWrong(page, s, true); await btn(page, 'Check again').click();
+  }
   await bad('a wrong second try', 'The line is');
+  if ((await hintText(page)).includes('..')) fail(`${label}: the line shown after two misses ends in two full stops (${await hintText(page)})`);
   await btn(page, 'Next').click();
   if ((await ls()).bi !== s.at + 1) fail(`${label}: Next after two misses did not move to the next line`);
   while ((s = await lessonStep(page)).step === 'build' && s.type && guard++ < 100) { await answerRight(page, s); await btn(page, 'Check').click(); await btn(page, 'Next').click(); }
@@ -266,7 +272,9 @@ async function missAndRetry(browser) {
   const turn = s, len = (await ls()).conv.queue.length;
   await answerWrong(page, turn); await btn(page, 'Check').click();
   if (!(await hintText(page)).includes('Meaning')) fail(`${label}: the first miss does not show the meaning (${await hintText(page)})`);
-  await answerWrong(page, turn); await btn(page, 'Check').click();
+  await btn(page, 'Check').click();
+  if ((await ls()).conv.attempts !== 1 || !(await hintText(page)).includes('Same answer')) fail(`${label}: checking the same wrong answer again counted as a second miss (${await hintText(page)})`);
+  await answerWrong(page, turn, true); await btn(page, 'Check').click();
   const hint2 = await page.locator('.ladder .fb').count();
   if (hint2 < 2) fail(`${label}: the second miss adds no hint (${await hintText(page)})`);
   if ((await ls()).conv.pos !== turn.at) fail(`${label}: a missed turn moved on`);
