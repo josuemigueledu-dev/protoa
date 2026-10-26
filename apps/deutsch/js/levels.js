@@ -144,6 +144,8 @@ function gapItem(w) {
   const m = w.ex.match(/\[([^\]]+)\]/)[1], noun = ROLE_BEFORE.test(w.ex.split('[')[0]) && m.match(/^[Dd](?:er|ie|as) ([A-ZÄÖÜ]\S*)$/);
   return { sec: 'gap', type: 'gap', de: w.ex.replace(/[\[\]]/g, ''), shown: w.ex.replace(/\[[^\]]+\]/, m.split(' ').map(() => '_____').join(' ')), a: noun ? [m, noun[1]] : [m], en: w.exEn };
 }
+// a Grammatik prompt's cue in brackets, "(the)" or "(machen)", is a small hint line under it, not a word wrapped on its own in the display type
+const examPrompt = it => { const m = /^(.*\S)\s*(\([^)]*\))$/.exec(it.prompt); return h('div', { class: 'examword', lang: 'de' }, ...(m ? [m[1], h('span', { class: 'examcue', lang: it.type === 'conj' ? 'de' : 'en' }, m[2])] : [it.prompt])); };
 // the gap's prompt, placeholder and label, in the singular or plural
 const gapText = it => it.a[0].includes(' ') ? { ask: 'Write the missing words in the right form.', hint: 'fehlende Wörter', label: 'Missing words' } : { ask: 'Write the missing word in the right form.', hint: 'fehlendes Wort', label: 'Missing word' };
 // the exam's strict marking for typed answers (dictation, words, grammar, gaps); the placement test marks the same way
@@ -300,7 +302,7 @@ function renderExam(v) {
   else if (it.sec === 'lesen') card.append(h('div', { class: 'eyebrow' }, 'Lesen'), h('div', { class: 'readtext' }, h('b', { lang: 'de' }, it.title), h('p', { lang: 'de' }, it.text)), h('p', { class: 'examq', lang: 'de' }, it.q), choice(it.type === 'tf' ? ['richtig', 'falsch'] : it.o));
   else if (it.type === 'in') card.append(h('div', { class: 'eyebrow' }, 'Wortschatz · German → English'), h('div', { class: 'examword', lang: 'de' }, it.de), typed({ placeholder: 'In English …', 'aria-label': 'Meaning in English' }, false));
   else if (it.type === 'out') card.append(h('div', { class: 'eyebrow' }, 'Wortschatz · English → German'), h('div', { class: 'examword' }, it.en.join(', ')), h('p', { class: 'faint' }, it.noun ? 'A noun: write it with its article.' : 'Write the German word or phrase.'), typed({ placeholder: 'Auf Deutsch …', 'aria-label': 'German word' }));
-  else if (it.sec === 'gram') card.append(h('div', { class: 'eyebrow' }, 'Grammatik'), h('p', {}, it.type === 'conj' ? 'Write the correct form of the verb.' : 'Write the correct article.'), h('div', { class: 'examword', lang: 'de' }, it.prompt), typed({ placeholder: '…', 'aria-label': 'Answer' }));
+  else if (it.sec === 'gram') card.append(h('div', { class: 'eyebrow' }, 'Grammatik'), h('p', {}, it.type === 'conj' ? 'Write the correct form of the verb.' : 'Write the correct article.'), examPrompt(it), typed({ placeholder: '…', 'aria-label': 'Answer' }));
   else if (it.type === 'gap') card.append(h('div', { class: 'eyebrow' }, 'Lückentext'), h('p', {}, gapText(it).ask), h('div', { class: 'examword', lang: 'de' }, it.shown), h('p', { class: 'faint' }, it.en), typed({ placeholder: gapText(it).hint, 'aria-label': gapText(it).label }));
   else if (it.type === 'order') card.append(h('div', { class: 'eyebrow' }, 'Satzbau'), h('p', {}, 'Type the sentence: put these words in the right order.'), h('div', { class: 'jumble', lang: 'de' }, ...it.jumble.map(w => h('span', {}, w))), h('p', { class: 'faint' }, it.en), typed({ placeholder: 'Ihr Satz', 'aria-label': 'Your sentence' }));
   else if (it.type === 'trans') card.append(h('div', { class: 'eyebrow' }, 'Übersetzung · English → German'), h('div', { class: 'examword' }, it.en), typed({ placeholder: 'Auf Deutsch …', 'aria-label': 'German translation' }));
