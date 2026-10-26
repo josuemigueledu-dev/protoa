@@ -5,6 +5,7 @@
 // played to its end with its own model answers (Done → Continue lands on the new stop, after the last lesson too), and lesson 1 with misses and a reload.
 // A sheet over a lesson (search, a word card) keeps the keys to itself. A step that passes
 // straight on lets the old screen finish leaving. Pausing the exam keeps the answer being typed.
+// A review card answered wrong and graded Good anyway is not counted as recalled.
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // A Grammar unit opens at its top, however far the list or the lesson was scrolled.
 // "Not a beginner?" places a learner who knows lessons 1–5 at Lesson 6, on the map.
@@ -395,6 +396,36 @@ async function examPauseKeepsAnswer(browser) {
   await ctx.close();
 }
 
+// The review summary counts a card as recalled only when its answer was right: a miss graded Good afterwards
+// still reschedules as Good (grading yourself is allowed), but the summary does not say "Alles sitzt."
+async function reviewSummaryCountsMisses(browser) {
+  const label = 'review summary';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => {
+    LESSONS[0].words.forEach(w => markLearned(w, 1)); S.settings.onboarded = true; document.querySelector('.sheet')?.remove();
+    const ids = LESSONS[0].words.map(w => w.de).filter(id => wordDef(id)).slice(0, 3);
+    startReview(ids.map(id => ({ id, sh: cardShard(id), c: cardOf(id), kind: 'r', extra: true })), 'Smoke');
+  });
+  for (let i = 0; i < 3; i++) {
+    await page.waitForFunction(i => PR && PR.done === i, i);
+    await drawn(page);
+    const input = page.locator('#view > .view:not(.leaving) .rv-card input');
+    // the first card right, the other two wrong; every card then graded Good
+    await input.fill(i === 0 ? await page.evaluate(() => wordDef(PR.queue[0].id).en[0]) : 'xylophone');
+    await page.keyboard.press('Enter');
+    await page.locator('.actionbar .btn', { hasText: 'Good' }).click();
+  }
+  await drawn(page);
+  const sum = await page.evaluate(() => ({ title: document.querySelector('#view > .view:not(.leaving) .summary h1')?.textContent, ...REVIEW_SUMMARY }));
+  if (sum.n !== 3 || sum.good !== 1) fail(`${label}: 1 of 3 cards answered right, but the summary counts ${sum.good} of ${sum.n} recalled`);
+  if (sum.title === 'Alles sitzt.') fail(`${label}: two misses graded Good still read "Alles sitzt."`);
+  await ctx.close();
+}
+
 // Grammar has no tab on a phone: opened from Practice, Profile or a lesson's Notice, that tab stays lit and
 // Grammar's back button leads back there (into the lesson, at the same step).
 async function grammarKeepsItsTab(browser) {
@@ -555,6 +586,7 @@ try {
   await sheetsOwnKeys(browser);
   await stepPassesOn(browser);
   await examPauseKeepsAnswer(browser);
+  await reviewSummaryCountsMisses(browser);
   await grammarKeepsItsTab(browser);
   await grammarUnitOpensAtTop(browser);
   await placementFirstRun(browser);
