@@ -136,7 +136,7 @@ test('markTyped marks like the exam: articles, umlaut shortcuts and case', () =>
   assert.equal(it.expected, 'wrong, false');
 });
 
-test('gap items: one blank per missing word, the prompt says "words" when there are two, and the noun alone fills an article + noun gap', () => {
+test('gap items: one blank per missing word, the prompt says "words" when there are two, and the noun alone fills an article + noun gap only for a role after sein', () => {
   const gaps = lessons.flatMap(L => L.words).filter(w => /\[[^\]]+\]/.test(w.ex));
   assert.ok(gaps.some(w => /\[\S+ \S+\]/.test(w.ex)), 'the lessons have two-word gaps to check');
   for (const w of gaps) {
@@ -151,6 +151,15 @@ test('gap items: one blank per missing word, the prompt says "words" when there 
   assert.equal(mark('Herr Weber ist [der Lehrer].', 'Lehrer'), true, '"Herr Weber ist Lehrer." is right too');
   assert.equal(mark('Herr Weber ist [der Lehrer].', 'der Lehrer'), true);
   assert.equal(mark('Herr Weber ist [der Lehrer].', 'die Lehrer'), false);
+  assert.equal(mark('Ana ist [die Studentin].', 'Studentin'), true);
+  assert.equal(mark('Ich bin [der Lehrer].', 'Lehrer'), true);
+  assert.equal(mark('Das Kind ist [der Schüler].', 'Schüler'), true, '"das" as an article is fine');
+  assert.equal(mark('Das ist [die Karte].', 'Karte'), false, 'no bare noun after "das ist"');
+  assert.equal(mark('Das ist [die Karte].', 'die Karte'), true);
+  assert.equal(mark('Es ist [der Lehrer].', 'Lehrer'), false);
+  assert.equal(mark('Wo ist [der Bahnhof]?', 'Bahnhof'), false, 'no bare noun after a question word');
+  assert.equal(mark('Hier ist [der Kaffee].', 'Kaffee'), false);
+  assert.equal(mark('Ich brauche [die Tasse].', 'Tasse'), false, 'only after sein or werden');
   assert.equal(mark('[Das ist] Ana.', 'ist'), false, 'only an article before a noun can be left out');
   assert.equal(mark('Der Test ist [ein bisschen] schwer.', 'bisschen'), false);
   assert.equal(mark('Ana kommt aus Mexiko. [Das stimmt].', 'Stimmt'), false);
