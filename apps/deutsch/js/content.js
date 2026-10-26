@@ -432,7 +432,7 @@ const PROTOA_TODAY = {
   4: ['Neben der Tafel hängt etwas Neues.', 'Something new is hanging beside the board.'],
   5: ['Pause. Ana will Kaffee, aber die Schlange ist lang.', 'Break. Ana wants coffee, but the queue is long.'],
   6: ['Am Dienstag gab es keinen Kaffee. Heute vielleicht.', 'On Tuesday there was no coffee. Today, maybe.'],
-  7: ['Heute fragst du. Und Herr Webers Telefon liegt neben der Kreide.', 'Today you ask the questions. And Herr Weber’s phone is lying next to the chalk.'],
+  7: ['Heute fragst du. Und Herr Webers Handy liegt neben der Kreide.', 'Today you ask the questions. And Herr Weber’s phone is lying next to the chalk.'],
   8: ['Anas Stuhl ist leer. Lena will wissen, warum.', 'Ana’s chair is empty. Lena wants to know why.'],
   9: ['Sieben Stühle. Einer ist leer.', 'Seven chairs. One is empty.'],
   10: ['Alle schreiben ihre Nummer auf. Fast alle.', 'Everyone writes down their number. Almost everyone.'],
@@ -440,6 +440,45 @@ const PROTOA_TODAY = {
   12: ['Herr Weber hat ein Blatt Papier. Und kein Lächeln.', 'Herr Weber has a sheet of paper. And no smile.'],
   13: ['Lena hat zehn Minuten. Sie bestellt für alle.', 'Lena has ten minutes. She orders for everyone.'],
   14: ['Markt am Maybachufer. Anas Liste ist auf Spanisch.', 'The market at Maybachufer. Ana’s list is in Spanish.']
+};
+/* ---------- Cast reactions: after 5 right answers in a row ----------
+   One short dry line from the scene's cast member (Weber by default), German with the English under it.
+   Keys are NIGHT_CAST's values in art.js (cast.barista → murat; he has no name before lesson 15).
+   Lines that say a number only fit a run of exactly five. Weber and Murat say Sie to the learner, Ana and Lena du.
+   Story writes these (docs/curriculum/story.md): in character, no exclamation marks, no praise a cartoon would give. */
+const CAST_CHEERS = {
+  weber: [
+    ['Fünf richtig. Nicht schlecht.', 'Five right. Not bad.'],
+    ['So. Fünf von fünf.', 'Right. Five out of five.'],
+    ['Gut. Weiter.', 'Good. Carry on.'],
+    ['Richtig. Und das. Und das.', 'Right. And that. And that.'],
+    ['Sie sind heute schnell. Interessant.', 'You’re quick today. Interesting.'],
+    ['Ich sage nichts. Noch nicht.', 'I’m not saying anything. Not yet.']
+  ],
+  ana: [
+    ['Okay, du lernst schneller als ich.', 'Okay, you’re learning faster than me.'],
+    ['Fünf? Nein, warte … ja, fünf.', 'Five? No, wait … yes, five.'],
+    ['Wie machst du das?', 'How do you do that?'],
+    ['Eso … nein, warte. Auf Deutsch: Genau.', 'Eso … no, wait. In German: Genau.'],
+    ['Ich zähle mit. Alles richtig.', 'I’m counting along. All correct.'],
+    ['Du bist wirklich neu hier?', 'You’re really new here?']
+  ],
+  lena: [
+    ['Hm. Gut.', 'Hm. Good.'],
+    ['Ach so. Du kannst das ja.', 'Oh, I see. So you know this.'],
+    ['Na gut. Ich lege das Handy weg.', 'Fine. I’m putting my phone away.'],
+    ['Fünf richtig. Ich trinke nur drei Kaffee.', 'Five right. I only drink three coffees.'],
+    ['Okay. Jetzt bin ich wach.', 'Okay. Now I’m awake.'],
+    ['Schneller als die U8.', 'Faster than the U8.']
+  ],
+  murat: [
+    ['Das verdient einen Kaffee.', 'That deserves a coffee.'],
+    ['Richtig. Wie Ihr Kaffee: immer gleich.', 'Right. Like your coffee: always the same.'],
+    ['Einen Moment … nein, Sie brauchen keinen Moment.', 'One moment … no, you don’t need a moment.'],
+    ['Ich höre alles. Und das war gut.', 'I hear everything. And that was good.'],
+    ['Fünf. Das gibt einen Stempel.', 'Five. That earns a stamp.'],
+    ['Perfekt. Wie ein Espresso.', 'Perfect. Like an espresso.']
+  ]
 };
 const courseOf = n => COURSE.find(c => c.n === n) || { n, station: 'Station ' + n, topic: 'Lesson ' + n, icon: 'question' };
 

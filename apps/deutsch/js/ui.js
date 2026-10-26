@@ -303,7 +303,8 @@ function renderToday(v) {
     h('div', { class: 'goal', role: 'img', 'aria-label': g0.today >= g0.perDay ? `${g0.today} new words today, goal of ${g0.perDay} met` : `${g0.today} of ${g0.perDay} new words today` }, ringEl(Math.min(1, g0.today / Math.max(1, g0.perDay)), 84), h('div', { class: 'inner', 'aria-hidden': 'true' }, h('span', {}, g0.today), h('small', {}, g0.today >= g0.perDay ? 'goal met' : 'of ' + g0.perDay)))));
   if (gateT) v.append(h('div', { class: 'card stack examcard' }, h('div', { class: 'nextcard' }, sigEl('exam'), h('div', { class: 'grow' }, h('div', { class: 'eyebrow' }, gateT.words.toLocaleString('en') + ' words reached'), h('h2', { style: 'font-size:var(--t-title)' }, gateT.code + ' exam'), h('div', { class: 'faint' }, 'Pass with 90% to open the next lessons.'))), h('button', { class: 'btn wide', onclick: () => openExamPreview(gateT.code) }, S.progress.exam ? 'Continue the exam' : 'Open the exam')));
   if (L) v.append(todayLessonCard(L, resume));
-  else if (!gateT) v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, 'You have reached the end of the written line.'), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map')));
+  else if (!gateT) { const nx = Math.max(0, ...allLessons().map(l => l.n)) + 1;   // every written lesson is done: say what comes next
+    v.append(h('div', { class: 'card stack primary' }, h('p', { class: 'muted' }, `That’s every lesson so far. Lesson ${nx} comes soon` + (S.ai ? ', or write it now with Protoa on the map.' : '.')), h('button', { class: 'btn wide', onclick: () => go('learn') }, 'Open the map'))); }
   v.append(todayLine(due.length));
   v.append(todayDuo(due, L));
   if (!S.progress.sounds) v.append(h('button', { class: 'card listrow', onclick: () => openMore(renderSounds) }, h('div', { class: 'grow' }, h('b', {}, 'Lesson 0 · Sounds'), h('div', { class: 'faint' }, 'How German spelling maps to sound. Ten minutes, once.')), h('span', { class: 'muted' }, '›')));
@@ -326,7 +327,7 @@ const leadOf = L => { const c = (L && L.scene && L.scene.cast || []).find(c => C
 function protoaLine(L, resume, due) {
   const who = !resume && newcomer(L), plate = L && L.scene && L.scene.plate, lead = resume && leadOf(L);
   const own = !resume && L && typeof PROTOA_TODAY !== 'undefined' && LESSONS.includes(L) && PROTOA_TODAY[L.n];
-  const [de, deHtml, en] = !L ? (due ? [due === 1 ? 'Ein Wort wartet auf dich.' : `${due} Wörter warten auf dich.`, '', due === 1 ? 'One word is waiting for you.' : `${due} words are waiting for you.`] : ['Bald geht es weiter.', '', 'More stops are coming soon.'])
+  const [de, deHtml, en] = !L ? (due ? [due === 1 ? 'Eine Karte wartet auf dich.' : `${due} Karten warten auf dich.`, '', due === 1 ? 'One card is waiting for you.' : `${due} cards are waiting for you.`] : ['Bald geht es weiter.', '', 'More stops are coming soon.'])
     : resume ? (lead ? [`${lead === 'cast.barista' ? 'Der Barista' : CAST_DE[lead][1]} wartet noch.`, '', `${lead === 'cast.barista' ? 'The barista' : CAST_DE[lead][1]} is still waiting. Carry on where you stopped.`] : ['Weiter geht es.', '', 'Let’s carry on where you stopped.'])
     : own ? [own[0], '', own[1]]
     : who ? [`Heute triffst du ${CAST_DE[who][0]}.`, `Heute triffst du <b>${CAST_DE[who][0]}</b>.`, `Today you meet ${CAST_DE[who][1]}.`]
