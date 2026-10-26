@@ -478,6 +478,8 @@ function lessonCheck(v, L, ls) {
     v.append(c); const next = () => setStep('build', { bi: 0, battempts: 0 }); actionBar({ buttons: [h('button', { class: 'btn', onclick: next }, 'Build it')] }); KEYS = e => { if (e.key === 'Enter') next(); }; return;
   }
   const id = ls.checkQ[0], w = L.words.find(x => x.de === id);
+  const pics = picOthers(w, [...L.words, ...allLessons().filter(l => l.n < L.n).flatMap(l => l.words).filter(x => isLearned(x.de))]);
+  if (pics) return lessonPicCheck(v, L, ls, w, pics);
   /* distractors: this lesson first, then earlier ones, same word type first; never words from lessons the learner has not reached */
   const seen = x => x.de !== id && x.en[0] !== w.en[0];
   const tiers = [L.words.filter(seen), ...allLessons().filter(l => l.n < L.n).sort((a, b) => b.n - a.n).map(l => l.words.filter(seen))];
@@ -500,6 +502,35 @@ function lessonCheck(v, L, ls) {
   c.append(grid); v.append(c);
   if (S.settings.autoWord) setTimeout(() => speak(w.de.replace(/^(der|die|das) /, '')), 200);
   KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grid.children[n - 1].click(); };
+}
+/* picture choice (owner, Oct 26): "Welches Bild passt?" with four painted word pictures, each over its German word.
+   Only for a word with a Night Glass picture; the other three are pictured words the learner has seen (null when there are fewer) */
+function picOthers(w, seen) {
+  if (!w || !nightWord(w)) return null; const out = [];
+  for (const x of shuffle(seen)) if (out.length < 3 && x.de !== w.de && x.en[0] !== w.en[0] && nightWord(x) && nightWord(x) !== nightWord(w) && !out.some(o => nightWord(o) === nightWord(x))) out.push(x);
+  return out.length === 3 ? out : null;
+}
+/* the prompt (the meaning) and the 2×2 grid; onPick(right, button) runs once, after which every tile is locked */
+function picChoice(w, others, onPick) {
+  const grid = h('div', { class: 'choices pics' }); let locked = false;
+  shuffle([w, ...others]).forEach((x, i) => { const b = h('button', { class: 'choice pic', 'data-de': x.de, onclick: () => {
+    if (locked) return; locked = true; [...grid.children].forEach(c => c.disabled = true);
+    const right = x === w; b.classList.add(right ? 'ok' : 'bad'); if (!right) grid.querySelector(`[data-de="${CSS.escape(w.de)}"]`)?.classList.add('ok');
+    if (S.settings.autoWord) speak(w.de.replace(/^(der|die|das) /, '')); onPick(right, b);
+  } }, h('kbd', {}, i + 1), h('span', { class: 'illus photo ' + (x.g || ''), 'aria-hidden': 'true', html: nightImg(x) }), h('span', { class: 'pic-de' }, artEl(x.de))); grid.append(b); });
+  const ask = h('div', { class: 'pic-ask' }, h('span', {}, 'Which one is'), h('b', {}, '“' + w.en[0] + '”'));
+  return { ask, grid, keys: e => { const n = parseInt(e.key); if (n >= 1 && n <= 4 && !locked) grid.children[n - 1].click(); } };
+}
+function lessonPicCheck(v, L, ls, w, others) {
+  const c = h('div', { class: 'card stack' }, h('div', { class: 'eyebrow' }, `Word check · ${ls.checkQ.length} left`));
+  const cont = () => { NAV = 'fwd'; render(); };
+  const pc = picChoice(w, others, right => {
+    if (right) { uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
+    else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: 'This is <em lang="de">' + esc(w.de) + '</em> (' + esc(w.en[0]) + '). It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
+    save('progress'); showAbove(pc.grid, pc.ask); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+  });
+  c.append(h('div', { class: 'coach' }, h('div', { class: 'say' }, 'Welches Bild passt?', h('span', { class: 'faint', style: 'font-weight:500' }, ' · which picture is it?'))), pc.ask, pc.grid); v.append(c);
+  KEYS = pc.keys;
 }
 /* tiles widget with FLIP snap */
 function tilesWidget(tokens, extra, onChange) {
@@ -692,7 +723,7 @@ function startReview(items, title) { // every 3rd recognition card with interval
 }
 /* what Protoa says above each kind of card, German first */
 const RV_SAY = { r: ['Wie heißt das auf Englisch?', 'What is this in English?'], li: ['Hör mal. Welches Wort ist das?', 'Listen. Which word is it?'], ls: ['Hör gut zu. Schreib den Satz.', 'Listen closely. Write the sentence.'],
-  p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'What does it mean?'],
+  p: ['Wie sagt man das auf Deutsch?', 'How do you say this in German?'], sent: ['Und was sagst du?', 'And what do you say?'], mc: ['Was bedeutet das?', 'What does it mean?'], pic: ['Welches Bild passt?', 'Which picture is it?'],
   gap: ['Welches Wort fehlt?', 'Which word is missing?'], order: ['Bau den Satz.', 'Build the sentence.'], trans: ['Sag es auf Deutsch.', 'Say it in German.'] };
 /* diagnose() kinds whose hint teaches something after the answer is shown; the others only point at the answer */
 const MISS_TEACHES = ['gender', 'case', 'verb', 'sep', 'related'];
@@ -703,6 +734,7 @@ function renderReview(v) {
   const def = it.c.sent ? null : wordDef(it.id); const card = h('div', { class: 'card stack' });
   if (['gap', 'order', 'trans'].includes(it.kind) && !(def && def.ex && def.exEn && /\[[^\]]+\]/.test(def.ex))) it.kind = 'r';
   if (it.kind === 'mc' && !def) it.kind = 'r';
+  if (it.kind === 'mc' && !it.pics) { const pics = picOthers(def, allLessons().flatMap(l => l.words).filter(x => isLearned(x.de))); if (pics) Object.assign(it, { kind: 'pic', pics }); }
   // Night Glass (screens/7-review.jpg): close, title and count on the stage, one segment per card, then Protoa's line in German and English
   const say = RV_SAY[it.kind] || RV_SAY.r, n = Math.min(PR.done + 1, PR.total);
   const progress = PR.total <= 24 ? h('div', { class: 'rv-segs', 'aria-hidden': 'true', style: `grid-template-columns:repeat(${PR.total},1fr)` }, ...Array.from({ length: PR.total }, (_, i) => h('i', { class: i < PR.done ? 'done' : i === PR.done ? 'now' : '' })))
@@ -739,7 +771,7 @@ function renderReview(v) {
     };
     card.append(inp, it.kind === 'r' ? '' : h('div', { class: 'row' }, umlautRow(inp), micBtn(inp, check)), fb); setTimeout(() => inp.focus(), 50);
     actionBar({ buttons: [h('button', { class: 'btn', onclick: check }, 'Check')] }); KEYS = e => { if (e.key === 'Enter') check(); };
-  } else if (['mc', 'gap', 'order', 'trans'].includes(it.kind)) {
+  } else if (['mc', 'pic', 'gap', 'order', 'trans'].includes(it.kind)) {
     renderDrill(card, it, def, fb, showGrades, exRow);
   } else if (it.kind === 'p') {
     card.append(meta(), h('div', { class: 'wcard' }, h('div', { class: 'de', style: 'font-size:1.8rem' }, def.en.filter(m => !def.en.some(o => o.startsWith(m + ' ('))).join(', ')), h('div', { class: 'faint' }, (def.type === 'n' ? 'noun, with its article' : { v: 'verb (dictionary form)', phrase: 'phrase' }[def.type] || ''))));
@@ -792,7 +824,7 @@ function wordBank() {
       const t = h('button', { class: 'btile', onclick: () => showDetail(id, cd, d) }); if (d.pic && PICS[d.pic]) { const i = h('div', { class: 'illus sm' }); i.innerHTML = PICS[d.pic]; t.append(i); } t.append(h('div', { class: 'de', lang: 'de' }, artEl(id)), h('div', { class: 'en' }, d.en.join(', ')), ringEl(strengthOf(cd.r), 22)); grid.append(t); });
   };
   // a tile opens its card and history in a sheet over the bank, so the page stays where the learner tapped
-  const showDetail = (id, cd, d) => { const full = wordDef(id); const hist = h('section', { class: 'whist stack', 'aria-label': 'History' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since ? fmtDate(cd.since) : '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? fmtDate(cd.r[0]) + (cd.r[1] >= 1 ? ' (every ' + cd.r[1] + (cd.r[1] === 1 ? ' day)' : ' days)') : '') : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · missed ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'English → German'), h('span', {}, cd.p ? 'open, next ' + fmtDate(cd.p[0]) : 'opens once German → English holds for 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${fmtDate(dt)} ${({ r: 'to English', p: 'to German', li: 'listening', ls: 'sentence', sent: 'line', mc: 'meaning', gap: 'gap', order: 'order', trans: 'translation' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); openSheet(inner => inner.append(full && full.ex ? wordCard(full, { bare: true }) : h('div', { class: 'wcard' }, h('div', { class: 'de', lang: 'de' }, artEl(id)), h('div', { class: 'en' }, d.en.join(', '))), hist), 'word'); };
+  const showDetail = (id, cd, d) => { const full = wordDef(id); const hist = h('section', { class: 'whist stack', 'aria-label': 'History' }, h('div', { class: 'eyebrow' }, 'History'), h('div', { class: 'tbl' }, h('b', {}, 'Learned'), h('span', {}, cd.since ? fmtDate(cd.since) : '—'), h('b', {}, 'Next review'), h('span', {}, cd.r ? fmtDate(cd.r[0]) + (cd.r[1] >= 1 ? ' (every ' + cd.r[1] + (cd.r[1] === 1 ? ' day)' : ' days)') : '') : '—'), h('b', {}, 'Reviews'), h('span', {}, (cd.r ? cd.r[3] : 0) + ' · missed ' + (cd.r ? cd.r[4] : 0)), h('b', {}, 'English → German'), h('span', {}, cd.p ? 'open, next ' + fmtDate(cd.p[0]) : 'opens once German → English holds for 4 days'))); if (cd.hist && cd.hist.length) hist.append(h('div', { class: 'small muted' }, cd.hist.slice(-8).map(([dt, k, g]) => `${fmtDate(dt)} ${({ r: 'to English', p: 'to German', li: 'listening', ls: 'sentence', sent: 'line', mc: 'meaning', pic: 'picture', gap: 'gap', order: 'order', trans: 'translation' })[k] || k} → ${['again', 'hard', 'good', 'easy'][g]}`).join(' · '))); openSheet(inner => inner.append(full && full.ex ? wordCard(full, { bare: true }) : h('div', { class: 'wcard' }, h('div', { class: 'de', lang: 'de' }, artEl(id)), h('div', { class: 'en' }, d.en.join(', '))), hist), 'word'); };
   [search, fLesson, fType, fStr].forEach(e => e.addEventListener('input', draw)); draw();
   c.append(h('div', { class: 'row' }, h('div', { class: 'grow' }, search), fLesson, fType, fStr), grid); return c;
 }
