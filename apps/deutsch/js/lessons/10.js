@@ -1,6 +1,6 @@
 /* Lesson 10 */
 LESSONS.push({
-  n: 10, title: 'Numbers 11–20', theme: 'Elf bis zwanzig',
+  n: 10, title: 'Numbers 11\u2060–\u206020', theme: 'Elf bis zwanzig',
   scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }, { id: 'cast.ana', x: 900 }, { id: 'cast.lena', x: 640 }], place: 'Volkshochschule am Hermannplatz', time: 'Thursday, 9:00', cap: 'Raum 2.04 · Donnerstag, 9:00',
     intro: [
       'Thursday, 9:00, room 2.04. Herr Weber is tired of "Ana, could you ask Lena", so a contact list goes round and everyone writes their number on it. Everyone except Lena. First, he counts with the class and asks how old things are.',
@@ -63,7 +63,7 @@ LESSONS.push({
     sep: {},
   },
 });
-GRAMMAR.push({ id: 'age', title: 'Age and numbers 11–20', lesson: 10,
+GRAMMAR.push({ id: 'age', title: 'Age and numbers 11\u2060–\u206020', lesson: 10,
     body: '<p>German says "is", not "has", for age: <em>Ich bin zwanzig Jahre alt</em>, <em>Wie alt ist die Gitarre?</em>. <em>Jahre alt</em> can be dropped when the age is clear: <em>Er ist zwanzig.</em></p><p>11 and 12 are their own words. From 13 to 19 the small number plus <em>-zehn</em>: <em>dreizehn, vierzehn, fünfzehn</em>, and with a short form for <em>sechs</em> and <em>sieben</em>: <em>sechzehn, siebzehn</em>. Twenty is <em>zwanzig</em>. Phone numbers are read digit by digit: <em>null drei null, zwei drei eins zwei fünf</em>.</p>',
     table: [['11 elf', '12 zwölf'], ['13 dreizehn', '14 vierzehn'], ['15 fünfzehn', '16 sechzehn'], ['17 siebzehn', '18 achtzehn'], ['19 neunzehn', '20 zwanzig'], ['sechs → sech-', 'sieben → sieb-']],
     examples: [
