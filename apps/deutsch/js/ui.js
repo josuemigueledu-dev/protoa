@@ -268,21 +268,23 @@ function actionBar(opts) {
 /* The action bar and the phone's tab bar float over the one scroller, so what a turn, a miss or a result
    just added can land under them. Scroll just far enough that el clears the bar, without sliding keep (what
    el answers: the line spoken to you, the card's word; el itself by default) under the sticky header and band.
-   When both don't fit, keep's top goes as high as the band and el shows its first line. One read, one scroll, a frame later. */
+   When both don't fit, keep's top goes as high as the band and el shows its first line, or all of need when given
+   (what must not hide under the bar: the newest help after a miss, the tiles to answer with); keep then slides under
+   the band as far as that takes. One read, one scroll, a frame later. */
 const BAND_SMALL_AT = 80;   // the conversation's picture band is smaller once the lesson has scrolled this far (lessonConv)
-function showAbove(el, keep = el) {
+function showAbove(el, keep = el, need) {
   requestAnimationFrame(() => {
     if (!el || !el.isConnected) return; if (!keep || !keep.isConnected) keep = el;
     const bar = document.querySelector('.actionbar'), mob = document.body.classList.contains('lay-mobile');
     const floor = (bar ? innerHeight - bar.offsetHeight : mob && tabsEl.offsetHeight ? tabsEl.getBoundingClientRect().top : innerHeight) - 16;   // offsetHeight: the bar's spring-up transform must not count
     const head = Math.max(0, ...[...document.querySelectorAll('.lesson-top')].map(e => e.getBoundingClientRect().bottom));
-    const r = el.getBoundingClientRect(), k = keep.getBoundingClientRect().top;
+    const r = el.getBoundingClientRect(), k = keep.getBoundingClientRect().top, must = need && need.isConnected ? need.getBoundingClientRect().bottom : r.top + 36;
     // the band sticks under the header; when a scroll changes its size, everything below it moves by as much
     const band = document.querySelector('.conv-band'), cs = band && getComputedStyle(band), bandH = small => band ? parseFloat(cs.getPropertyValue(small ? '--h-small' : '--h')) : 0;
     const plan = small => {
       const shift = bandH(band && band.classList.contains('small')) - bandH(small), ceil = head + bandH(small) + 12;
       const down = r.bottom - shift - floor, most = k - shift - ceil;   // scroll at least down, at most most
-      const dy = down <= most ? (down > 0 ? down : Math.min(most, 0)) : Math.max(most + 12, r.top - shift - floor + 36);   // a squeeze: no gaps, el shows its first line
+      const dy = down <= most ? (down > 0 ? down : Math.min(most, 0)) : Math.max(most + 12, must - shift - floor);   // a squeeze: no gaps, el shows its first line (or need)
       return { dy, fits: !band || (PANE.scrollTop + dy > BAND_SMALL_AT) === small };
     };
     let p = plan(true); if (!p.fits) { const q = plan(false); if (q.fits) p = q; }
@@ -558,7 +560,8 @@ function lessonConv(v, L, ls) {
     band = h('div', { class: 'conv-band', role: 'img', 'aria-label': L.scene.place }); conv.classList.add('has-band'); conv.append(band);
     C.log.forEach(track); drawBand();
     // the band sticks under the lesson header and shrinks once the learner scrolls
-    requestAnimationFrame(() => { const lt = v.querySelector('.lesson-top'); if (lt) conv.style.setProperty('--lt-h', lt.offsetHeight + 'px'); });
+    // kept current: measured once, the header could still be mid-way into the screen (272 px, not 125, with reduced motion) and the band stuck that low
+    const lt = v.querySelector('.lesson-top'); if (lt) new ResizeObserver(() => conv.style.setProperty('--lt-h', lt.offsetHeight + 'px')).observe(lt);
     const shrink = () => { if (!band.isConnected) return PANE.removeEventListener('scroll', shrink); band.classList.toggle('small', PANE.scrollTop > BAND_SMALL_AT); };
     PANE.addEventListener('scroll', shrink, { passive: true });
   } else { const bg = h('div', { class: 'bgscene', 'aria-hidden': 'true' }); bg.innerHTML = SCENES[L.scene.id] || SCENES.classroom; conv.append(bg); }
@@ -598,7 +601,7 @@ function lessonConv(v, L, ls) {
     else widget = typeWidget({}, () => check());
     turnbox.append(widget.el, ladder);
     // the cursor without the browser's own scroll, then the turn above the action bar and its line below the band
-    setTimeout(() => { if (widget.focus) widget.focus({ preventScroll: true }); showAbove(turnbox, answering()); }, 50);
+    setTimeout(() => { if (widget.focus) widget.focus({ preventScroll: true }); showAbove(turnbox, answering(), widget.el); }, 50);
     if (attempts.n >= 1) ladder.append(fbEl('note', 'Meaning: <b>' + esc(fill(t.en)) + '</b>'));
     const checkBtn = h('button', { class: 'btn', onclick: () => check() }, 'Check');
     actionBar({ buttons: [checkBtn] });
@@ -617,7 +620,7 @@ function lessonConv(v, L, ls) {
     }
     function selfJudge(ans) { // Claude unavailable: show the model answer and let him judge (Right / Close / Wrong)
       ladder.innerHTML = ''; const ul = glossEl(t.de, t.g);
-      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?'))); showAbove(ladder, answering());
+      ladder.append(h('div', { class: 'fb note', style: 'flex-direction:column;align-items:stretch' }, h('div', {}, 'Protoa’s AI is not reachable, so free answers cannot be checked. A model answer:'), h('div', { class: 'row' }, ul, playBtn(t.de)), h('div', {}, 'How close was yours?'))); showAbove(ladder, answering(), ladder);
       actionBar({ buttons: [h('button', { class: 'btn ghost', onclick: () => settle({ ok: false, hint: 'Compare your line with the model answer, then try once more.' }, ans) }, 'Wrong'), h('button', { class: 'btn ghost', onclick: () => settle({ ok: true, exact: false, note: 'Close enough to be understood.' }, ans) }, 'Close'), h('button', { class: 'btn', onclick: () => settle({ ok: true, exact: true }, ans) }, 'Right')] });
       KEYS = null;
     }
@@ -645,7 +648,7 @@ function lessonConv(v, L, ls) {
           const cont = () => { log.append(bubble(C.log[C.log.length - 1])); advance(); };
           actionBar({ state: 'bad', msg: 'It comes back in a few turns.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); KEYS = e => { if (e.key === 'Enter') cont(); };
         }
-        showAbove(ladder, answering());
+        showAbove(ladder, answering(), ladder);   // the help just added, all of it: the line answered may go under the band
       }
     }
   }
