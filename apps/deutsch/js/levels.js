@@ -249,7 +249,7 @@ function renderPlacementResult(v, P) {
     missed.forEach(r => c.append(h('div', { class: 'mistake' }, h('span', { class: 'eyebrow' }, 'Lesson ' + r.lesson), h('div', { class: 'faint', lang: r.type === 'gap' ? 'de' : null }, r.prompt), h('div', {}, h('span', { class: 'yours' }, 'You: ' + (r.answer === null ? 'I don’t know' : r.answer))), h('div', { lang: 'de' }, h('b', {}, 'Correct: '), r.expected))));
     v.append(c); }
   const finish = apply => { if (apply) { applyPlacement(place); checkStamps(); } PLACE = null; route = 'learn'; NAV = 'fade'; render(); };
-  actionBar({ buttons: before.length ? [h('button', { class: 'btn ghost', onclick: () => finish(false) }, 'Start from Lesson 1'), h('button', { class: 'btn', onclick: () => finish(true) }, place === null ? 'Mark them done' : 'Start at Lesson ' + place)] : [h('button', { class: 'btn', onclick: () => finish(true) }, 'Start Lesson 1')] });
+  actionBar({ buttons: before.length ? [h('button', { class: 'btn ghost', onclick: () => finish(false) }, 'From Lesson 1'), h('button', { class: 'btn', onclick: () => finish(true) }, place === null ? 'Mark all done' : 'Start at Lesson ' + place)] : [h('button', { class: 'btn', onclick: () => finish(true) }, 'Start Lesson 1')] });
 }
 
 /* ---------- exam flow ---------- */

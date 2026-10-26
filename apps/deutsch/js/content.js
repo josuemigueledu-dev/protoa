@@ -467,7 +467,7 @@ const CAST_CHEERS = {
     ['Hm. Gut.', 'Hm. Good.'],
     ['Ach so. Du kannst das ja.', 'Oh, I see. So you know this.'],
     ['Na gut. Ich lege das Handy weg.', 'Fine. I’m putting my phone away.'],
-    ['Fünf richtig. Ich trinke nur drei Kaffee.', 'Five right. I only drink three coffees.'],
+    ['Fünf richtig. Mehr als meine drei Kaffee am Tag.', 'Five right. More than my three coffees a day.'],
     ['Okay. Jetzt bin ich wach.', 'Okay. Now I’m awake.'],
     ['Schneller als die U8.', 'Faster than the U8.']
   ],
@@ -476,7 +476,7 @@ const CAST_CHEERS = {
     ['Richtig. Wie Ihr Kaffee: immer gleich.', 'Right. Like your coffee: always the same.'],
     ['Einen Moment … nein, Sie brauchen keinen Moment.', 'One moment … no, you don’t need a moment.'],
     ['Ich höre alles. Und das war gut.', 'I hear everything. And that was good.'],
-    ['Fünf. Das gibt einen Stempel.', 'Five. That earns a stamp.'],
+    ['Fünf. Das ist fast ein Stempel.', 'Five. That’s almost a stamp.'],
     ['Perfekt. Wie ein Espresso.', 'Perfect. Like an espresso.']
   ]
 };
