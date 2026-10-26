@@ -254,6 +254,8 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 /* a sheet without a grab handle (About you) gives its heading room under the top edge */
 .sheet .in>:first-child:not(.grab,.close){margin-top:16px}
 body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
+/* a word's sheet from Your words: the card, then its history under a hairline */
+.sheet .whist{border-top:1px solid var(--line);padding-top:16px}
 .toast,.weiter{-webkit-backdrop-filter:none;backdrop-filter:none}
 .toast{background:var(--night);color:var(--nink);border-radius:var(--r-xs);box-shadow:inset 0 2px 0 var(--magenta),var(--shadow)}
 .confetti i{box-shadow:none}
