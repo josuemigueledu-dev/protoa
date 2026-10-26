@@ -27,7 +27,17 @@ let grammarOpen = null;
 let grammarListY = 0, grammarBackY = 0;
 const tabOf = r => r === 'grammar' ? grammarFrom : TABS.some(([id]) => id === r) ? r : 'profile';
 function go(r) { if (r === 'grammar') grammarFrom = tabOf(route); grammarOpen = null; grammarBackY = 0; if (r !== route) { NAV = tabDir(route, r); if (r === 'learn' && S.progress.lessonState && !S.progress.lessonState.paused) { S.progress.lessonState.paused = true; save('progress'); } } route = r; try { history.replaceState(null, '', '#' + r); } catch (e) { } render(); }
-function toast(msg) { clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status' }, msg); overlay.innerHTML = ''; overlay.append(t); toastT = setTimeout(() => t.remove(), 2600); }
+/* A toast belongs to the screen it was shown on: the next screen drawn takes it away (dropToast, from drawScreen), except
+   one shown by the same tap or key that changed the screen ("Review stop done", "Exam paused"). It floats above an
+   action bar (Sprechen's keys, a lesson's Check), never over it, and a tap dismisses it. */
+let toastFresh = false;
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => { toastFresh = false; }, true));
+function toast(msg) {
+  clearTimeout(toastT); const t = h('div', { class: 'toast', role: 'status', onclick: () => t.remove() }, msg); overlay.innerHTML = ''; overlay.append(t); toastFresh = true;
+  const bar = document.querySelector('.actionbar'); if (bar) t.style.bottom = Math.max(96, bar.offsetHeight + 12) + 'px';   // offsetHeight: the bar's spring-up transform must not count
+  toastT = setTimeout(() => t.remove(), 2600);
+}
+function dropToast() { if (!toastFresh) overlay.querySelector('.toast')?.remove(); }
 function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; document.body.classList.toggle('hide-gloss', !!S.settings.hideGloss); }
 function newView() { const dir = DIRS[NAV]; view.querySelectorAll(':scope > :not(.leaving)').forEach(e => e.remove()); const v = h('div', { class: 'view stack ' + NAV + (dir ? ' in-' + dir : '') }); view.append(v); if (dir) setTimeout(() => v.classList.remove('in-' + dir), 1200); return v; }
 /* ---------- screens travel (owner, Oct 25): the old screen's slabs leave one by one in the direction of travel while
@@ -77,7 +87,7 @@ function render() {
 }
 function draw() { const was = drawing; drawing = true; try { drawScreen(); } finally { drawing = was; } }
 function drawScreen() {
-  renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.body.style.removeProperty('--bar-room'); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
+  renderedDay = todayStr(); stopAudio(); dropToast(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.body.style.removeProperty('--bar-room'); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
   const inLesson = lessonMode();
   document.body.classList.toggle('in-lesson', !!inLesson);
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);

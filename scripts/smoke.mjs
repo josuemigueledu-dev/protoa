@@ -10,6 +10,7 @@
 // Grammar keeps the tab it was opened from lit, and its back button leads there (or back into the lesson).
 // A Grammar unit opens at its top, however far the list or the lesson was scrolled; "‹ Grammar" goes back to where the list was.
 // "Not a beginner?" places a learner who knows lessons 1–5 at Lesson 6, on the map.
+// A toast leaves with its screen (unless the same tap brought the new screen), floats above an action bar, and a tap dismisses it.
 // Run: npm run smoke (needs playwright: `npm i --no-save playwright && npx playwright install chromium`)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -135,7 +136,16 @@ async function answerRight(page, s) {
 // other: a different wrong answer from the one already given (a check of the same answer keeps the try)
 async function answerWrong(page, s, other) {
   await cursorIn(page, s);
-  if (s.type === 'tiles') { const pool = page.locator('.tiles:not(.answer) > .tile'); if (other) await (await pool.count() ? pool : page.locator('.tiles.answer > .tile')).first().click(); else if (!await page.locator('.tiles.answer > .tile').count()) await pool.first().click(); }
+  if (s.type === 'tiles') {
+    const pool = page.locator('.tiles:not(.answer) > .tile'), ans = page.locator('.tiles.answer > .tile');
+    if (other) {
+      // one tile again, but another one: adding a second tile could build a two-word line in the right order
+      const was = (await ans.allTextContents()).join(' ');
+      while (await ans.count()) await ans.first().click();
+      const k = (await pool.allTextContents()).findIndex(t => t !== was);
+      await pool.nth(Math.max(k, 0)).click();
+    } else if (!await ans.count()) await pool.first().click();
+  }
   else if (s.type === 'gap') { const inputs = page.locator('.gapline input'); for (let k = 0; k < await inputs.count(); k++) await inputs.nth(k).fill(other ? 'Unsinn' : 'Quatsch'); }
   else await page.locator('.turnbox input, .turnbox textarea').first().fill(other ? 'Quatsch Unsinn' : 'Quatsch Quatsch');
 }
@@ -526,6 +536,41 @@ async function grammarUnitOpensAtTop(browser) {
   await ctx.close();
 }
 
+// a toast belongs to its screen: changing tab takes it away, a toast shown with the screen change stays, it never
+// covers an action bar (Sprechen's keys, a lesson's buttons), and a tap dismisses it
+async function toastLeavesWithItsScreen(browser) {
+  const label = 'toast';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => fail(`${label}: uncaught error: ${e.message}`));
+  await page.goto(BASE);
+  await page.waitForSelector('#view > *');
+  await page.evaluate(() => { LESSONS[0].words.forEach(w => markLearned(w, 1)); S.progress.lessonsDone = [1]; S.settings.onboarded = true; document.querySelector('.sheet')?.remove(); go('today'); });
+  await drawn(page); await page.waitForTimeout(400);
+  const shown = () => page.evaluate(() => document.querySelector('#overlay .toast')?.textContent || null);
+  await page.evaluate(() => toast('16 new stamps in your Stempelheft')); await page.waitForTimeout(500);
+  await page.locator('#tabs .tab', { hasText: 'Lessons' }).click(); await drawn(page); await page.waitForTimeout(300);
+  if (await shown()) fail(`${label}: "${await shown()}" from Today was still up on the Lessons tab`);
+  // shown by the tap that changes the screen, before or after render(): it is that screen's toast
+  await page.evaluate(() => { toast('Review stop done'); NAV = 'fade'; render(); }); await drawn(page); await page.waitForTimeout(300);
+  if (await shown() !== 'Review stop done') fail(`${label}: a toast shown just before the screen changed was dropped by it`);
+  await page.evaluate(() => { go('practice'); toast('Saved. Pick it up again from the map.'); }); await drawn(page); await page.waitForTimeout(300);
+  if (await shown() !== 'Saved. Pick it up again from the map.') fail(`${label}: a toast shown just after the screen changed was dropped by it`);
+  await page.locator('#overlay .toast').click(); await page.waitForTimeout(100);
+  if (await shown()) fail(`${label}: tapping the toast did not dismiss it`);
+  // over an action bar as tall as Sprechen's (its keys over the reply box; Sprechen itself needs the AI)
+  await page.evaluate(() => startLesson(1, true)); await drawn(page); await page.waitForTimeout(500);
+  await page.evaluate(() => {
+    const inp = deInput({}), bar = actionBar({ buttons: [h('div', { class: 'chatbar' }, inp, h('button', { class: 'btn' }, 'Send'))] });
+    bar.insertBefore(h('div', { class: 'tools' }, umlautRow(inp), h('button', { class: 'btn ghost sm' }, 'How do I say…?')), bar.firstChild);
+    toast('Protoa can’t answer that line. Try saying it another way.');
+  });
+  await page.waitForTimeout(400);
+  const at = await page.evaluate(() => ({ toast: Math.round(document.querySelector('#overlay .toast').getBoundingClientRect().bottom), bar: Math.round(innerHeight - document.querySelector('.actionbar').offsetHeight) }));
+  if (at.toast > at.bar) fail(`${label}: the toast covers the action bar (its bottom at y ${at.toast}, the bar's top at y ${at.bar})`);
+  await ctx.close();
+}
+
 // "Not a beginner?" on the first run: the placement test asks one item per lesson, stops after two misses on one
 // lesson, and "Start at Lesson N" marks the lessons before it done and opens the map on Lesson N. Lesson 1's
 // preview offers the test until then, and not after.
@@ -614,6 +659,7 @@ try {
   await grammarKeepsItsTab(browser);
   await grammarUnitOpensAtTop(browser);
   await placementFirstRun(browser);
+  await toastLeavesWithItsScreen(browser);
   await browser.close();
 } catch (e) {
   fail(String(e.stack || e));
