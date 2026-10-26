@@ -547,12 +547,10 @@ button.kbody:active .kmk{transform:scale(.92)}
 .rv-card{gap:12px}
 .rv-pic{margin:-24px -24px 4px;aspect-ratio:16/8;max-height:clamp(150px,30vh,240px);background:var(--night2);overflow:hidden;display:flex;align-items:center;justify-content:center;
   border-bottom:6px solid transparent;border-image:repeating-linear-gradient(-45deg,var(--magenta) 0 8px,#11151b 8px 16px) 6}
-.rv-pic img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}
-/* wide cards: the whole picture, never a cropped face, feathered into its own corner colour (the picture blown up, no live blur) */
-body:not(.lay-mobile) .rv-pic{position:relative;isolation:isolate}
-body:not(.lay-mobile) .rv-pic img{width:auto;height:100%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
-.rv-pic .haze{display:none}
-body:not(.lay-mobile) .rv-pic .haze{display:block;position:absolute;inset:0;z-index:-1;background-size:2000%;background-position:0 0;background-repeat:no-repeat}
+/* the whole square picture, never a cropped face or ball, feathered into its own corner colour (the picture blown up, no live blur) */
+.rv-pic{position:relative;isolation:isolate}
+.rv-pic img{width:auto;height:100%;display:block;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.rv-pic .haze{position:absolute;inset:0;z-index:-1;background-size:8000%;background-position:0 0;background-repeat:no-repeat}
 .rv-pic:not(.photo){background:var(--chip)} .rv-pic:not(.photo) svg{height:82%;width:auto}
 .rv-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.8125rem}
 .rv-meta span{white-space:nowrap} .rv-meta span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis} .rv-meta span:last-child{font-variant-numeric:tabular-nums}
