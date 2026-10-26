@@ -75,7 +75,7 @@ function render() {
 }
 function draw() { const was = drawing; drawing = true; try { drawScreen(); } finally { drawing = was; } }
 function drawScreen() {
-  renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
+  renderedDay = todayStr(); stopAudio(); KEYS = null; document.querySelector('.actionbar')?.remove(); document.body.style.removeProperty('--bar-room'); document.querySelectorAll('.sheet').forEach(s => s.remove()); document.querySelectorAll('.weiter').forEach(p => { p._io?.disconnect(); p.remove(); }); lastLayout = applyLayout(); renderTabs(); applyTheme();
   const inLesson = lessonMode();
   document.body.classList.toggle('in-lesson', !!inLesson);
   document.body.classList.toggle('in-talk', route === 'talk' && !!TALK && !!TALK.active);
@@ -276,6 +276,7 @@ function showAbove(el, keep = el, need) {
   requestAnimationFrame(() => {
     if (!el || !el.isConnected) return; if (!keep || !keep.isConnected) keep = el;
     const bar = document.querySelector('.actionbar'), mob = document.body.classList.contains('lay-mobile');
+    if (bar) document.body.style.setProperty('--bar-room', bar.offsetHeight + 16 + 'px');   // room under the content for a tall bar (a two-line miss), so there is something to scroll
     const floor = (bar ? innerHeight - bar.offsetHeight : mob && tabsEl.offsetHeight ? tabsEl.getBoundingClientRect().top : innerHeight) - 16;   // offsetHeight: the bar's spring-up transform must not count
     const head = Math.max(0, ...[...document.querySelectorAll('.lesson-top')].map(e => e.getBoundingClientRect().bottom));
     const r = el.getBoundingClientRect(), k = keep.getBoundingClientRect().top, must = need && need.isConnected ? need.getBoundingClientRect().bottom : r.top + 36;
@@ -519,7 +520,7 @@ function picChoice(w, others, onPick) {
     const right = x === w; b.classList.add(right ? 'ok' : 'bad'); if (!right) grid.querySelector(`[data-de="${CSS.escape(w.de)}"]`)?.classList.add('ok');
     if (S.settings.autoWord) speak(w.de.replace(/^(der|die|das) /, '')); onPick(right, b);
   } }, h('kbd', {}, i + 1), h('span', { class: 'illus photo ' + (x.g || ''), 'aria-hidden': 'true', html: nightImg(x) }), h('span', { class: 'pic-de' }, artEl(x.de))); grid.append(b); });
-  const ask = h('div', { class: 'pic-ask' }, h('span', {}, 'Which one is'), h('b', {}, '“' + w.en[0] + '”'));
+  const ask = h('div', { class: 'pic-ask' }, h('b', {}, '“' + w.en[0] + '”'));
   return { ask, grid, keys: e => { const n = parseInt(e.key); if (n >= 1 && n <= 4 && !locked) grid.children[n - 1].click(); } };
 }
 function lessonPicCheck(v, L, ls, w, others) {
@@ -528,7 +529,7 @@ function lessonPicCheck(v, L, ls, w, others) {
   const pc = picChoice(w, others, right => {
     if (right) { uiSound('ok'); markLearned(w, L.n); ls.checkQ.shift(); actionBar({ state: 'ok', msg: '✓ <em lang="de">' + esc(w.de) + '</em> is in your word bank.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
     else { uiSound('bad'); ls.checkQ.push(ls.checkQ.shift()); actionBar({ state: 'bad', msg: '<em lang="de">' + esc(w.de) + '</em> = ' + esc(w.en[0]) + '. It comes back in a moment.', buttons: [h('button', { class: 'btn', onclick: cont }, 'Continue')] }); }
-    save('progress'); showAbove(pc.grid, pc.ask); KEYS = ev => { if (ev.key === 'Enter') cont(); };
+    save('progress'); showAbove(pc.grid, pc.ask, pc.grid.querySelector('.choice.ok')); KEYS = ev => { if (ev.key === 'Enter') cont(); };
   });
   c.append(h('div', { class: 'coach' }, h('div', { class: 'say' }, 'Welches Bild passt?', h('span', { class: 'faint', style: 'font-weight:500' }, ' · which picture is it?'))), pc.ask, pc.grid); v.append(c);
   KEYS = pc.keys;
@@ -751,7 +752,7 @@ function renderReview(v) {
     h('div', { class: 'bx' }, ...[1, 2, 3, 4, 5].map(k => h('i', { class: k === box ? 'on' : k < box ? 'past' : '', style: '--k:' + k }))), h('span', {}, learnedCount().toLocaleString('en') + ' words')));
   const fb = h('div', { class: 'ladder' }); let attempts = 0, result = null, graded = false, reveal = null;
   const grade = g => { if (graded) return; graded = true; const key = it.kind === 'p' ? 'p' : 'r'; it.c[key] = schedule(it.c[key] || newCard(), g); it.c.hist = (it.c.hist || []).concat([[todayStr(), it.kind, g]]).slice(-30); save(null, it.sh || cardShard(it.id)); dayLog('reviews', 1); PR.stats.n++; if (g >= 2) PR.stats.good++; if (g === 0) PR.stats.missed.push(it.id); if (g === 0 && !it.extra) PR.queue.push(it); PR.queue.shift(); PR.done++; NAV = 'fwd'; if (!PR.queue.length) finishReviewSession(); else render(); };
-  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
+  const showGrades = (pre, state, msg) => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); const btns = ['Again', 'Hard', 'Good', 'Easy'].map((l, i) => h('button', { class: 'btn ' + (i === pre ? '' : 'ghost'), style: 'flex:1', onclick: () => grade(i) }, h('kbd', { class: 'kbd', style: 'margin-right:6px' }, i + 1), l)); actionBar({ state, msg, buttons: btns }); showAbove(fb, card.querySelector('.rv-word, .wcard, .bub, .pic-ask')); KEYS = e => { const n = parseInt(e.key); if (n >= 1 && n <= 4) grade(n - 1); if (e.key === 'Enter') grade(pre); }; };
   const bare = def ? it.id.replace(/^(der|die|das) /, '') : '';
   const exRow = () => def && def.ex ? h('div', { class: 'row' }, glossEl(def.ex.replace(/[\[\]]/g, ''), def.exG || null), playBtn(def.ex.replace(/[\[\]]/g, ''))) : '';
   if (it.kind === 'r' || it.kind === 'li' || it.kind === 'ls') {

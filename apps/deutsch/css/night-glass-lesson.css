@@ -234,15 +234,19 @@
 .chatlog .corr{background:var(--card-solid);color:var(--ink);box-shadow:inset 3px 0 0 var(--steel),0 8px 18px -12px var(--slab-sh-2);border-radius:var(--r-sm);padding:10px 14px 10px 17px}
 .chatlog .corr.ok{color:var(--green-deep);font-weight:700;box-shadow:inset 3px 0 0 var(--green),0 8px 18px -12px var(--slab-sh-2)}
 
+/* a tall bar (a two-line miss is ~180 px) needs as much room under the content, or showAbove has nothing to scroll
+   and the last row of answers stays under it; showAbove sets --bar-room from the bar's height */
+body.in-lesson main{padding-bottom:max(144px,var(--bar-room,0px))}
+body.lay-mobile.in-lesson main{padding-bottom:max(112px,var(--bar-room,0px))}
+
 /* picture choice: the meaning asked for, then four painted pictures, each over its German word (2×2, 4×1 on wide cards) */
 .pic-ask{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 6px;text-align:center}
-.pic-ask span{color:var(--muted);font-size:.9375rem}
 .pic-ask b{font-family:var(--hero);font-weight:400;letter-spacing:-.03em;font-size:1.625rem;line-height:1.2;overflow-wrap:anywhere}
 .choices.pics{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (min-width:720px){ body:not(.lay-mobile) .choices.pics{grid-template-columns:repeat(4,minmax(0,1fr))} }
-.choice.pic{position:relative;flex-direction:column;align-items:stretch;gap:10px;padding:10px 8px 12px;text-align:center}
+.choice.pic{position:relative;flex-direction:column;align-items:stretch;gap:8px;padding:8px 8px 12px;text-align:center}
 .choice.pic .illus{width:100%;height:auto;aspect-ratio:1;border-radius:var(--r)}
 .choice.pic .pic-de{display:block;font-size:1.0625rem;line-height:1.2;overflow-wrap:anywhere}
-.choice.pic kbd{position:absolute;top:16px;left:16px;min-width:24px;padding:1px 6px;background:rgba(17,21,27,.55);color:#eef1f4;box-shadow:none} /* the key sits on the picture's corner so the word keeps the full width */
+.choice.pic kbd{position:absolute;top:16px;left:16px;min-width:24px;padding:1px 6px;background:color-mix(in srgb,var(--photo-scrim) 60%,transparent);color:var(--on-status);box-shadow:none} /* the key sits on the picture's corner so the word keeps the full width */
 .choice.pic.ok .pic-de [class^="g-"],.choice.pic.bad .pic-de [class^="g-"]{color:inherit}
 .choice.pic:disabled:not(.ok):not(.bad){opacity:.7}
