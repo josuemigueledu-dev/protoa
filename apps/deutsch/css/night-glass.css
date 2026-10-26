@@ -259,6 +259,17 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 /* a sheet without a grab handle (About you) gives its heading room under the top edge */
 .sheet .in>:first-child:not(.grab,.close){margin-top:16px}
 body:not(.lay-mobile) .sheet .in{border-radius:var(--r)}
+/* sheet heads (docs/designs/night-glass/system.md, "Sheet head"): a titled sheet (Search, Keyboard shortcuts, About you)
+   sets its 22 px title on the close button's line, 24 px under the top edge, and stops 40 px short of the right edge
+   so a long title never runs under the button; Search and Shortcuts had it 17 px lower, under the grab's gap */
+.sheet .in>.grab+.close+h2{margin-top:-17px}
+.sheet .in>.grab+.close+h2{padding-right:40px}
+/* About you's intro is a page head's intro line: 15 px, 8 px under the title (it was 13 px, 0 px under) */
+.sheet .in>.row:first-child h2+p{font-size:var(--t-sub);line-height:1.45;margin:8px 0 0;max-width:46ch;text-wrap:pretty}
+/* a preview sheet (a lesson, a review stop, the exam, Laute, "Not a beginner?"): the eyebrow 4 px over the title and
+   the line under it 8 px below, as on a page head, so the three read as one block under the picture (16 and 16 before) */
+.preview>.eyebrow+h1{margin-top:-12px}
+.preview>h1+p{margin-top:-8px}
 /* a word's sheet from Your words: the card, then its history under a hairline */
 .sheet .whist{border-top:1px solid var(--line);padding-top:16px}
 .toast,.weiter{-webkit-backdrop-filter:none;backdrop-filter:none}
