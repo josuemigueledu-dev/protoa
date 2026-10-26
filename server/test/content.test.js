@@ -244,3 +244,18 @@ test('no lesson text is religious or political', () => {
   }
   assert.deepEqual(hits, [], 'remove religious or political content (owner rule); if this is a false positive, adjust BANNED');
 });
+
+test('CAST_CHEERS: German and English for each cast member, no exclamation marks, the right du or Sie', () => {
+  const cheers = get('CAST_CHEERS');
+  assert.deepEqual(Object.keys(cheers).sort(), ['ana', 'lena', 'murat', 'weber']);
+  for (const [who, lines] of Object.entries(cheers)) {
+    assert.ok(lines.length >= 3, `${who}: at least 3 lines`);
+    for (const l of lines) {
+      assert.ok(Array.isArray(l) && l.length === 2 && l.every(x => typeof x === 'string' && x.trim()), `${who}: [German, English] pair`);
+      assert.ok(!/!/.test(l.join(' ')), `${who}: no exclamation marks in "${l[0]}"`);
+      // Weber and Murat say Sie to the learner; Ana and Lena say du (story.md). A first-word Sie may be 'she', so it is skipped
+      if (who === 'weber' || who === 'murat') assert.ok(!/\b(du|dich|dir|dein\w*)\b/i.test(l[0]), `${who} says Sie: "${l[0]}"`);
+      else assert.ok(!/\b(Sie|Ihr\w*)\b/.test(l[0].replace(/^\S+\s/, '')), `${who} says du: "${l[0]}"`);
+    }
+  }
+});
