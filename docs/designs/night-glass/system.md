@@ -43,15 +43,27 @@ Two families: **Krona One** for display (titles, big numbers), letter-spacing �
 
 | role | size | font | token |
 |---|---|---|---|
+| hero title (one per screen at most) | 27–40, scales with the width | Krona One | |
 | page title | 26 | Krona One | `--t-title` |
 | slab title | 22 | Krona One | (h2) |
-| small slab title (rail widgets, list headers) | 17 | Krona One | |
+| small slab title | 17 | Krona One | (`.widget h2`) |
 | body | 17 | Atkinson 400 | `--t-body` |
 | intro line under a page title | 15, `--ngrey` | Atkinson 400 | `--t-sub` |
 | caption, eyebrow, meta | 13 | Atkinson (700 for eyebrows) | `--t-cap` |
 | German in running text | 20 | Atkinson | `--t-de` |
 
-*Still differs:* slab titles come in five sizes (17, 20, 22, 27, 35 px): the map's chapter header (24 and 35), the Today lesson card (27) and the map's current-lesson card (20) each have their own. Today's greeting is 20 px in a dark slab, where the mock-up (`screens/1-today.jpg`) sets it on the stage at display size.
+**Titles (done: `[design]` slab titles).** A title takes its size from what holds it, never from the screen it is on:
+
+- **Page title, 26:** the head of every screen that is not a lesson, the course map's *Lessons* included (it was 24).
+- **Slab title, 22:** the title of a content slab (24 px padding): Practice's sets, Profile's slabs, Grammar's rule of the day (`.gfeat .t`, was 24), the exam card at the A1 gate (`.nextcard h2`, was 20).
+- **Small slab title, 17:** the title of a small slab (20 px padding) and of a row on the course map: the rail widgets, the map's current-lesson card (`.kcard h2`, was 20; at 22 five lesson names ran to three lines in its 150 px column at 390 px, at 17 every name fits in two) and the chapter rows on the map line (`.kst.kchap .ktx b`, was 18).
+- **Hero title:** the one big display line a screen may have: Today's lesson card (`.tlesson h2`, 27 at 390 px, 30 at desktop), the map's chapter header (`.khead h2`, 35 / 40) and the Done ticket (`.ticket h1`, 32). The mock-ups set these large on purpose (`screens/1-today.jpg`, `2-course-map.jpg`). *Still differs:* the three use three different clamps; one shared clamp is a later PR.
+- Big numbers (`.kpi .n`, `.lv b`, `.big`) are 26 like a page title; Today's due count is 32.
+
+![Slab titles before / after, 390 px Night Glass: the map card, Grammar's rule of the day, the map head](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-slab-titles-1.png)
+![The same in Day Glass](https://raw.githubusercontent.com/josuemigueledu-dev/protoa/team-media/2026-10-26/design-slab-titles-2.png)
+
+*Still differs:* Today's greeting is 20 px in a dark slab (26 at desktop), where the mock-up (`screens/1-today.jpg`) sets it on the stage at display size.
 
 ## Components
 
@@ -93,7 +105,8 @@ In this order, one per `[design]` PR:
 
 1. ~~Slab padding (24 content, 20 small) and the 24 px rhythm on the map.~~ Done.
 2. ~~Arrow button size (56, 40 px chip).~~ Done.
-3. Slab title sizes (22 / 17), with Today's lesson card and the map's cards.
+3. ~~Slab title sizes (22 / 17), with the map's cards.~~ Done.
 4. Today's greeting on the stage (needs the owner's eye: it is the first screen).
+5. One clamp for the three hero titles.
 
 Seen while measuring, for ux: on Today's stop line at 390 px, a long current-stop label ("Numbers 0–10", bold) runs into the next stop's label ("Numbers 11–20"); it does on main too.

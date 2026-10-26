@@ -112,7 +112,7 @@ b,strong{font-weight:700}
 h1,h2,.big,.stat .n,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
 h1,h2{line-height:1.08;overflow-wrap:break-word;hyphens:auto}
 h2{font-size:1.375rem}
-.nextcard h2{font-size:1.25rem!important}
+.nextcard h2{font-size:1.375rem!important}
 .widget h2,.widget h3{font-size:1.0625rem}
 h3{font-family:var(--text);font-weight:700;letter-spacing:0}
 .today-hero h1{font-family:var(--hero);font-weight:400}
@@ -429,7 +429,7 @@ body:not(.lay-mobile) .khead{background:var(--glass-dark);box-shadow:inset 0 1px
 body.lay-mobile .khead{clip-path:none;border-radius:0;margin:-16px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
   padding:4px max(20px,env(safe-area-inset-right,0px)) 20px max(20px,env(safe-area-inset-left,0px))}
 .khead .kt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.khead h1{font-size:1.5rem;margin:0}
+.khead h1{font-size:var(--t-title);margin:0}
 .khead .kc{font-size:.9375rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .khead .kch{display:flex;align-items:center;gap:12px;margin-top:14px}
 .khead .kk{display:block;font-size:1rem;color:var(--muted)}
@@ -488,7 +488,7 @@ button.kbody:active .kmk{transform:scale(.92)}
 .kst.kchap{padding-top:18px}
 .kst.kchap .kmk{background:var(--night);color:var(--nink)}
 .kst.fold .kmk{opacity:.75}
-.kst.kchap .ktx b{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.125rem}
+.kst.kchap .ktx b{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;font-size:1.0625rem}
 .ktx{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .ktx b{font-size:1.1875rem;line-height:1.2;font-weight:700;color:var(--ink)}
 .kst.done .ktx b{font-weight:400;color:var(--k2)}
@@ -508,7 +508,7 @@ button.kbody:active .kmk{transform:scale(.92)}
 .kpic{width:92px;height:92px;border:0;padding:0;border-radius:var(--r);background:var(--night2) center/cover no-repeat;cursor:pointer;transition:transform .15s var(--ease)}
 .kpic:active{transform:scale(.96)}
 .kpic.none{background:linear-gradient(135deg,var(--night),var(--night2))}
-.kcard h2{font-size:1.25rem;line-height:1.1;margin:0}
+.kcard h2{font-size:1.0625rem;line-height:1.15;margin:0}
 .kcard .ktx span{color:var(--muted);font-size:.8125rem}
 .kcard .btn{margin-top:8px;gap:12px}
 
