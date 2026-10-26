@@ -81,7 +81,7 @@ function stationListWidget() {
   const { items } = mapModel(); const list = h('div', { class: 'stlist' });
   items.filter(i => i.kind === 'lesson').forEach(it => {
     const row = it.state === 'soon' ? h('div', { class: 'soonrow' }) : h('button', { onclick: () => openStation(it) });
-    row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.c.station), h('small', {}, it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
+    row.append(sigEl(it.c.icon), h('div', {}, h('span', { lang: 'de' }, it.L ? it.L.theme || it.L.title : it.c.station), h('small', {}, 'Lesson ' + it.n + ' · ' + it.c.topic)), h('span', { class: 'tag chip' + (it.state === 'done' ? ' ok' : it.state === 'now' ? ' yours' : '') }, ({ done: 'done', now: 'now', locked: 'next', soon: 'soon' })[it.state]));
     list.append(row);
   });
   return h('div', { class: 'widget' }, h('div', { class: 'wh' }, h('h2', {}, 'All lessons'), h('span', { class: 'faint' }, S.progress.lessonsDone.length + ' of ' + COURSE.length)), list);
@@ -233,7 +233,7 @@ function renderPracticeHub(v) {
   // practise one set
   const groups = {}; learnedAll.forEach(([id, c]) => { const n = c.lesson || c.v1; const k = n ? 'L' + n : 'imp'; (groups[k] = groups[k] || []).push([id, c]); });
   const keys = Object.keys(groups).sort((a, b) => (a === 'imp') - (b === 'imp') || a.localeCompare(b, undefined, { numeric: true }));
-  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : courseOf(n).station + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? '\u00a0word' : '\u00a0words')); }))));
+  if (keys.length) v.append(h('div', { class: 'card stack' }, h('h2', {}, 'Practise one set'), h('div', { class: 'row' }, ...keys.map(k => { const items = groups[k], n = +k.slice(1); const label = k === 'imp' ? 'Imported' : 'Lesson ' + n + ' · ' + courseOf(n).topic; return h('button', { class: 'btn ghost sm', onclick: () => startReview(shuffle(items).map(([id, c], i) => mk(id, c, ['r', 'p', 'li', 'r'][i % 4])), k === 'imp' ? 'Imported words' : courseOf(n).topic) }, k !== 'imp' ? sigEl(courseOf(n).icon) : '', label + ' · ' + items.length + (items.length === 1 ? '\u00a0word' : '\u00a0words')); }))));
   // the forecast and strength charts are empty until the first words; Your words below says how to start
   if (!fresh && !document.body.classList.contains('lay-desktop')) { v.append(forecastWidget()); v.append(h('div', { class: 'widget' }, h('h2', {}, 'Word strength'), strengthBar())); }
   v.append(wordBank());
