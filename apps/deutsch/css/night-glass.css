@@ -119,6 +119,7 @@ body.in-lesson .aurora::after{display:none}
 
 /* ---------- type ---------- */
 h1,h2,.big,.kpi .n,.lv b,.examword,.today-hero .goal .inner,.brand{font-family:var(--hero);font-weight:400;letter-spacing:-.04em}
+.examword .examcue{display:block;margin-top:6px;font:500 1rem/1.4 var(--text);letter-spacing:0;color:var(--muted)}
 h1,h2{line-height:1.08;overflow-wrap:break-word;hyphens:auto}
 h2{font-size:1.375rem}
 .nextcard h2{font-size:1.375rem!important}

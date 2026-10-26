@@ -95,7 +95,8 @@
 .coach .say{border-radius:var(--r) var(--r) var(--r) 2px}
 /* a long word (Entschuldigung) breaks at a German hyphen instead of running out of the card, as on the review card */
 .wcard .de{font-family:var(--hero);font-weight:400;letter-spacing:-.04em;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}
-.wcard .kind{letter-spacing:.04em}
+/* the word type as written, "noun · pl. die Kinder", like the review card's "[ipa] · noun", not in capitals */
+.wcard .kind{text-transform:none;letter-spacing:0}
 .wcard .illus,.wcard .wtile{border-radius:var(--r)}
 /* article colours wherever a gendered word is shown */
 .wcard .illus.m{box-shadow:inset 0 -4px 0 var(--der),inset 0 0 0 1px var(--line)}
@@ -192,6 +193,8 @@ button.wchip:active{transform:scale(.96)}
 .mate:first-child .face{box-shadow:0 0 0 2px var(--card-solid),0 0 0 4px var(--magenta)}
 .mate b{font-size:.875rem}
 .mate .faint{font-size:.75rem;line-height:1.2}
+/* a phone fits two to a row, so "Herr Weber" and "from Mexico City" stay on one line each */
+@media (max-width:519px){.classrow{grid-template-columns:repeat(2,1fr)}}
 
 /* ---------- Grammar (screens/5-grammar.jpg) ---------- */
 .gfeat{display:grid;gap:10px;width:100%;text-align:left;padding:24px;border-radius:var(--r);background:var(--glass-dark);color:var(--nink);

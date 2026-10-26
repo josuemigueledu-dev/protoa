@@ -63,7 +63,7 @@ LESSONS.push({
   },
 });
 
-GRAMMAR.push({ id: 'ein', title: 'der, die, das and ein, eine', lesson: 13,
+GRAMMAR.push({ id: 'ein', title: 'der, die, das and ein,\u00a0eine', lesson: 13,
     body: '<p>Every noun has one of three genders, and the article shows it: <em>der Tee</em>, <em>die Milch</em>, <em>das Wasser</em>. For "a", <em>der</em> and <em>das</em> words take <em>ein</em>, and <em>die</em> words take <em>eine</em>: <em>ein Tee</em>, <em>eine Tasse</em>, <em>ein Glas</em>. It is the same word as the number one, so <em>ein Kaffee</em> is also "one coffee".</p><p>Spanish has two genders and German three, and the Spanish word is no guide: <em>la leche</em> is <em>die Milch</em>, but <em>la cerveza</em> is <em>das Bier</em> and <em>el vaso</em> is <em>das Glas</em>. Learn the article with the noun, every time. <em>mit</em> is <em>con</em> and <em>ohne</em> is <em>sin</em>: <em>Kaffee mit Milch, ohne Zucker</em>.</p>',
     table: [['der Tee', 'ein Tee'], ['die Cola', 'eine Cola'], ['das Wasser', 'ein Wasser'], ['with milk (con)', 'mit Milch'], ['without sugar (sin)', 'ohne Zucker']],
     examples: [
