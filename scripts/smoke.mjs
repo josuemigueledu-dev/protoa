@@ -50,6 +50,8 @@ async function open(browser, label, viewport, colorScheme) {
 
 // a new screen is drawn two frames after the old one starts leaving (render() in ui.js): wait for it
 const drawn = page => page.waitForFunction(() => document.querySelector('#view > .view:not(.leaving)'));
+// ...and done sliding in: Playwright scrolls a row that is still moving into view again before it taps it
+const settled = page => page.waitForFunction(() => !document.querySelector('#view > .view:not(.leaving)')?.getAnimations({ subtree: true }).some(a => a.playState === 'running' && a.effect.getComputedTiming().endTime !== Infinity));
 
 async function noSidewaysScroll(page, label) {
   // the document never scrolls (the app shell); #app is the scroller, so measure both
@@ -510,13 +512,15 @@ async function grammarUnitOpensAtTop(browser) {
     if (at.title !== title) fail(`${label}: ${how} showed "${at.title}", not the unit "${title}"`);
     else if (at.scroll > 0 || at.y < 0) fail(`${label}: ${how} opened the unit mid-page (scrolled ${at.scroll} px, its title at y ${at.y})`);
   };
-  await page.evaluate(() => go('grammar')); await drawn(page); await page.waitForTimeout(300);
+  await page.evaluate(() => go('grammar')); await drawn(page); await settled(page);
   const rows = cur('.listrow:not(.soon)');
   const row = rows.nth(await rows.count() - 1), title = (await row.locator('b').first().textContent()).trim();
   await row.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
-  const listY = Math.round(await page.evaluate(() => PANE.scrollTop));
-  if (listY < 200) fail(`${label}: the Grammar list did not scroll, so this check proves nothing`);
+  // where the list is at the tap itself: the click may still scroll the row before it lands
+  await page.evaluate(() => document.addEventListener('pointerdown', () => { window.tapY = Math.round(PANE.scrollTop); }, { capture: true, once: true }));
   await row.click();
+  const listY = await page.evaluate(() => window.tapY);
+  if (listY < 200) fail(`${label}: the Grammar list did not scroll, so this check proves nothing`);
   await atTop(title, 'the last unit in the scrolled list');
   // back to the list, where it was scrolled, then the same from a lesson's Notice step scrolled down
   await cur('.btn', { hasText: '‹ Grammar' }).click(); await drawn(page); await page.waitForTimeout(400);
