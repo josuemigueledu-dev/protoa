@@ -20,7 +20,9 @@ function renderSidebar() {
   NAV_ITEMS.forEach(([id, label]) => sb.append(h('button', { class: 'nav', 'aria-current': (route === id || (id === 'profile' && route === 'more')) ? 'page' : null, onclick: () => go(id), title: label }, h('span', { html: ICONS[id === 'learn' ? 'learn' : id], style: 'display:contents' }), h('span', {}, label), navBadge(id))));
   sb.append(h('div', { class: 'spacer' }));
   const t = todayInfo();
-  sb.append(h('button', { class: 'goalmini', onclick: () => go('profile'), title: 'Your day' }, ringEl(Math.min(1, t.mins / Math.max(1, S.settings.minutes)), 48), h('div', { class: 'txt' }, h('b', {}, `${t.mins} of ${S.settings.minutes} min`), h('span', {}, t.words >= goalInfo().perDay ? `${t.words} new words today · goal met` : `${t.words} of ${goalInfo().perDay} new words today`))));
+  // one measure per ring: new words, as on Today's ring; the minutes go under it
+  const per = goalInfo().perDay, met = t.words >= per;
+  sb.append(h('button', { class: 'goalmini', onclick: () => go('profile'), title: 'Your day' }, ringEl(Math.min(1, t.words / Math.max(1, per)), 48), h('div', { class: 'txt' }, h('b', {}, met ? 'Goal met' : `${t.words} of ${per}`), h('span', {}, `${met ? t.words + ' ' : ''}new word${t.words === 1 && met ? '' : 's'} · ${t.mins} min`))));
   sb.append(h('div', { class: 'kbdhint' }, h('span', { class: 'kbd' }, '?'), ' shortcuts · ', h('span', { class: 'kbd' }, 'Ctrl K'), ' search'));
 }
 
