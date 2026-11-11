@@ -421,6 +421,21 @@ function uiSound(kind, r) {
     else { [523, 659, 784, 1046].forEach((f, i) => { const o2 = c.createOscillator(), g2 = c.createGain(); o2.connect(g2); g2.connect(c.destination); o2.frequency.value = f; g2.gain.setValueAtTime(.0001, t + i * .1); g2.gain.exponentialRampToValueAtTime(.1, t + i * .1 + .03); g2.gain.exponentialRampToValueAtTime(.0001, t + i * .1 + .4); o2.start(t + i * .1); o2.stop(t + i * .1 + .42); }); }
   } catch (e) { }
 }
+/* starting the audio engine takes ~30 ms on a phone, and the first sound used to pay for it inside the answer's tap
+   (#146). Start it in a quiet moment after the learner first touches the page instead: browsers only let audio start
+   after a touch, and iOS keeps it paused until the next one, where ctx() resumes it. Called once from boot. */
+function warmAudio() {
+  const warm = d => {
+    if (actx || !(S.settings.uiSounds || Object.keys(VOX_URL).length)) return;
+    if (d && !d.didTimeout && d.timeRemaining() < 30) return requestIdleCallback(warm, { timeout: 3000 }); // not mid-animation
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); const g = actx.createGain(); g.connect(actx.destination); g.disconnect(); } catch (e) { }
+  };
+  const first = () => {
+    removeEventListener('pointerup', first, true); removeEventListener('keydown', first, true);
+    if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 3000 }); else setTimeout(warm, 500);
+  };
+  addEventListener('pointerup', first, true); addEventListener('keydown', first, true);
+}
 
 /* ---------- the voice: a faceless orb that pulses while speaking ---------- */
 const Voice = {
