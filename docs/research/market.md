@@ -67,6 +67,59 @@ Store fees reduce this: Apple and Google take 15–30% depending on program and 
 
 ## 6. Recommendation
 
-Choose **option C**: a complete free course plus a paid tier that sells AI practice and convenience, **$7.99/month or $59.99/year**, web checkout first, store billing when the native apps ship. Launch to Spanish speakers first.
+*(Superseded: the owner picked model A on 2026-10-24; see section 7.)* Choose **option C**: a complete free course plus a paid tier that sells AI practice and convenience, **$7.99/month or $59.99/year**, web checkout first, store billing when the native apps ship. Launch to Spanish speakers first.
 
 Decision the owner needs to make is listed in the run's log: confirm option C and the price band, so monetization groundwork (entitlements config, quotas, paywall hook) can follow it.
+
+## 7. Owner's pick: model A, free with limits, and a Plus worth paying for
+
+Added 2026-10-25. The owner picked **model A** on 2026-10-24 (issue #1): the whole course is free, practice has a daily allowance that refills, Plus removes the limits and adds more AI conversation, every limit on the core course is a little more generous than Duolingo's, mistakes cost less, and no lesson is ever locked behind payment. On 2026-10-25 the owner sent back the first numbers (open PRs #59 and #63) as "too lenient, there has to be an incentive to go premium, if free is just premium lite then it doesn't work." This section is the redo: the free AI allowances are much tighter, the core course stays a little more generous than Duolingo, and Plus has clear extras. Models stay hybrid (quick tasks on Haiku 5.5, conversation, exams and generated lessons on Sonnet 5.5; `ai-costs.md`).
+
+### Duolingo's limits (as of October 2026)
+
+Duolingo publishes almost no numbers itself, so most of these come from fan wikis, press and user reports, and A/B groups differ. **Re-check in the app before launch.**
+
+- **Energy** replaced hearts, tested from 2025-07-03 ([Duolingo blog](https://blog.duolingo.com/duolingo-energy/); [CNET via AOL](https://www.aol.com/news/duolingo-bringing-energy-language-learning-120004759.html); [Android Authority](https://www.androidauthority.com/quitting-duolingo-energy-system-3599842/); [Duolingo Wiki, Energy](https://duolingo.fandom.com/wiki/Energy); [Duoplanet](https://duoplanet.com/duolingo-energy-system/); all found 2026-10-25). **25 energy** when full. **Every exercise costs 1**, right or wrong, and reports say a wrong answer can cost 1 more. **Everything draws on it, lessons included**, so a free learner gets roughly 2–3 lessons before the wall ([2026 review](https://www.myengineeringbuddy.com/blog/duolingo-reviews-pricing-alternatives-2026/)). It refills **about +1 an hour**, full in about a day. Five right in a row gives back a **random 1–5**; ads, gems, chests and friend bonuses give more. Reviewing your mistakes at the end of a lesson is free.
+- **Explain My Answer** (why an answer was wrong) has been **free for everyone since 2026-01-01** in most German, Spanish, French, Italian, Portuguese, Japanese and Korean courses; before that it was Max only. No published cap; in practice it is bounded by energy, so a free learner can only make the mistakes that 25 exercises allow ([StoryLearning, checked 2026-09-19](https://storylearning.com/duolingo-max-review); [Nibble, updated 2026-08-26](https://nibble-app.com/blog/is-duolingo-max-worth-it); both read 2026-10-25).
+- **AI conversation**: none on free or Super. **Max** adds Roleplay and Video Call with Lily (calls of about 1–3 minutes, as often as you like), in the iOS and Android apps only (same sources).
+- **Prices**: Super about $12.99/month or $84/year (US App Store shows six unlabelled Super prices, $9.99 to $119.99, on 2026-09-19); Max about $29.99/month or $168/year (Nibble; Max prices appear only inside the app).
+
+For a second reference point on AI allowances: Speak Premium is $17.99/month or $83.99/year and caps custom "Made for You" lessons at 3 a day; Premium Plus ($39.99/month) lifts it ([LanguaTalk](https://languatalk.com/blog/speak-app-review/), [SpeakShark](https://speakshark.com/blog/speak-app-review-2026), read 2026-10-25; prices from the US App Store in July 2026).
+
+### Side by side (proposal, for the owner's sign-off)
+
+Core course, no AI (costs us nothing per learner):
+
+| Limit | Duolingo free | Protoa free | Protoa Plus |
+|---|---|---|---|
+| Lessons | Draw energy: 2–3 a day before the wall | **Never limited**, never cost energy | Never limited |
+| Daily review of due words | Draws energy | **Never limited** | Never limited |
+| Extra drills (Practice hub) | Draw energy | Draw energy | **Unlimited** |
+| Full bar | 25 | 25 | no bar |
+| Cost per exercise | 1 | 1 | 0 |
+| Extra cost of a mistake | 0 to 1 | **0** | 0 |
+| Refill | about +1 an hour, full in about a day | **+1 every 50 minutes**, full in under 21 hours | n/a |
+| Five right in a row | random 1–5 back | **3 back, every time** (Duolingo's average, without the lottery) | n/a |
+| Running out mid-session | Blocks the next exercise | **The drill you started always finishes** | n/a |
+| Ways to refill early | Ads, gems | None (no ads, no gems) | n/a |
+| Exams | In the course | **2 marked a day**, never locked | 2 marked a day |
+
+AI (each call costs us money):
+
+| Allowance | Duolingo free | Protoa free | Protoa Plus |
+|---|---|---|---|
+| "Why? Explain it" after a mistake, and checks of your own free replies | Explain My Answer, bounded by energy | **15 a day** | 100 a day (fair use) |
+| "Correct my sentence" and "How do I say…?" in Sprechen | none | **5 a day** | 50 a day (fair use) |
+| Sprechen conversation with the cast | none (Max, about $30/month) | **10 turns a week**: one short conversation, to try it | **240 turns a month**: a full conversation every day |
+| Write your own lesson (AI-generated) | none | none | **4 a month** |
+| Price | $0 (Super about $13, Max about $30) | $0 | **$7.99/month or $59.99/year** |
+
+What changed from the first proposal: free conversation turns 25 a week → 10 a week; free quick checks 40 a day in one pool → 15 explanations plus 5 tools a day; free exams 3 → 2 a day; drill energy 30 with +1 every 40 minutes and 1 back per combo → 25 with +1 every 50 minutes and 3 back per combo. Plus is unchanged on conversation (240 turns) and generated lessons (4), and gets unlimited drills.
+
+**Why Plus is now worth paying for.** A free learner can finish the whole course and keep every word, so free is never a trial. But the parts that feel like a tutor are a taste on free and a daily habit on Plus: more than 5x the conversation (about 43 turns a month against 240), 7–10x the explanations and tools, unlimited drills, and lessons written for you. Duolingo sells unlimited energy at about $13 and AI conversation only at about $30; Protoa Plus sells both for $7.99.
+
+**What it costs us** (hybrid models, prices in `ai-costs.md`): a free learner who uses every allowance every day costs about $2.30 a month ($0.80 without exams; a typical free learner about $0.50). A Plus learner who maxes everything costs about $7.00 a month, more than the annual plan's $3.50–4.80 net, so the fair-use caps, the logged usage and the global daily spend ceiling in `ai-costs.md` stay necessary; a typical Plus learner (15 conversations, a few explanations a day, two generated lessons) is about $2.20.
+
+### Recommendation
+
+Approve both tables. The core course stays more generous than Duolingo on every row (lessons and due reviews never limited, mistakes cost nothing), while the AI tutor is what Plus sells. No ads and no gems at launch; a referral month of Plus (section 5) is the only other way to get more. The numbers live in two config objects, `PLANS` in `server/src/entitlements.js` (PR #59) and `ENERGY` in `server/src/energy.js` (PR #63), both updated to these values, so any number changes in one line. Nothing changes for learners while `MONETIZATION` is off.
