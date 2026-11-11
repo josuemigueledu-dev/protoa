@@ -1,6 +1,6 @@
 /* Lesson 9 */
 LESSONS.push({
-  n: 9, title: 'Numbers 0–10', theme: 'Null bis zehn',
+  n: 9, title: 'Numbers 0\u2060–\u206010', theme: 'Null bis zehn',
   scene: { id: 'classroom', plate: 'plate.classroom', cast: [{ id: 'cast.weber', x: 1200 }, { id: 'cast.ana', x: 900 }, { id: 'cast.lena', x: 640 }], place: 'Volkshochschule am Hermannplatz', time: 'Tuesday, 9:00', cap: 'Raum 2.04 · Dienstag, 9:00',
     intro: [
       'Tuesday, 9:00, room 2.04. Herr Weber puts the chalk down: today the class counts.',
@@ -62,7 +62,7 @@ LESSONS.push({
     related: { 'zwei': 'drei', 'sechs': 'sieben', 'acht': 'neun' },
     sep: {},
   } });
-GRAMMAR.push({ id: 'num', title: 'Numbers 0–10', lesson: 9,
+GRAMMAR.push({ id: 'num', title: 'Numbers 0\u2060–\u206010', lesson: 9,
     body: '<p>Numbers do not change with the noun: <em>zwei Kaffee</em>, <em>sieben Tage</em>. The one exception is <em>eins</em>: in front of a noun it becomes <em>ein</em> or <em>eine</em>, like the article (Spanish <em>uno</em> → <em>un</em>, <em>una</em>): <em>ein Kaffee</em>, <em>eine Woche</em>. Room and phone numbers are read digit by digit, and zero is <em>null</em>: 2.04 is <em>zwei null vier</em>.</p><p>Spelling and sound: <em>z</em> is "ts" (<em>zwei, zehn</em>), and an <em>s</em> before a vowel buzzes (<em>sieben</em>). <em>Sechs</em> is "zeks", not <em>seis</em>.</p>',
     table: [['0 null', '1 eins'], ['2 zwei', '3 drei'], ['4 vier', '5 fünf'], ['6 sechs', '7 sieben'], ['8 acht', '9 neun'], ['10 zehn', 'ein Kaffee, eine Woche']],
     examples: [
