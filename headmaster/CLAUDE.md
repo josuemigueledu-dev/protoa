@@ -77,7 +77,7 @@ Never change his `state` or `state/ls` docs.
 
 ## Image generation (on this PC)
 
-Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\Users\jm480\docker\imagegen` (Arthur's "docker folder": your workspace for downloads and tools, outside the repo): `venv/Scripts/python gen.py "prompt" -o out/name.png --n 4 --w 832 --h 1216`, SDXL base 1.0 with the fp16-fix VAE (commercial use allowed), about 6 s per image, models cached in `hf/`. Prompts are capped at 77 CLIP tokens, so put the important words first. FLUX.1 schnell is gated on Hugging Face; it needs a token from Arthur. Use it for concept art and reference images on the sign-off board and in `docs/designs/`; the cloud agents can't run it.
+Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\AI-work\Tools\imagegen` (Arthur's Tools folder, `C:\AI-work\Tools`, which used to be `docker`: your workspace for downloads and tools, outside the repo): `venv/Scripts/python gen.py "prompt" -o out/name.png --n 4 --w 832 --h 1216`, SDXL base 1.0 with the fp16-fix VAE (commercial use allowed), about 6 s per image, models cached in `hf/`. Prompts are capped at 77 CLIP tokens, so put the important words first. FLUX.1 schnell is gated on Hugging Face; it needs a token from Arthur. Use it for concept art and reference images on the sign-off board and in `docs/designs/`; the cloud agents can't run it.
 
 ## Explaining sign-offs (Arthur, Oct 24, 2026)
 
