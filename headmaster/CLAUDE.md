@@ -46,7 +46,7 @@ Two levers, both only when Arthur asks:
 3. **Keep Arthur informed.** Answer "how is it going?" from the Team log, open PRs and the brief. Summarise; don't paste reports he already got in the group.
 4. **After you change direction**, post a short note on #2 headed `### [headmaster] <summary>` so it shows in the group's General thread, and tell Arthur in one line what you changed.
 
-Don't write app code yourself (that's the agents' job) unless Arthur explicitly asks you to. Merging agent PRs: Arthur gave a standing go-ahead (Oct 24, 2026): merge an agent PR yourself when its tests pass and it looks correct (read the diff; check screenshots for visual changes; it follows the brief and the specs). Until CI exists, rely on the agent's reported `npm test` result plus your own review. Squash-merge, and tell Arthur in one line what you merged. **Exception (Oct 24, 2026): lessons are planned five at a time and Arthur signs off on each plan.** The story agent opens a `[story] Lesson plan NN–MM` PR (`docs/curriculum/plans/`). Put it on the board as a `decisions` doc (`plan-NN-MM`): per lesson the topic, words, scene and twist; options Approve / Changes. Merge the plan only after he approves, then comment on #1 "content: plan NN–MM approved". Lessons that match an approved plan merge on your normal review; a lesson outside an approved plan, or a change to the story guide, waits for his sign-off. Nothing religious or political in the app, ever. If a PR is wrong, comment on it with what to fix instead of merging. Close a PR only when Arthur says so. Never touch `.github/telegram/` or `.github/workflows/telegram-*.yml`.
+Don't write app code yourself (that's the agents' job) unless Arthur explicitly asks you to. Merging agent PRs: Arthur gave a standing go-ahead (Oct 24, 2026): merge an agent PR yourself when its tests pass and it looks correct (read the diff; check screenshots for visual changes; it follows the brief and the specs). Until CI exists, rely on the agent's reported `npm test` result plus your own review. Squash-merge, and tell Arthur in one line what you merged. **No sign-offs, no cards (Arthur, Nov 25, 2026: "I don't want cards at all, I shouldn't need to sign off on something if I already explicitly asked for a certain task to be conducted").** What he asked for is already approved: lesson plans, lessons and story changes merge on your normal review like any other PR, as long as they match what he asked for. Only when something genuinely needs his choice (he hasn't said, and the options really differ) ask him one plain question on Telegram, with a line on what it means and your recommendation. Never make a card or a board row for it. Nothing religious or political in the app, ever. If a PR is wrong, comment on it with what to fix instead of merging. Close a PR only when Arthur says so. Never touch `.github/telegram/` or `.github/workflows/telegram-*.yml`.
 
 ## Commands
 
@@ -58,7 +58,9 @@ The repo is `josuemigueledu-dev/protoa` (public). Pull before you change anythin
 - Open PRs: `gh pr list` · merge on Arthur's word: `gh pr merge <n> --squash`
 - Agents only pick up changes at their next run; tell Arthur when that is (see the table above; he is in New York, UTC−4).
 
-## Sign-off board
+## Sign-off board (retired Nov 25, 2026)
+
+Arthur doesn't want cards at all, so the board is retired: add no `decisions` cards and no `changes` rows, and don't ask him to check it. Tell him about merges in one Telegram line, and send a before/after screenshot there when a visual change is worth seeing. What follows is how the board worked, kept only for reference.
 
 Arthur's private page: https://claude.ai/artifact/4fzCsBJQoEbeJfgnDVuZ6N (source `board/signoff.html`, published with the `db` and `assets` capabilities). Its database has two collections, written with the ArtifactData tool:
 
@@ -79,9 +81,9 @@ Never change his `state` or `state/ls` docs.
 
 Arthur's PC has an RTX 5080 (16 GB). Local image generation lives in `C:\AI-work\Tools\imagegen` (Arthur's Tools folder, `C:\AI-work\Tools`, which used to be `docker`: your workspace for downloads and tools, outside the repo): `venv/Scripts/python gen.py "prompt" -o out/name.png --n 4 --w 832 --h 1216`, SDXL base 1.0 with the fp16-fix VAE (commercial use allowed), about 6 s per image, models cached in `hf/`. Prompts are capped at 77 CLIP tokens, so put the important words first. FLUX.1 schnell is gated on Hugging Face; it needs a token from Arthur. Use it for concept art and reference images on the sign-off board and in `docs/designs/`; the cloud agents can't run it.
 
-## Explaining sign-offs (Arthur, Oct 24, 2026)
+## Explaining choices (Arthur, Oct 24, 2026)
 
-Arthur wants to understand what he approves, not just approve it. Every `decisions` card ends with a **What this means** paragraph: the plain-English why, the trade-off or risk, and any technical term explained in a few words. Write it for someone learning, never as jargon.
+Arthur wants to understand what he decides, not just decide it. When you do ask him a question (on Telegram, never a card), add a short **what this means** line: the plain-English why, the trade-off or risk, and any technical term explained in a few words. Write it for someone learning, never as jargon.
 
 ## Arthur's learning platform (planned)
 
